@@ -169,20 +169,20 @@ jobs:
                   docker run --detach \
                     --name backend-ci-app \
                     --network backend-ci \
-                    --publish 8080:8080 \
+                    --publish 8081:8081 \
                     --env SPRING_DATASOURCE_URL=jdbc:postgresql://backend-ci-postgres:5432/freelanceflow \
                     --env SPRING_DATASOURCE_USERNAME=ci_user \
                     --env SPRING_DATASOURCE_PASSWORD=ci_password \
                     --env SPRING_JPA_DEFAULT_SCHEMA=public \
                     --env SPRING_FLYWAY_SCHEMAS=public \
                     --env JWT_SECRET=ci-only-secret-that-is-long-enough-for-jwt-signing \
-                    --env CORS_ALLOWED_ORIGINS=http://localhost:5173 \
+                    --env CORS_ALLOWED_ORIGINS=http://localhost:5174 \
                     freelanceflow-backend:${{ github.sha }}
 
             - name: Wait for backend health
               run: |
                   for attempt in $(seq 1 60); do
-                    if curl --fail --silent http://localhost:8080/actuator/health; then
+                    if curl --fail --silent http://localhost:8081/actuator/health; then
                       echo
                       exit 0
                     fi
@@ -208,7 +208,7 @@ jobs:
                     --header 'Content-Type: application/json' \
                     --request POST \
                     --data '{"email":"ci-${{ github.run_id }}@example.com","password":"ci-password-123","displayName":"CI Smoke Test"}' \
-                    http://localhost:8080/api/auth/register | grep -q 'token'
+                    http://localhost:8081/api/auth/register | grep -q 'token'
 
             - name: Show backend logs on failure
               if: ${{ failure() }}
