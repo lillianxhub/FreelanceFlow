@@ -17,14 +17,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChangePasswordRequest {
 
-    @NotBlank(message = "กรุณาระบุรหัสผ่านเดิม")
+    @NotBlank(message = "Enter the current password")
     private String oldPassword;
 
-    @NotBlank(message = "กรุณาระบุรหัสผ่านใหม่")
-    @Size(min = 8, max = 100, message = "รหัสผ่านใหม่ต้องมี 8–100 ตัวอักษร")
+    @NotBlank(message = "Enter a new password")
+    @Size(min = 8, max = 100, message = "New password must be 8–100 characters")
     private String newPassword;
 
-    @AssertTrue(message = "รหัสผ่านใหม่ต้องไม่เกิน 72 ไบต์ UTF-8")
+    @AssertTrue(message = "New password must be at most 72 UTF-8 bytes")
     @JsonIgnore
     public boolean isNewPasswordWithinByteLimit() {
         return newPassword == null || newPassword.getBytes(StandardCharsets.UTF_8).length <= 72;

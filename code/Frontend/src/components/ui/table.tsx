@@ -34,7 +34,7 @@ function TablePagination({ page, totalPages, onPageChange, className }: TablePag
         <PaginationItem>
           <PaginationPrevious
             href={`?page=${safePage - 1}`}
-            text="ก่อนหน้า"
+            text="Previous"
             aria-disabled={safePage === 1}
             className={safePage === 1 ? 'pointer-events-none opacity-50' : undefined}
             onClick={(event) => {
@@ -64,7 +64,7 @@ function TablePagination({ page, totalPages, onPageChange, className }: TablePag
         <PaginationItem>
           <PaginationNext
             href={`?page=${safePage + 1}`}
-            text="ถัดไป"
+            text="Next"
             aria-disabled={safePage === safeTotalPages}
             className={safePage === safeTotalPages ? 'pointer-events-none opacity-50' : undefined}
             onClick={(event) => {

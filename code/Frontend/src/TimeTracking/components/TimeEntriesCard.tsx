@@ -74,13 +74,13 @@ export default function TimeEntriesCard({
       <section className="!p-0">
         <CardHeader className="p-6 pb-2">
           <div>
-            <CardTitle>รายการเวลา</CardTitle>
+            <CardTitle>Time entries</CardTitle>
             <CardDescription className="mt-1 text-sm text-text-secondary">
-              รวม{' '}
+              Total{' '}
               <strong className="text-text-primary">
-                {formatDurationSeconds(summary.totalSeconds).replace(/\sนาที$/, '')}
+                {formatDurationSeconds(summary.totalSeconds).replace(/\sminutes$/, '')}
               </strong>{' '}
-              จาก {summary.entryCount} รายการ
+              of {summary.entryCount} entries
             </CardDescription>
           </div>
           <CardAction>
@@ -90,11 +90,11 @@ export default function TimeEntriesCard({
               onValueChange={(value) => {
                 if (value) onRangeChange(value as RangePreset)
               }}
-              aria-label="ช่วงเวลารายการเวลา"
+              aria-label="Time entry period"
             >
-              <ToggleGroupItem value="ALL">ทั้งหมด</ToggleGroupItem>
-              <ToggleGroupItem value="DAY">วันนี้</ToggleGroupItem>
-              <ToggleGroupItem value="WEEK">สัปดาห์นี้</ToggleGroupItem>
+              <ToggleGroupItem value="ALL">All</ToggleGroupItem>
+              <ToggleGroupItem value="DAY">Today</ToggleGroupItem>
+              <ToggleGroupItem value="WEEK">This week</ToggleGroupItem>
             </ToggleGroup>
           </CardAction>
         </CardHeader>
@@ -102,13 +102,13 @@ export default function TimeEntriesCard({
         <CardContent className="p-6 pt-0">
           <div className="mb-4 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div className="flex min-w-0 flex-col gap-1.5">
-              <Label htmlFor="time-filter-client">ลูกค้า</Label>
+              <Label htmlFor="time-filter-client">Clients</Label>
               <NativeSelect
                 id="time-filter-client"
                 value={filters.client}
                 onChange={(event) => onClientChange(event.target.value)}
               >
-                <option value="ALL">ทุกลูกค้า</option>
+                <option value="ALL">All clients</option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name}
@@ -118,13 +118,13 @@ export default function TimeEntriesCard({
             </div>
 
             <div className="flex min-w-0 flex-col gap-1.5">
-              <Label htmlFor="time-filter-project">โปรเจกต์</Label>
+              <Label htmlFor="time-filter-project">Projects</Label>
               <NativeSelect
                 id="time-filter-project"
                 value={filters.project}
                 onChange={(event) => onProjectChange(event.target.value)}
               >
-                <option value="ALL">ทุกโปรเจกต์</option>
+                <option value="ALL">All projects</option>
                 {projects
                   .filter(
                     (project) => filters.client === 'ALL' || project.client_id === filters.client,
@@ -138,14 +138,14 @@ export default function TimeEntriesCard({
             </div>
 
             <div className="flex min-w-0 flex-col gap-1.5">
-              <Label htmlFor="time-filter-task">งาน</Label>
+              <Label htmlFor="time-filter-task">Tasks</Label>
               <NativeSelect
                 id="time-filter-task"
                 value={filters.task}
                 disabled={filters.project === 'ALL'}
                 onChange={(event) => onTaskChange(event.target.value)}
               >
-                <option value="ALL">ทุกงาน</option>
+                <option value="ALL">All tasks</option>
                 {filterTasks.map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.name}
@@ -155,35 +155,35 @@ export default function TimeEntriesCard({
             </div>
 
             <div className="flex min-w-0 flex-col gap-1.5">
-              <Label htmlFor="time-filter-from">ตั้งแต่วันที่</Label>
+              <Label htmlFor="time-filter-from">From date</Label>
               <DatePicker
                 id="time-filter-from"
                 value={filters.from}
                 onChange={(value) => onDateChange('from', value)}
-                aria-label="ตั้งแต่วันที่"
+                aria-label="From date"
               />
             </div>
 
             <div className="flex min-w-0 flex-col gap-1.5 sm:col-span-2 xl:col-span-1">
-              <Label htmlFor="time-filter-to">ถึงวันที่</Label>
+              <Label htmlFor="time-filter-to">To date</Label>
               <DatePicker
                 id="time-filter-to"
                 value={filters.to}
                 onChange={(value) => onDateChange('to', value)}
-                aria-label="ถึงวันที่"
+                aria-label="To date"
               />
             </div>
           </div>
 
           {loading && entries.length === 0 ? (
-            <LoadingState label="กำลังโหลดรายการเวลา..." />
+            <LoadingState label="Loading time entries…" />
           ) : error && entries.length === 0 ? (
             <ErrorState message={error} onRetry={onRetry} />
           ) : entries.length === 0 ? (
             <EmptyState
               icon={<FiClock aria-hidden="true" />}
-              title="ไม่มี Time entries"
-              description="ลองเปลี่ยนตัวกรองหรือเพิ่ม Time entries ใหม่"
+              title="None Time entries"
+              description="Change the filters or add a new time entry."
             />
           ) : (
             <TimeEntryTable

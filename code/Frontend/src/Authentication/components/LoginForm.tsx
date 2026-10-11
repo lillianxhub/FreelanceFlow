@@ -27,7 +27,7 @@ function LoginForm() {
       await login(form.email, form.password)
       router.replace('/dashboard')
     } catch (err) {
-      setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'))
+      setError(getErrorMessage(err, 'Could not sign in'))
     } finally {
       setLoading(false)
     }
@@ -40,19 +40,19 @@ function LoginForm() {
           <img src="/logo-light.svg" alt="" />
           <strong>FreelanceFlow</strong>
         </div>
-        <h1>เข้าสู่ระบบ</h1>
-        {/* <p className="auth-description">จัดการลูกค้า โปรเจกต์ และเวลาทำงานในที่เดียว</p> */}
+        <h1>Sign in</h1>
+        {/* <p className="auth-description">Manage clients, projects, and time in one place</p> */}
         {error && <p className="auth-error">{error}</p>}
 
         <AuthInput
-          label="อีเมล"
+          label="Email"
           type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
         />
         <AuthInput
-          label="รหัสผ่าน"
+          label="Password"
           type="password"
           name="password"
           value={form.password}
@@ -60,11 +60,11 @@ function LoginForm() {
         />
 
         <Button variant="default" className="h-10 w-full" type="submit" disabled={loading}>
-          {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+          {loading ? 'Signing in…' : 'Sign in'}
         </Button>
 
         <p className="auth-footer">
-          ยังไม่มีบัญชี? <Link href="/register">สมัครสมาชิก</Link>
+          No account yet? <Link href="/register">Register</Link>
         </p>
       </form>
     </AuthenticationLayout>

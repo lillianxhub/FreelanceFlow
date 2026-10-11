@@ -120,7 +120,7 @@ class UserServiceTest {
 
         assertThatThrownBy(() -> userService.updateCurrentUser(request))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("ไม่พบข้อมูลโปรไฟล์ผู้ใช้");
+                .hasMessage("User profile not found");
 
         verify(userRepository, never()).save(any());
         verifyNoInteractions(userMapper);
@@ -135,7 +135,7 @@ class UserServiceTest {
                 .newPassword("new-password")
                 .build()))
                 .isInstanceOf(InvalidCredentialsException.class)
-                .hasMessage("รหัสผ่านไม่ถูกต้อง");
+                .hasMessage("Incorrect password");
 
         verify(userRepository, never()).save(any());
         verifyNoInteractions(refreshTokenService);
@@ -153,7 +153,7 @@ class UserServiceTest {
                 .newPassword("same-password")
                 .build()))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม");
+                .hasMessage("New password must differ from the current password");
 
         verify(userRepository, never()).save(any());
         verifyNoInteractions(refreshTokenService);

@@ -19,7 +19,7 @@ test('protected routes wait for auth, redirect guests and show authenticated con
     },
   }
   for (const state of [
-    { loading: true, user: null, text: 'กำลังตรวจสอบการเข้าสู่ระบบ' },
+    { loading: true, user: null, text: 'Checking your session' },
     { loading: false, user: null, text: '' },
     { loading: false, user, text: 'Private page' },
   ]) {

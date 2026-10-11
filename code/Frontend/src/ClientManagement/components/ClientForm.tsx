@@ -39,7 +39,7 @@ function ClientForm({
         if (active) setProvinces(items)
       })
       .catch(() => {
-        if (active) setAddressError('ไม่สามารถโหลดข้อมูลจังหวัดได้')
+        if (active) setAddressError('Could not load provinces')
       })
       .finally(() => {
         if (active) setAddressLoading(false)
@@ -135,7 +135,7 @@ function ClientForm({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-name" required>
-            ชื่อผู้ติดต่อ
+            Contact name
           </FormLabel>
           <Input
             id="client-name"
@@ -145,13 +145,13 @@ function ClientForm({
             onBlur={handleBlur}
             aria-invalid={Boolean(fieldErrors.name)}
             aria-describedby={fieldErrors.name ? 'client-name-error' : undefined}
-            placeholder="ชื่อ-นามสกุล"
+            placeholder="Full name"
           />
           <FieldError id="client-name-error" message={fieldErrors.name} />
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="company-name" required>
-            ชื่อบริษัท
+            Company name
           </FormLabel>
           <Input
             id="company-name"
@@ -161,13 +161,13 @@ function ClientForm({
             onBlur={handleBlur}
             aria-invalid={Boolean(fieldErrors.company_name)}
             aria-describedby={fieldErrors.company_name ? 'company-name-error' : undefined}
-            placeholder="บริษัท จำกัด"
+            placeholder="Example Co., Ltd."
           />
           <FieldError id="company-name-error" message={fieldErrors.company_name} />
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-email" required>
-            อีเมล
+            Email
           </FormLabel>
           <Input
             id="client-email"
@@ -184,7 +184,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-phone" required>
-            โทรศัพท์
+            Phone
           </FormLabel>
           <Input
             id="client-phone"
@@ -204,7 +204,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-address" required>
-            ที่อยู่
+            Address
           </FormLabel>
           <Input
             id="client-address"
@@ -219,7 +219,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-province" required>
-            จังหวัด
+            Province
           </FormLabel>
           <NativeSelect
             id="client-province"
@@ -231,7 +231,7 @@ function ClientForm({
             aria-describedby={fieldErrors.province ? 'client-province-error' : undefined}
             disabled={addressLoading || Boolean(addressError)}
           >
-            <option value="">{addressLoading ? 'กำลังโหลดจังหวัด...' : 'เลือกจังหวัด'}</option>
+            <option value="">{addressLoading ? 'Loading provinces…' : 'Select province'}</option>
             {provinces.map((province) => (
               <option key={province.id} value={province.name_th}>
                 {province.name_th}
@@ -242,7 +242,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-district" required>
-            อำเภอ / เขต
+            District
           </FormLabel>
           <NativeSelect
             id="client-district"
@@ -254,7 +254,7 @@ function ClientForm({
             aria-describedby={fieldErrors.district ? 'client-district-error' : undefined}
             disabled={!selectedProvince}
           >
-            <option value="">เลือกอำเภอ / เขต</option>
+            <option value="">Select district</option>
             {districts.map((district) => (
               <option key={district.id} value={district.name_th}>
                 {district.name_th}
@@ -265,7 +265,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-sub-district" required>
-            ตำบล / แขวง
+            Subdistrict
           </FormLabel>
           <NativeSelect
             id="client-sub-district"
@@ -277,7 +277,7 @@ function ClientForm({
             aria-describedby={fieldErrors.sub_district ? 'client-sub-district-error' : undefined}
             disabled={!selectedDistrict}
           >
-            <option value="">เลือกตำบล / แขวง</option>
+            <option value="">Select subdistrict</option>
             {subDistricts.map((subDistrict) => (
               <option key={subDistrict.id} value={subDistrict.name_th}>
                 {subDistrict.name_th}
@@ -288,7 +288,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-postal-code" required>
-            รหัสไปรษณีย์
+            Postal code
           </FormLabel>
           <NativeSelect
             id="client-postal-code"
@@ -300,7 +300,7 @@ function ClientForm({
             aria-describedby={fieldErrors.postal_code ? 'client-postal-code-error' : undefined}
             disabled={!selectedSubDistrict}
           >
-            <option value="">เลือกตำบลก่อน</option>
+            <option value="">Select a subdistrict first</option>
             {selectedSubDistrict && (
               <option value={String(selectedSubDistrict.zip_code)}>
                 {selectedSubDistrict.zip_code}
@@ -311,7 +311,7 @@ function ClientForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="client-tax" required>
-            เลขประจำตัวผู้เสียภาษี
+            Tax ID
           </FormLabel>
           <Input
             id="client-tax"
@@ -328,15 +328,15 @@ function ClientForm({
           <FieldError id="client-tax-error" message={fieldErrors.tax_id} />
         </div>
         {/* <div className="flex flex-col gap-1.5">
-        <FormLabel htmlFor="client-status" required>สถานะ</FormLabel>
-        <NativeSelect id="client-status" name="status" value={value.status} onChange={handleInputChange} onBlur={handleBlur} aria-invalid={Boolean(fieldErrors.status)} aria-describedby={fieldErrors.status ? 'client-status-error' : undefined}><option value="ACTIVE">ใช้งานอยู่</option><option value="ARCHIVED">เก็บถาวร</option></NativeSelect><FieldError id="client-status-error" message={fieldErrors.status} /></div> */}
+        <FormLabel htmlFor="client-status" required>Status</FormLabel>
+        <NativeSelect id="client-status" name="status" value={value.status} onChange={handleInputChange} onBlur={handleBlur} aria-invalid={Boolean(fieldErrors.status)} aria-describedby={fieldErrors.status ? 'client-status-error' : undefined}><option value="ACTIVE">Active</option><option value="ARCHIVED">Archived</option></NativeSelect><FieldError id="client-status-error" message={fieldErrors.status} /></div> */}
         {addressError && (
           <p className="rounded-lg bg-red-soft px-[11px] py-[9px] text-sm text-destructive">
             {addressError}
           </p>
         )}
         <div className="flex flex-col gap-1.5 md:col-span-2">
-          <FormLabel htmlFor="client-notes">หมายเหตุ</FormLabel>
+          <FormLabel htmlFor="client-notes">Notes</FormLabel>
           <Textarea
             id="client-notes"
             name="notes"
@@ -347,10 +347,10 @@ function ClientForm({
       </div>
       <div className="mt-[18px] flex justify-end gap-2 border-t border-border pt-[18px]">
         <Button variant="outline" className="h-10" type="button" onClick={onCancel}>
-          ยกเลิก
+          Cancel
         </Button>
         <Button variant="default" className="h-10" type="submit" disabled={saving}>
-          {saving ? 'กำลังบันทึก...' : 'บันทึกลูกค้า'}
+          {saving ? 'Saving…' : 'Save client'}
         </Button>
       </div>
     </form>

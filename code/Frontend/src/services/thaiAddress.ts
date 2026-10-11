@@ -66,9 +66,9 @@ function parseProvince(value: unknown): ThaiProvince | null {
 }
 
 function parseAddressData(value: unknown): ThaiProvince[] {
-  if (!Array.isArray(value)) throw new Error('รูปแบบข้อมูลที่อยู่ไม่ถูกต้อง')
+  if (!Array.isArray(value)) throw new Error('Invalid address data format')
   const provinces = value.map(parseProvince).filter((item): item is ThaiProvince => item !== null)
-  if (provinces.length === 0) throw new Error('ไม่พบข้อมูลจังหวัดจาก API')
+  if (provinces.length === 0) throw new Error('No provinces found from API')
   return provinces
 }
 
@@ -76,7 +76,7 @@ export function loadThaiAddressData(): Promise<ThaiProvince[]> {
   if (!addressDataPromise) {
     addressDataPromise = fetch(THAI_ADDRESS_API)
       .then(async (response) => {
-        if (!response.ok) throw new Error('ไม่สามารถโหลดข้อมูลที่อยู่ได้')
+        if (!response.ok) throw new Error('Could not load address data')
         return parseAddressData((await response.json()) as unknown)
       })
       .catch((error: unknown) => {

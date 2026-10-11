@@ -149,7 +149,7 @@ class AuthServiceTest {
                 // When & Then
                 assertThatThrownBy(() -> authService.register(registerRequest))
                                 .isInstanceOf(EmailAlreadyExistsException.class)
-                                .hasMessage("อีเมลนี้ถูกใช้งานแล้ว");
+                                .hasMessage("Email already in use");
 
                 verify(userRepository).existsByEmail(registerRequest.getEmail());
                 verify(userRepository, never()).save(any(User.class));

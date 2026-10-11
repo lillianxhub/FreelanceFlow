@@ -25,28 +25,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ManualTimeEntryRequest {
 
-    @NotNull(message = "กรุณาระบุโปรเจกต์")
+    @NotNull(message = "Select a project")
     private UUID projectId;
 
     private UUID taskId;
 
     private String description;
 
-    @NotNull(message = "กรุณาระบุเวลาเริ่มต้น")
+    @NotNull(message = "Enter a start time")
     private Instant startedAt;
 
     private Instant endedAt;
 
-    @Positive(message = "ระยะเวลาต้องมากกว่าศูนย์")
+    @Positive(message = "Duration must be greater than zero")
     private Long durationSeconds;
 
-    @AssertTrue(message = "กรุณาระบุเวลาสิ้นสุดหรือระยะเวลาอย่างใดอย่างหนึ่ง")
+    @AssertTrue(message = "Enter an end time or duration")
     @JsonIgnore
     public boolean isTimeInputExclusive() {
         return (endedAt == null) != (durationSeconds == null);
     }
 
-    @AssertTrue(message = "เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่มต้น")
+    @AssertTrue(message = "End time must be after start time")
     @JsonIgnore
     public boolean isTimeRangeValid() {
         return startedAt == null

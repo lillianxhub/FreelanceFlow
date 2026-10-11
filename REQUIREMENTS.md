@@ -19,10 +19,10 @@
 | Authentication | refresh cookie และ access token แยกหน้าที่; logout/invalidation และ refresh concurrency ต้องสอดคล้อง |
 | ลูกค้า/โปรเจกต์/งาน | ตรวจ owner และความสัมพันธ์ที่ Backend; archive/delete ต้องรักษารายงานและเวลาเดิม |
 | Timer | มี timer ทำงานได้หนึ่งรายการต่อผู้ใช้; สลับงานต้องมีการตัดสินใจจากผู้ใช้และบันทึกอย่างถูกต้อง |
-| วันนี้ | เลือกงานแยกจาก Task status, เก็บตามผู้ใช้/วันที่ Bangkok/ลำดับ, นำออกไม่ลบ Task; ไม่ยกงานค้างอัตโนมัติ |
-| Project Board | OPEN / IN_PROGRESS / COMPLETED; AUTO และ MANUAL ไม่เปลี่ยน timer ที่วิ่งเมื่อสลับโหมด; การเรียงไม่เริ่ม timer ใหม่ |
+| Task Board | `/task-board` มี Today และ Kanban ตามโปรเจกต์; Today เก็บตามผู้ใช้/วันที่ Bangkok/ลำดับ, นำออกไม่ลบ Task, ไม่ยกงานค้างอัตโนมัติ |
+| Project Board และ timer | OPEN / IN_PROGRESS / COMPLETED; AUTO และ MANUAL ไม่เปลี่ยน timer ที่วิ่งเมื่อสลับโหมด; การเรียงไม่เริ่ม timer ใหม่; เริ่ม/หยุดใน Board โดยไม่ redirect |
 | รายงาน | คำนวณจากข้อมูลบันทึกจริง ระบุช่วงวัน หน่วย duration และการจัดกลุ่ม |
-| การเงิน | roadmap; ก่อน implement ต้องกำหนด amount precision, currency, invoice/payment/void/refund rules และข้อมูลจริง |
+| การเงิน | Finance ห้าหน้าเป็น prototype ที่ใช้ข้อมูลสมมติร่วมกัน รีเซ็ตเมื่อรีโหลด; ก่อนเชื่อมข้อมูลจริงต้องกำหนด amount precision, currency, invoice/payment/void/refund rules และ ownership |
 
 ## ตัวอย่าง criteria
 

@@ -93,7 +93,7 @@ class TimerControllerTest {
                 ))
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("เริ่มจับเวลาเรียบร้อยแล้ว"))
+                        .value("Timer started"))
                 .andExpect(jsonPath("$.data.id")
                         .value(ENTRY_ID.toString()))
                 .andExpect(jsonPath("$.data.task").doesNotExist())
@@ -171,7 +171,7 @@ class TimerControllerTest {
                         .content("{\"projectId\":\"" + PROJECT_ID + "\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("มีตัวจับเวลาที่กำลังทำงานอยู่ กรุณาหยุดก่อนเริ่มใหม่"))
+                .andExpect(jsonPath("$.message").value("A timer is already running. Stop it before starting another."))
                 .andExpect(jsonPath("$.data").value(nullValue()))
                 .andExpect(jsonPath("$.meta").value(nullValue()))
                 .andExpect(jsonPath("$.error.code").value("TIMER_ALREADY_RUNNING"));
@@ -187,7 +187,7 @@ class TimerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value(
-                        "ดึงข้อมูลตัวจับเวลาที่กำลังทำงานเรียบร้อยแล้ว"
+                        "Current timer retrieved"
                 ))
                 .andExpect(jsonPath("$.data.running").value(true))
                 .andExpect(jsonPath("$.data.timeEntry.id")
@@ -223,7 +223,7 @@ class TimerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("ไม่มีตัวจับเวลาที่กำลังทำงาน"))
+                        .value("No running timer"))
                 .andExpect(jsonPath("$.data.running").value(false))
                 .andExpect(jsonPath("$.data.timeEntry").doesNotExist());
     }
@@ -242,7 +242,7 @@ class TimerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("หยุดจับเวลาเรียบร้อยแล้ว"))
+                        .value("Timer stopped"))
                 .andExpect(jsonPath("$.data.id")
                         .value(ENTRY_ID.toString()))
                 .andExpect(jsonPath("$.data.startedAt")
@@ -264,7 +264,7 @@ class TimerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("ยกเลิกการจับเวลาเรียบร้อยแล้ว"))
+                        .value("Timer canceled"))
                 .andExpect(jsonPath("$.data").value(nullValue()))
                 .andExpect(jsonPath("$.meta").value(nullValue()))
                 .andExpect(jsonPath("$.error").value(nullValue()));

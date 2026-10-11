@@ -35,7 +35,7 @@ export default function PaginationControls({
         <PaginationItem>
           <PaginationPrevious
             href={href(Math.max(1, safePage - 1))}
-            text="ก่อนหน้า"
+            text="Previous"
             aria-disabled={safePage === 1}
             className={safePage === 1 ? 'pointer-events-none opacity-50' : undefined}
             onClick={(event) => {
@@ -65,7 +65,7 @@ export default function PaginationControls({
         <PaginationItem>
           <PaginationNext
             href={href(Math.min(safeTotalPages, safePage + 1))}
-            text="ถัดไป"
+            text="Next"
             aria-disabled={safePage === safeTotalPages}
             className={safePage === safeTotalPages ? 'pointer-events-none opacity-50' : undefined}
             onClick={(event) => {

@@ -8,20 +8,20 @@ export function validateManualTimeField(
   field: ManualTimeFieldName,
   value: ManualTimeForm,
 ): string | undefined {
-  if (field === 'project_id' && !value.project_id) return 'กรุณาเลือกโปรเจกต์'
+  if (field === 'project_id' && !value.project_id) return 'Select a project'
   if (field === 'entry_date' && !/^\d{4}-\d{2}-\d{2}$/.test(value.entry_date))
-    return 'กรุณาเลือกวันที่'
-  if (field === 'manual_mode' && !value.manual_mode) return 'กรุณาเลือกวิธีระบุเวลา'
-  if (field === 'start_time' && !value.start_time) return 'กรุณาระบุเวลาเริ่ม'
+    return 'Select a date'
+  if (field === 'manual_mode' && !value.manual_mode) return 'Select a time entry method'
+  if (field === 'start_time' && !value.start_time) return 'Enter a start time'
 
   if (field === 'end_time') {
-    if (!value.end_time) return 'กรุณาระบุเวลาสิ้นสุด'
+    if (!value.end_time) return 'Enter an end time'
     if (value.start_time && value.end_time <= value.start_time)
-      return 'เวลาสิ้นสุดต้องหลังเวลาเริ่ม'
+      return 'End time must be after start time'
   }
 
   if (field === 'duration_minutes' && Number(value.duration_minutes) <= 0) {
-    return 'ระยะเวลาต้องมากกว่า 0 นาที'
+    return 'Duration must be greater than 0 minutes'
   }
 
   return undefined

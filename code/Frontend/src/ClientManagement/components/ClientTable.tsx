@@ -16,10 +16,10 @@ export default function ClientsTable({ clients }: ClientTableProps) {
       <Table className="data-table">
         <TableHeader>
           <TableRow>
-            <TableHead>ลูกค้า</TableHead>
-            <TableHead>อีเมล</TableHead>
-            <TableHead>โทรศัพท์</TableHead>
-            <TableHead>สถานะ</TableHead>
+            <TableHead>Clients</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

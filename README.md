@@ -39,7 +39,11 @@ Frontend http://localhost:5174, Backend ผ่าน Compose ใช้ http://lo
 
 ## ขอบเขตผลิตภัณฑ์
 
-มีระบบบัญชีผู้ใช้ ลูกค้า โปรเจกต์ งาน จับเวลา แผนงานวันนี้ Project Board และรายงาน การเงินเป็น roadmap: ต้องออกแบบการบันทึกและกฎจริงก่อนเพิ่ม schema/API ห้ามคำนวณยอดจาก placeholder หรือแสดงยอดสมมติ
+มีระบบบัญชีผู้ใช้ ลูกค้า โปรเจกต์ งาน จับเวลา Task Board ที่แยกจาก Dashboard พร้อมแท็บ Today/Kanban และรายงาน UI ใช้ธีมอ้างอิง Demo และข้อความระบบภาษาอังกฤษ
+
+กลุ่ม Finance มี Financial Overview, Income, Expenses, Invoices และ Payments เป็น **ต้นแบบข้อมูลสมมติ** ที่ระบุชัดบนหน้าจอ การสร้าง invoice และรับชำระจะเปลี่ยนยอดข้ามหน้าในหน่วยสตางค์ แต่รีเซ็ตเมื่อรีโหลดหรือออกจากระบบ ยังไม่มี schema/API การเงินหรือการบันทึกเงินจริง ก่อนเชื่อมระบบจริงต้องออกแบบ amount precision, currency, tax, invoice/payment/void/refund และ ownership โดยไม่ใช้ราคา placeholder ของโปรเจกต์
+
+เปิด `http://localhost:5174/task-board` เพื่อจัดงานและจับเวลาในหน้าเดียวกัน; เลือก Kanban และโปรเจกต์จากหน้าเดียวกัน เปิด `http://localhost:5174/finance` เพื่อทดลองการเงิน ข้อมูลตัวอย่างไม่ถูกส่งไป Backend
 
 ## เครดิต
 

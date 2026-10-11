@@ -93,13 +93,13 @@ function previousPeriodLabel(from: string, to: string): string {
   const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
   const previousStart = new Date(start.getTime() - days * 86_400_000)
   const previousEnd = new Date(start.getTime() - 86_400_000)
-  const fullDate = new Intl.DateTimeFormat('th-TH', {
+  const fullDate = new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     timeZone: 'UTC',
   })
-  const dayMonth = new Intl.DateTimeFormat('th-TH', {
+  const dayMonth = new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
     month: 'short',
     timeZone: 'UTC',
@@ -194,12 +194,12 @@ function ReportsPage() {
   const showProjectTimeChart = groupBy === 'PROJECT'
   const timeChartData = clientChartData
   const selectedClientName =
-    data.filters.clients.find((client) => client.id === clientId)?.name || 'ลูกค้าที่เลือก'
-  const timeChartTitle = showProjectTimeChart ? 'เวลาตามโปรเจกต์' : 'เวลาตามลูกค้า'
+    data.filters.clients.find((client) => client.id === clientId)?.name || 'Selected client'
+  const timeChartTitle = showProjectTimeChart ? 'Time by project' : 'Time by client'
   const timeChartDescription =
     clientId !== 'ALL'
-      ? `ชั่วโมงที่บันทึก${showProjectTimeChart ? 'แยกตามโปรเจกต์' : ''}ของลูกค้า ${selectedClientName}`
-      : `ชั่วโมงที่บันทึกแยกตาม${showProjectTimeChart ? 'โปรเจกต์' : 'ลูกค้า'}${hasDateRange ? 'ในช่วงเวลาที่เลือก' : 'ทุกช่วงเวลา'}`
+      ? `Hours tracked${showProjectTimeChart ? 'By project' : ''}for client ${selectedClientName}`
+      : `Hours tracked by${showProjectTimeChart ? 'Projects' : 'Clients'}${hasDateRange ? 'in the selected period' : 'All time'}`
   const projectChartData = projects.items
     .filter((project) => project.trackedSeconds > 0 || project.taskProgressPercent > 0)
     .map((project) => ({
@@ -211,16 +211,16 @@ function ReportsPage() {
   const trend =
     trendPercent == null ? (
       hasDateRange ? (
-        'ไม่มีเวลาบันทึกในช่วงเปรียบเทียบ'
+        'No tracked time in the comparison period'
       ) : (
-        'ทุกช่วงเวลา'
+        'All time'
       )
     ) : (
       <span
         className={`inline-flex flex-wrap items-center gap-1 font-semibold ${trendPercent >= 0 ? 'text-green' : 'text-destructive'}`}
       >
         {trendPercent >= 0 ? <FiTrendingUp /> : <FiTrendingDown />}
-        {trendPercent >= 0 ? 'เพิ่มขึ้น' : 'ลดลง'} {Math.abs(trendPercent).toFixed(0)}% เทียบกับ{' '}
+        {trendPercent >= 0 ? 'Increased' : 'Decreased'} {Math.abs(trendPercent).toFixed(0)}% versus{' '}
         {previousPeriodLabel(range.from, range.to)}
       </span>
     )
@@ -228,15 +228,7 @@ function ReportsPage() {
     downloadCsv(
       hasDateRange ? `time-report-${range.from}-${range.to}.csv` : 'time-report-all.csv',
       [
-        [
-          'โปรเจกต์',
-          'ลูกค้า',
-          'เวลาเป้าหมาย',
-          'เวลาที่ใช้',
-          'ใช้ไป (%)',
-          'ความคืบหน้า (%)',
-          'สถานะ',
-        ],
+        ['Projects', 'Clients', 'Target time', 'Time spent', 'Used (%)', 'Progress (%)', 'Status'],
         ...projectRows.map(({ project, targetHours, usedHours }) => [
           project.projectName,
           project.clientName,
@@ -252,16 +244,16 @@ function ReportsPage() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-screen-2xl space-y-6">
       <PageHeader
-        eyebrow="จัดการ / รายงาน"
-        title="รายงาน"
-        description="วิเคราะห์การใช้เวลาและความคืบหน้าของโปรเจกต์"
+        eyebrow="Manage / Reports"
+        title="Reports"
+        description="Analyze time use and project progress."
         actions={
           <Button
             className="h-10"
             onClick={exportReport}
             disabled={!canLoad || projects.items.length === 0}
           >
-            <FiDownload /> ส่งออกหน้านี้ CSV
+            <FiDownload /> Export this page CSV
           </Button>
         }
       />
@@ -269,11 +261,11 @@ function ReportsPage() {
       <Card>
         <CardContent className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 xl:grid-cols-5">
           <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-from">จากวันที่</Label>
+            <Label htmlFor="report-from">From date</Label>
             <DatePicker
               id="report-from"
               value={range.from}
-              placeholder="เลือกวันที่เริ่ม"
+              placeholder="Select start date"
               onChange={(value) => {
                 setRange((current) => ({ ...current, from: value }))
                 setPage(1)
@@ -281,7 +273,7 @@ function ReportsPage() {
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-status">สถานะโปรเจกต์</Label>
+            <Label htmlFor="report-status">StatusProjects</Label>
             <NativeSelect
               id="report-status"
               value={status}
@@ -292,7 +284,7 @@ function ReportsPage() {
                 setPage(1)
               }}
             >
-              <option value="ALL">ทุกสถานะ</option>
+              <option value="ALL">All statuses</option>
               {Object.entries(projectStatusLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -301,11 +293,11 @@ function ReportsPage() {
             </NativeSelect>
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-to">ถึงวันที่</Label>
+            <Label htmlFor="report-to">To date</Label>
             <DatePicker
               id="report-to"
               value={range.to}
-              placeholder="เลือกวันที่สิ้นสุด"
+              placeholder="Select end date"
               onChange={(value) => {
                 setRange((current) => ({ ...current, to: value }))
                 setPage(1)
@@ -313,7 +305,7 @@ function ReportsPage() {
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-client">ลูกค้า</Label>
+            <Label htmlFor="report-client">Clients</Label>
             <NativeSelect
               id="report-client"
               value={clientId}
@@ -324,7 +316,7 @@ function ReportsPage() {
                 setPage(1)
               }}
             >
-              <option value="ALL">ลูกค้าทั้งหมด</option>
+              <option value="ALL">All clients</option>
               {data.filters.clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
@@ -333,7 +325,7 @@ function ReportsPage() {
             </NativeSelect>
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-project">โปรเจกต์</Label>
+            <Label htmlFor="report-project">Projects</Label>
             <NativeSelect
               id="report-project"
               value={projectId}
@@ -343,7 +335,7 @@ function ReportsPage() {
                 setPage(1)
               }}
             >
-              <option value="ALL">โปรเจกต์ทั้งหมด</option>
+              <option value="ALL">All projects</option>
               {availableProjects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
@@ -356,19 +348,19 @@ function ReportsPage() {
 
       {hasPartialRange ? (
         <p className="text-sm text-destructive">
-          เลือกวันที่เริ่มและวันที่สิ้นสุดให้ครบ หรือเว้นว่างทั้งคู่เพื่อดูทุกช่วงเวลา
+          Select both dates, or leave both blank to view all time.
         </p>
       ) : hasDateRange && !validRange ? (
-        <p className="text-sm text-destructive">วันที่เริ่มต้องไม่เกินวันที่สิ้นสุด</p>
+        <p className="text-sm text-destructive">Start date must be on or before end date</p>
       ) : loading ? (
-        <LoadingState label="กำลังประมวลผลรายงาน..." />
+        <LoadingState label="Preparing report…" />
       ) : error ? (
         <ErrorState message={error} onRetry={refresh} />
       ) : (
         <>
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
-              label="เวลารวม"
+              label="Total time"
               icon={<FiClock />}
               value={formatDurationSeconds(summary.totalTrackedSeconds)}
               foot={trend}
@@ -376,27 +368,27 @@ function ReportsPage() {
               compact
             />
             <SummaryCard
-              label="จำนวนรายการเวลา"
+              label="Time entries"
               icon={<FiList />}
               value={summary.timeEntryCount}
-              unit="รายการ"
-              foot={hasDateRange ? 'ในช่วงเวลาที่เลือก' : 'ทุกช่วงเวลา'}
+              unit="entries"
+              foot={hasDateRange ? 'in the selected period' : 'All time'}
               accent="blue"
             />
             <SummaryCard
-              label="โปรเจกต์ที่มีการบันทึกเวลา"
+              label="Projects with tracked time"
               icon={<FiBriefcase />}
               value={summary.projectsWithTime}
-              unit="โปรเจกต์"
-              foot={`จากทั้งหมด ${summary.totalProjects} โปรเจกต์`}
+              unit="Projects"
+              foot={`of total ${summary.totalProjects} Projects`}
               accent="violet"
             />
             <SummaryCard
-              label="ลูกค้าที่มีการทำงาน"
+              label="Clients with tracked time"
               icon={<FiUsers />}
               value={summary.clientsWithTime}
-              unit="ลูกค้า"
-              foot={`จากทั้งหมด ${summary.totalClients} ลูกค้า`}
+              unit="Clients"
+              foot={`of total ${summary.totalClients} Clients`}
               accent="orange"
             />
           </section>
@@ -416,13 +408,13 @@ function ReportsPage() {
                       setGroupBy(value)
                     }
                   }}
-                  aria-label="จัดกลุ่มเวลาตาม"
+                  aria-label="Group time by"
                 >
-                  <ToggleGroupItem value="CLIENT" aria-label="เวลาตามลูกค้า">
-                    ตามลูกค้า
+                  <ToggleGroupItem value="CLIENT" aria-label="Time by client">
+                    By client
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="PROJECT" aria-label="เวลาตามโปรเจกต์">
-                    ตามโปรเจกต์
+                  <ToggleGroupItem value="PROJECT" aria-label="Time by project">
+                    By project
                   </ToggleGroupItem>
                 </ToggleGroup>
               </div>
@@ -431,11 +423,11 @@ function ReportsPage() {
               {timeChartData.length ? (
                 <ChartContainer
                   className="h-[300px] w-full min-w-0 aspect-auto"
-                  config={{ hours: { label: 'ชั่วโมง', color: '#4F6BFF' } }}
+                  config={{ hours: { label: 'hours', color: '#4F6BFF' } }}
                 >
                   <BarChart data={timeChartData} layout="vertical" margin={{ left: 12, right: 28 }}>
                     <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                    <XAxis type="number" axisLine={false} tickLine={false} unit=" ชม." />
+                    <XAxis type="number" axisLine={false} tickLine={false} unit=" h" />
                     <YAxis
                       type="category"
                       dataKey="name"
@@ -448,7 +440,7 @@ function ReportsPage() {
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar
                       dataKey="hours"
-                      name="ชั่วโมง"
+                      name="hours"
                       fill="var(--color-hours)"
                       radius={[0, 6, 6, 0]}
                     />
@@ -456,7 +448,7 @@ function ReportsPage() {
                 </ChartContainer>
               ) : (
                 <p className="py-12 text-center text-sm text-muted-foreground">
-                  ไม่มีข้อมูลเวลาในช่วงที่เลือก
+                  No time data for this period
                 </p>
               )}
             </CardContent>
@@ -464,9 +456,9 @@ function ReportsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>การใช้ชั่วโมงเทียบเป้าหมายและความคืบหน้างาน</CardTitle>
+              <CardTitle>Time usage versus task progress</CardTitle>
               <CardDescription>
-                เปรียบเทียบเปอร์เซ็นต์เวลาที่ใช้กับเปอร์เซ็นต์งานที่เสร็จของโปรเจกต์ในหน้านี้
+                Compare time used with tasks completed for these projects.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -475,8 +467,8 @@ function ReportsPage() {
                   <ChartContainer
                     className="h-[320px] min-w-[44rem] aspect-auto"
                     config={{
-                      usage: { label: 'การใช้ชั่วโมง', color: '#4F6BFF' },
-                      progress: { label: 'ความคืบหน้างาน', color: '#7C3AED' },
+                      usage: { label: 'Hours used', color: '#4F6BFF' },
+                      progress: { label: 'Task progress', color: '#7C3AED' },
                     }}
                   >
                     <BarChart data={projectChartData}>
@@ -500,13 +492,13 @@ function ReportsPage() {
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar
                         dataKey="usage"
-                        name="การใช้ชั่วโมง"
+                        name="Hours used"
                         fill="var(--color-usage)"
                         radius={[5, 5, 0, 0]}
                       />
                       <Bar
                         dataKey="progress"
-                        name="ความคืบหน้างาน"
+                        name="Task progress"
                         fill="var(--color-progress)"
                         radius={[5, 5, 0, 0]}
                       />
@@ -515,7 +507,7 @@ function ReportsPage() {
                 </div>
               ) : (
                 <p className="py-12 text-center text-sm text-muted-foreground">
-                  ไม่มีข้อมูลโปรเจกต์ในช่วงที่เลือก
+                  No projects for this period
                 </p>
               )}
             </CardContent>
@@ -523,9 +515,9 @@ function ReportsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>รายละเอียดการใช้เวลาแต่ละโปรเจกต์</CardTitle>
+              <CardTitle>Time breakdown by project</CardTitle>
               <CardDescription>
-                เวลา เป้าหมาย และความคืบหน้าของโปรเจกต์ ({projects.total} รายการ)
+                Time, targets, and progress for projects ({projects.total} entries)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -539,13 +531,13 @@ function ReportsPage() {
               >
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ชื่อโปรเจกต์</TableHead>
-                    <TableHead>ชื่อลูกค้า</TableHead>
-                    <TableHead className="w-32">เวลาเป้าหมาย</TableHead>
-                    <TableHead className="w-32">เวลาที่ใช้</TableHead>
-                    <TableHead className="w-36">ใช้ไป</TableHead>
-                    <TableHead className="w-36">ความคืบหน้า</TableHead>
-                    <TableHead className="w-36">สถานะ</TableHead>
+                    <TableHead>Project name</TableHead>
+                    <TableHead>NameClients</TableHead>
+                    <TableHead className="w-32">Target time</TableHead>
+                    <TableHead className="w-32">Time spent</TableHead>
+                    <TableHead className="w-36">Used</TableHead>
+                    <TableHead className="w-36">Progress</TableHead>
+                    <TableHead className="w-36">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -564,7 +556,7 @@ function ReportsPage() {
                       </TableCell>
                       <TableCell>{project.clientName}</TableCell>
                       <TableCell>
-                        {targetHours ? `${targetHours.toFixed(1)} ชม.` : 'ไม่กำหนด'}
+                        {targetHours ? `${targetHours.toFixed(1)} h` : 'No target'}
                       </TableCell>
                       <TableCell>{formatDurationSeconds(project.trackedSeconds)}</TableCell>
                       <TableCell>
@@ -596,7 +588,7 @@ function ReportsPage() {
                   {!projectRows.length && (
                     <TableRow>
                       <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                        ไม่พบโปรเจกต์ตามตัวกรอง
+                        No projects match your filters
                       </TableCell>
                     </TableRow>
                   )}

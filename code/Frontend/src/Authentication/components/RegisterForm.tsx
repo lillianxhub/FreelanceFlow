@@ -37,13 +37,13 @@ function RegisterForm() {
   ): string | undefined => {
     const value = values[name].trim()
 
-    if (!value) return 'กรุณากรอกข้อมูลในช่องนี้'
-    if (name === 'email' && !isValidEmail(values.email)) return 'กรุณากรอกอีเมลให้ถูกต้อง'
-    if (name === 'phone' && !isValidPhone(values.phone)) return 'กรุณากรอกเบอร์โทรศัพท์ 10 หลัก'
+    if (!value) return 'Complete this field'
+    if (name === 'email' && !isValidEmail(values.email)) return 'Enter a valid email address'
+    if (name === 'phone' && !isValidPhone(values.phone)) return 'Enter a phone number 10 Main'
     if (name === 'password' && !hasRequiredPassword(values.password))
-      return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษรและไม่เกิน 72 ไบต์ UTF-8'
+      return 'Passwordmust have at least 8 characters and no more than 72 bytes UTF-8'
     if (name === 'confirmPassword' && !passwordsMatch(values.password, values.confirmPassword)) {
-      return 'รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน'
+      return 'Passwords do not match'
     }
 
     return undefined
@@ -119,7 +119,7 @@ function RegisterForm() {
       })
       router.replace('/login')
     } catch (err) {
-      setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'))
+      setError(getErrorMessage(err, 'Could not register'))
     } finally {
       setLoading(false)
     }
@@ -132,12 +132,12 @@ function RegisterForm() {
           <img src="/logo-light.svg" alt="" />
           <strong>FreelanceFlow</strong>
         </div>
-        <h1>สมัครสมาชิก</h1>
-        <p className="auth-description">สร้าง พื้นที่ทำงานสำหรับจัดการงานฟรีแลนซ์ของคุณ</p>
+        <h1>Register</h1>
+        <p className="auth-description">Create your freelance workspace</p>
         {error && <p className="auth-error">{error}</p>}
 
         <AuthInput
-          label="ชื่อที่แสดง"
+          label="Display name"
           type="text"
           name="displayName"
           value={form.displayName}
@@ -147,7 +147,7 @@ function RegisterForm() {
           autoComplete="nickname"
         />
         <AuthInput
-          label="ชื่อ"
+          label="Name"
           type="text"
           name="firstName"
           value={form.firstName}
@@ -157,7 +157,7 @@ function RegisterForm() {
           autoComplete="given-name"
         />
         <AuthInput
-          label="นามสกุล"
+          label="Last name"
           type="text"
           name="lastName"
           value={form.lastName}
@@ -167,7 +167,7 @@ function RegisterForm() {
           autoComplete="family-name"
         />
         <AuthInput
-          label="อีเมล"
+          label="Email"
           type="email"
           name="email"
           value={form.email}
@@ -177,7 +177,7 @@ function RegisterForm() {
           autoComplete="email"
         />
         <AuthInput
-          label="เบอร์โทรศัพท์"
+          label="Phone number"
           type="tel"
           name="phone"
           value={form.phone}
@@ -190,7 +190,7 @@ function RegisterForm() {
           maxLength={10}
         />
         <AuthInput
-          label="รหัสผ่าน"
+          label="Password"
           type="password"
           name="password"
           value={form.password}
@@ -201,7 +201,7 @@ function RegisterForm() {
           minLength={8}
         />
         <AuthInput
-          label="ยืนยันรหัสผ่าน"
+          label="Confirm password"
           type="password"
           name="confirmPassword"
           value={form.confirmPassword}
@@ -213,11 +213,11 @@ function RegisterForm() {
         />
 
         <Button className="min-h-10 w-full" type="submit" disabled={loading}>
-          {loading ? 'กำลังสมัคร...' : 'สมัครสมาชิก'}
+          {loading ? 'Registering…' : 'Register'}
         </Button>
 
         <p className="auth-footer">
-          มีบัญชีอยู่แล้ว? <Link href="/login">เข้าสู่ระบบ</Link>
+          Already have an account? <Link href="/login">Sign in</Link>
         </p>
       </form>
     </AuthenticationLayout>

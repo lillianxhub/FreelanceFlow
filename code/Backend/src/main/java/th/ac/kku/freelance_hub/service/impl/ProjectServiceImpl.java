@@ -201,7 +201,7 @@ public class ProjectServiceImpl implements ProjectService {
         String searchTerm = search == null ? null : search.trim();
         if (searchTerm != null && searchTerm.length() > 180) {
             throw new InvalidArgumentException(
-                    "คำค้นหาต้องไม่เกิน 180 ตัวอักษร", Map.of("field", "search")
+                    "Search must be at most 180 characters", Map.of("field", "search")
             );
         }
 
@@ -336,10 +336,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         Project project = findOwnedProject(ownerId, projectId);
         if (project.getStatus() == ProjectStatus.ARCHIVED) {
-            throw new InvalidStateException("ไม่สามารถแก้ไขโปรเจกต์ที่จัดเก็บแล้วได้");
+            throw new InvalidStateException("Archived projects cannot be edited");
         }
         if (project.getStatus() == ProjectStatus.COMPLETED) {
-            throw new InvalidStateException("ไม่สามารถแก้ไขโปรเจกต์ที่เสร็จสิ้นแล้วได้");
+            throw new InvalidStateException("Completed projects cannot be edited");
         }
         Client client = findOwnedClient(ownerId, request.getClientId());
 
@@ -380,7 +380,7 @@ public class ProjectServiceImpl implements ProjectService {
                     && summaries.get(0).getTotalTasks()
                             > summaries.get(0).getCompletedTasks()) {
                 throw new InvalidStateException(
-                        "ไม่สามารถเปลี่ยนโปรเจกต์เป็นเสร็จสิ้นได้ เพราะยังมีงานย่อยที่ไม่เสร็จ");
+                        "Complete all tasks before completing this project");
             }
         }
         project.changeStatus(request.getStatus());
@@ -435,7 +435,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (timerService.getCurrentTimer(ownerId)
                 .filter(timer -> projectId.equals(timer.getProjectId()))
                 .isPresent()) {
-            throw new InvalidStateException("กรุณาหยุดจับเวลาก่อนเปลี่ยนสถานะโปรเจกต์");
+            throw new InvalidStateException("Stop the timer before changing project status");
         }
     }
 
@@ -461,14 +461,14 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (pageable.isUnpaged() || pageable.getPageSize() > 100) {
             throw new InvalidArgumentException(
-                    "จำนวนโปรเจกต์ต่อหน้าต้องอยู่ระหว่าง 1 ถึง 100"
+                    "Project page size must be between 1 and 100"
             );
         }
 
         for (Sort.Order order : pageable.getSort()) {
             if (!SORT_FIELDS.contains(order.getProperty())) {
                 throw new InvalidArgumentException(
-                        "ฟิลด์ที่ใช้เรียงลำดับไม่ถูกต้อง", Map.of("field", "sortBy")
+                        "Invalid sort field", Map.of("field", "sortBy")
                 );
             }
         }

@@ -30,6 +30,7 @@ export interface StartTimerPayload {
   projectId: string
   taskId?: string
   description?: string
+  stopCurrentTimer?: boolean
 }
 
 export interface UpdateTimeEntryPayload {

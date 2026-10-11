@@ -18,7 +18,7 @@ export function formatDurationSeconds(totalSeconds: number | null | undefined = 
   const formatted = [hours, minutes, seconds]
     .map((value) => String(value).padStart(2, '0'))
     .join(':')
-  return `${formatted} นาที`
+  return formatted
 }
 
 export function formatDuration(minutes: number | null | undefined = 0): string {

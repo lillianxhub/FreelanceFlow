@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/refs -- dnd-kit exposes DOM bindings through hook return values. */
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
 import {
   DndContext,
   KeyboardSensor,
@@ -24,6 +23,8 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../api/apiError'
+import { startTimer, stopTimer } from '../services/timeTracking'
+import { useCurrentTimer } from '../TimeTracking/useCurrentTimer'
 import { listTimerProjects } from '../services/timerOptions'
 import {
   bangkokDate,
@@ -53,7 +54,7 @@ function AvailableTask({
     >
       <button
         type="button"
-        aria-label={`ลาก ${task.name} เข้าวันนี้`}
+        aria-label={`Drag ${task.name} into Today`}
         {...drag.listeners}
         {...drag.attributes}
         className="cursor-grab rounded px-1 text-subtle"
@@ -71,7 +72,7 @@ function AvailableTask({
         disabled={disabled}
         className="rounded border border-border px-2 py-1 text-xs disabled:opacity-40"
       >
-        เพิ่ม
+        Add
       </button>
     </div>
   )
@@ -82,12 +83,18 @@ function PlanRow({
   count,
   onMove,
   onRemove,
+  running,
+  onTimer,
+  busy,
 }: {
   task: PlannedTask
   index: number
   count: number
   onMove: (offset: number) => void
   onRemove: () => void
+  running: boolean
+  onTimer: () => void
+  busy: boolean
 }) {
   const drag = useSortable({ id: `plan:${task.id}` })
   return (
@@ -99,7 +106,7 @@ function PlanRow({
       <td className="p-3">
         <button
           type="button"
-          aria-label={`ลาก ${task.name} เพื่อเรียงลำดับ`}
+          aria-label={`Drag ${task.name} to reorder`}
           {...drag.attributes}
           {...drag.listeners}
           className="cursor-grab text-subtle"
@@ -113,21 +120,23 @@ function PlanRow({
         <small className="block text-text-secondary">{task.projectName}</small>
       </td>
       <td className="p-3 text-xs">
-        {task.status === 'COMPLETED' ? 'เสร็จ' : task.available ? 'พร้อมทำ' : 'ไม่พร้อมทำ'}
+        {task.status === 'COMPLETED' ? 'Done' : task.available ? 'Ready' : 'Unavailable'}
       </td>
       <td className="p-3 text-right">
         <div className="flex justify-end gap-1">
-          {task.available && (
-            <Link
+          {task.available && task.status !== 'COMPLETED' && (
+            <button
+              type="button"
+              disabled={busy}
               className="rounded border border-border px-2 py-1 text-xs"
-              href={`/time-tracker?projectId=${task.projectId}&taskId=${task.id}`}
+              onClick={onTimer}
             >
-              จับเวลา
-            </Link>
+              {running ? 'Stop timer' : 'Start timer'}
+            </button>
           )}
           <button
             type="button"
-            aria-label={`เลื่อน ${task.name} ขึ้น`}
+            aria-label={`Move ${task.name} up`}
             disabled={index === 0}
             onClick={() => onMove(-1)}
             className="px-1 disabled:opacity-30"
@@ -136,7 +145,7 @@ function PlanRow({
           </button>
           <button
             type="button"
-            aria-label={`เลื่อน ${task.name} ลง`}
+            aria-label={`Move ${task.name} down`}
             disabled={index === count - 1}
             onClick={() => onMove(1)}
             className="px-1 disabled:opacity-30"
@@ -145,7 +154,7 @@ function PlanRow({
           </button>
           <button
             type="button"
-            aria-label={`นำ ${task.name} ออกจากวันนี้`}
+            aria-label={`Remove ${task.name} from Today`}
             onClick={onRemove}
             className="px-1 text-text-secondary"
           >
@@ -169,6 +178,7 @@ function TodayDrop({ children }: { children: React.ReactNode }) {
   )
 }
 export default function TodayPlanner() {
+  const { currentTimer, refreshCurrentTimer } = useCurrentTimer()
   const [date, setDate] = useState(bangkokDate)
   const [plan, setPlan] = useState<DailyPlan | null>(null)
   const [previous, setPrevious] = useState<DailyPlan | null>(null)
@@ -178,6 +188,8 @@ export default function TodayPlanner() {
   const [page, setPage] = useState(1)
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [busy, setBusy] = useState(false)
+  const [timerBusy, setTimerBusy] = useState(false)
+  const runningId = currentTimer?.running ? currentTimer.timeEntry?.task?.id : undefined
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 160, tolerance: 5 } }),
@@ -191,7 +203,7 @@ export default function TodayPlanner() {
   useEffect(() => {
     queueMicrotask(() => {
       void refresh().catch((error: unknown) =>
-        toast.error(getErrorMessage(error, 'โหลดงานวันนี้ไม่สำเร็จ')),
+        toast.error(getErrorMessage(error, 'Could not load today tasks')),
       )
     })
   }, [refresh])
@@ -227,7 +239,7 @@ export default function TodayPlanner() {
       setPlan(await saveDailyPlan(plan, ids))
       setPrevious(await getPreviousPlan(date))
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'บันทึกงานวันนี้ไม่สำเร็จ'))
+      toast.error(getErrorMessage(error, 'Could not save today tasks'))
       await refresh()
     } finally {
       setBusy(false)
@@ -236,6 +248,31 @@ export default function TodayPlanner() {
   const add = (task: PlannedTask) => {
     if (plan && !plan.tasks.some((item) => item.id === task.id))
       void persist([...plan.tasks.map((item) => item.id), task.id])
+  }
+  const toggleTimer = async (task: PlannedTask) => {
+    if (timerBusy || !task.available || task.status === 'COMPLETED') return
+    const active = currentTimer?.running
+    const same = active && runningId === task.id
+    if (active && !same && !window.confirm('Stop and save the current task, then start this task?'))
+      return
+    setTimerBusy(true)
+    try {
+      if (same) await stopTimer()
+      else
+        await startTimer({
+          projectId: task.projectId,
+          taskId: task.id,
+          stopCurrentTimer: Boolean(active),
+        })
+      await refreshCurrentTimer()
+      await refresh()
+    } catch (reason: unknown) {
+      toast.error(getErrorMessage(reason, 'Could not update the timer'))
+      await refreshCurrentTimer()
+      await refresh()
+    } finally {
+      setTimerBusy(false)
+    }
   }
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || !plan) return
@@ -253,14 +290,14 @@ export default function TodayPlanner() {
   const carry =
     previous?.tasks.filter((task) => task.available && !todayIds.includes(task.id)) ?? []
   return (
-    <section className="mx-auto mb-7 w-full max-w-screen-2xl space-y-4" aria-label="งานวันนี้">
+    <section className="mx-auto mb-7 w-full max-w-screen-2xl space-y-4" aria-label="Today's tasks">
       <header>
         <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
-          พื้นที่ทำงาน
+          Workspace
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">วันนี้</h1>
+        <h1 className="mt-1 text-2xl font-semibold">Today</h1>
         <p className="text-sm text-text-secondary">
-          เลือกงานที่อยากทำ แล้วลากมาเรียงลำดับก่อนเริ่มจับเวลา
+          Choose tasks and drag them into your preferred order before tracking time
         </p>
       </header>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -275,11 +312,11 @@ export default function TodayPlanner() {
                   <table className="w-full min-w-[540px] text-left text-sm">
                     <thead className="border-b border-border bg-surface-soft text-xs text-text-secondary">
                       <tr>
-                        <th className="p-3">ลาก</th>
-                        <th className="p-3">ลำดับ</th>
-                        <th className="p-3">งาน</th>
-                        <th className="p-3">สถานะ</th>
-                        <th className="p-3">จัดการ</th>
+                        <th className="p-3">Drag</th>
+                        <th className="p-3">Order</th>
+                        <th className="p-3">Tasks</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -293,6 +330,9 @@ export default function TodayPlanner() {
                             void persist(arrayMove(todayIds, index, index + offset))
                           }
                           onRemove={() => void persist(todayIds.filter((id) => id !== task.id))}
+                          running={runningId === task.id}
+                          onTimer={() => void toggleTimer(task)}
+                          busy={timerBusy}
                         />
                       ))}
                     </tbody>
@@ -300,14 +340,14 @@ export default function TodayPlanner() {
                 </div>
               ) : (
                 <p className="p-8 text-center text-sm text-text-secondary">
-                  ยังไม่มีงานวันนี้ ลากหรือกดเพิ่มจากรายการด้านข้าง
+                  No tasks planned today. Drag or add one from the list.
                 </p>
               )}
             </SortableContext>
           </TodayDrop>
           <div className="rounded-xl border border-border bg-white">
             <div className="space-y-2 border-b border-border p-3">
-              <h2 className="font-semibold">เลือกงาน</h2>
+              <h2 className="font-semibold">Choose tasks</h2>
               <input
                 className="w-full rounded-md border border-border px-3 py-2 text-sm"
                 value={search}
@@ -315,8 +355,8 @@ export default function TodayPlanner() {
                   setSearch(event.target.value)
                   setPage(1)
                 }}
-                placeholder="ค้นหาชื่องาน"
-                aria-label="ค้นหาชื่องาน"
+                placeholder="Search tasks"
+                aria-label="Search tasks"
               />
               <select
                 className="w-full rounded-md border border-border px-3 py-2 text-sm"
@@ -325,9 +365,9 @@ export default function TodayPlanner() {
                   setProjectId(event.target.value)
                   setPage(1)
                 }}
-                aria-label="กรองตามโปรเจกต์"
+                aria-label="Filter by project"
               >
-                <option value="">ทุกโปรเจกต์</option>
+                <option value="">All projects</option>
                 {projects
                   .filter((project) => project.id)
                   .map((project) => (
@@ -347,20 +387,20 @@ export default function TodayPlanner() {
                 />
               ))}
               {!results?.tasks.length && (
-                <p className="p-4 text-sm text-text-secondary">ไม่พบงานที่เลือกได้</p>
+                <p className="p-4 text-sm text-text-secondary">No available tasks found</p>
               )}
             </div>
             <div className="flex justify-between border-t border-border p-3 text-xs">
               <button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>
-                ก่อนหน้า
+                Previous
               </button>
-              <span>หน้า {page}</span>
+              <span>Page {page}</span>
               <button
                 type="button"
                 disabled={!results || page * results.limit >= results.total}
                 onClick={() => setPage(page + 1)}
               >
-                ถัดไป
+                Next
               </button>
             </div>
           </div>
@@ -368,7 +408,7 @@ export default function TodayPlanner() {
       </DndContext>
       {carry.length > 0 && (
         <div className="rounded-xl border border-border bg-white p-4">
-          <h2 className="mb-2 font-semibold">งานค้างจากวันก่อน</h2>
+          <h2 className="mb-2 font-semibold">Open tasks from previous day</h2>
           <div className="space-y-2">
             {carry.map((task) => (
               <div key={task.id} className="flex items-center justify-between gap-3 text-sm">
@@ -380,7 +420,7 @@ export default function TodayPlanner() {
                   onClick={() => add(task)}
                   className="rounded border border-border px-3 py-1"
                 >
-                  ยกมาวันนี้
+                  Carry into today
                 </button>
               </div>
             ))}

@@ -119,7 +119,7 @@ export function ColorPicker({
           type="button"
           variant="outline"
           disabled={disabled}
-          aria-label={ariaLabel ?? 'เลือกสีโปรเจกต์'}
+          aria-label={ariaLabel ?? 'Choose project color'}
           className="h-[41px] justify-start gap-2 px-2 font-normal"
         >
           <span
@@ -130,16 +130,20 @@ export function ColorPicker({
           <span>{selectedColor}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 space-y-4 p-3" aria-label="เลือกสีโปรเจกต์">
+      <PopoverContent
+        align="start"
+        className="w-72 space-y-4 p-3"
+        aria-label="Choose project color"
+      >
         <div
           ref={areaRef}
           role="slider"
           tabIndex={0}
-          aria-label="ความอิ่มตัวและความสว่าง"
+          aria-label="Saturation and brightness"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(hsv.saturation * 100)}
-          aria-valuetext={`ความอิ่มตัว ${Math.round(hsv.saturation * 100)}% ความสว่าง ${Math.round(hsv.brightness * 100)}%`}
+          aria-valuetext={`Saturation ${Math.round(hsv.saturation * 100)}% Brightness ${Math.round(hsv.brightness * 100)}%`}
           className="relative h-40 touch-none cursor-crosshair rounded-lg"
           style={{
             background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(${hue} 100% 50%)`,
@@ -170,7 +174,7 @@ export function ColorPicker({
         </div>
 
         <Slider.Root
-          aria-label="เฉดสี"
+          aria-label="Hue"
           className="relative flex h-4 w-full touch-none items-center"
           min={0}
           max={360}
@@ -187,7 +191,7 @@ export function ColorPicker({
 
         <div
           className="relative h-3 rounded-full"
-          aria-label="ความทึบ 100 เปอร์เซ็นต์"
+          aria-label="Opacity 100 Percent"
           style={{
             background: `linear-gradient(to right, transparent, ${selectedColor}), repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 0 0 / 8px 8px`,
           }}
@@ -203,7 +207,7 @@ export function ColorPicker({
             value={visibleHex}
             onChange={(event) => handleHexChange(event.target.value)}
             onBlur={() => setDraftHex(null)}
-            aria-label="รหัสสี HEX"
+            aria-label="Hex color HEX"
             aria-invalid={
               draftHex !== null && !isHex(draftHex.startsWith('#') ? draftHex : `#${draftHex}`)
             }
@@ -212,16 +216,13 @@ export function ColorPicker({
           />
           <span
             className="flex h-8 w-[52px] shrink-0 items-center justify-center rounded-md border border-input text-xs"
-            aria-label="ความทึบ 100 เปอร์เซ็นต์"
+            aria-label="Opacity 100 Percent"
           >
             100%
           </span>
         </div>
 
-        <div
-          className="grid grid-cols-4 gap-2 border-t border-border pt-3"
-          aria-label="สีสำเร็จรูป"
-        >
+        <div className="grid grid-cols-4 gap-2 border-t border-border pt-3" aria-label="Presets">
           {presets.map((preset) => (
             <Button
               key={preset}
@@ -229,7 +230,7 @@ export function ColorPicker({
               variant="outline"
               size="icon"
               className="relative size-10 p-1"
-              aria-label={`เลือกสี ${preset}`}
+              aria-label={`Choose color ${preset}`}
               onClick={() => chooseColor(preset)}
             >
               <span className="size-full rounded-md" style={{ backgroundColor: preset }} />

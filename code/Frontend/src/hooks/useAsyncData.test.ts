@@ -47,7 +47,7 @@ test('refresh retains loaded data and reports errors, then recovers', async () =
     await act(async () => {
       await hook.current.refresh()
     })
-    assert.equal(hook.current.error, 'ไม่สามารถโหลดข้อมูลได้')
+    assert.equal(hook.current.error, 'Could not load data')
     fail = undefined
     await act(async () => {
       await hook.current.refresh()

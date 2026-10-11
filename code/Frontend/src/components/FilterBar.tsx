@@ -13,11 +13,11 @@ interface FilterBarProps extends PropsWithChildren {
 }
 
 export default function FilterBar({
-  placeholder = 'ค้นหา...',
+  placeholder = 'Search…',
   value,
   onChange,
   onSearch,
-  searchAriaLabel = 'ค้นหา',
+  searchAriaLabel = 'Search',
   className,
   children,
 }: FilterBarProps) {

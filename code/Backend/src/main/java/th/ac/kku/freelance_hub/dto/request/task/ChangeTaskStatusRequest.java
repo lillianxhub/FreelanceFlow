@@ -14,7 +14,7 @@ import th.ac.kku.freelance_hub.domain.enums.TaskStatus;
 @AllArgsConstructor
 public class ChangeTaskStatusRequest {
 
-    @NotNull(message = "ต้องระบุสถานะ OPEN, IN_PROGRESS หรือ COMPLETED")
+    @NotNull(message = "Status must be OPEN, IN_PROGRESS, or COMPLETED")
     @JsonFormat(with = JsonFormat.Feature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
     private TaskStatus status;
 }

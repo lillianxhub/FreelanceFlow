@@ -30,7 +30,7 @@ function TopbarTimer() {
       await stopTimerRequest()
       await refreshCurrentTimer()
     } catch (stopError: unknown) {
-      toast.error(getErrorMessage(stopError, 'ไม่สามารถหยุดเวลาได้'))
+      toast.error(getErrorMessage(stopError, 'Could not stop the timer'))
     } finally {
       setStopping(false)
     }
@@ -40,7 +40,7 @@ function TopbarTimer() {
     <>
       <div
         className="flex min-w-0 items-stretch overflow-hidden rounded-[10px] border border-[#d9e1ff] bg-primary-soft text-primary-dark"
-        aria-label="ตัวจับเวลาที่กำลังทำงาน"
+        aria-label="Active timer"
       >
         <Button
           variant="ghost"
@@ -52,9 +52,9 @@ function TopbarTimer() {
             <FiClock className="size-[14px]" aria-hidden="true" />
           </span>
           <span className="flex min-w-0 max-w-[140px] flex-col max-[820px]:hidden">
-            <strong className="truncate text-xs">{entry.project.name || 'กำลังบันทึกเวลา'}</strong>
+            <strong className="truncate text-xs">{entry.project.name || 'Tracking time'}</strong>
             <small className="truncate text-[10px] text-text-secondary">
-              {entry.task?.title || entry.description || 'ไม่ระบุงาน'}
+              {entry.task?.title || entry.description || 'No task selected'}
             </small>
           </span>
           <time className="shrink-0 text-xs font-bold tabular-nums">
@@ -66,8 +66,8 @@ function TopbarTimer() {
           type="button"
           onClick={() => void stopTimer()}
           disabled={stopping}
-          aria-label="หยุดและบันทึกเวลา"
-          title="หยุดและบันทึกเวลา"
+          aria-label="Stop and save time"
+          title="Stop and save time"
         >
           <FiSquare aria-hidden="true" />
         </button>

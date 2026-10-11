@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChangeClientStatusRequest {
 
-    @NotNull(message = "กรุณาระบุสถานะลูกค้า")
+    @NotNull(message = "Select a client status")
     private Boolean isActive;
 }

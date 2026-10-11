@@ -4,16 +4,16 @@ import { formatChartDuration } from '../../lib/dashboard'
 import type { ProductivityChartProps } from '../../types/analytics'
 
 function formatAxisDuration(totalSeconds: number): string {
-  if (totalSeconds >= 3600) return `${Number((totalSeconds / 3600).toFixed(1))} ชม.`
-  if (totalSeconds >= 60) return `${Number((totalSeconds / 60).toFixed(1))} นาที`
-  return `${Math.round(totalSeconds)} วิ`
+  if (totalSeconds >= 3600) return `${Number((totalSeconds / 3600).toFixed(1))} h`
+  if (totalSeconds >= 60) return `${Number((totalSeconds / 60).toFixed(1))} minutes`
+  return `${Math.round(totalSeconds)} s`
 }
 
 export default function ProductivityChart({ data }: ProductivityChartProps) {
   return (
     <ChartContainer
       className="h-72 w-full aspect-auto"
-      config={{ totalSeconds: { label: 'เวลาที่บันทึก', color: 'var(--primary)' } }}
+      config={{ totalSeconds: { label: 'Tracked time', color: 'var(--primary)' } }}
     >
       <LineChart data={[...data]} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -32,7 +32,7 @@ export default function ProductivityChart({ data }: ProductivityChartProps) {
         <Line
           type="monotone"
           dataKey="totalSeconds"
-          name="เวลาที่บันทึก"
+          name="Tracked time"
           stroke="var(--color-totalSeconds)"
           strokeWidth={3}
           dot={{ r: 4, fill: 'var(--color-totalSeconds)', strokeWidth: 2 }}

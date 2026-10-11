@@ -13,7 +13,7 @@ function ProtectedRoute({ children }: PropsWithChildren) {
   if (loading)
     return (
       <div className="grid min-h-screen place-items-center">
-        <LoadingState label="กำลังตรวจสอบการเข้าสู่ระบบ..." />
+        <LoadingState label="Checking your session…" />
       </div>
     )
   if (!user) return null

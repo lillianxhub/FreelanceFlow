@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class AuthenticationRequiredException extends ApiException {
     public AuthenticationRequiredException() {
-        super(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "กรุณาเข้าสู่ระบบก่อนดำเนินการ", null);
+        super(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Sign in to continue", null);
     }
 }

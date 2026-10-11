@@ -237,7 +237,7 @@ async function request<T>(
   const body: unknown = await response.json()
   const normalized = normalizeResponse<T>(body)
   if (!normalized.success)
-    throw createApiError(normalized, response.status, 'API ไม่สามารถดำเนินการได้')
+    throw createApiError(normalized, response.status, 'API Could not complete action')
   return normalized
 }
 

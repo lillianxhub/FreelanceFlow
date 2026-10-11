@@ -86,8 +86,7 @@ export function useTimer(
         if (active) setTaskOptions({ projectId, tasks, error: '' })
       })
       .catch(() => {
-        if (active)
-          setTaskOptions({ projectId, tasks: [], error: 'ไม่สามารถโหลดงานของโปรเจกต์ได้' })
+        if (active) setTaskOptions({ projectId, tasks: [], error: 'Could not load project tasks' })
       })
 
     return () => {

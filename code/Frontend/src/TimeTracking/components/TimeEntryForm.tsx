@@ -90,7 +90,7 @@ function TimeEntryForm({
       <div className="grid gap-[15px] md:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="manual-project" required>
-            โปรเจกต์
+            Projects
           </FormLabel>
           <NativeSelect
             id="manual-project"
@@ -101,7 +101,7 @@ function TimeEntryForm({
             aria-invalid={Boolean(fieldErrors.project_id)}
             aria-describedby={fieldErrors.project_id ? 'manual-project-error' : undefined}
           >
-            <option value="">เลือกโปรเจกต์</option>
+            <option value="">Select project</option>
             {projects
               .filter((project) => project.status !== 'ARCHIVED')
               .map((project) => (
@@ -113,7 +113,7 @@ function TimeEntryForm({
           <FieldError id="manual-project-error" message={fieldErrors.project_id} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <FormLabel htmlFor="manual-task">งาน</FormLabel>
+          <FormLabel htmlFor="manual-task">Tasks</FormLabel>
           <NativeSelect
             id="manual-task"
             name="task_id"
@@ -123,7 +123,7 @@ function TimeEntryForm({
             aria-invalid={Boolean(fieldErrors.task_id)}
             aria-describedby={fieldErrors.task_id ? 'manual-task-error' : undefined}
           >
-            <option value="">ไม่ระบุงาน</option>
+            <option value="">No task selected</option>
             {tasks
               .filter((task) => task.project_id === value.project_id && task.status !== 'COMPLETED')
               .map((task) => (
@@ -135,7 +135,7 @@ function TimeEntryForm({
           <FieldError id="manual-task-error" message={fieldErrors.task_id} />
         </div>
         <div className="flex flex-col gap-1.5 md:col-span-2">
-          <FormLabel htmlFor="manual-description">คำอธิบาย</FormLabel>
+          <FormLabel htmlFor="manual-description">Description</FormLabel>
           <Input
             id="manual-description"
             name="description"
@@ -145,7 +145,7 @@ function TimeEntryForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="manual-date" required>
-            วันที่
+            Date
           </FormLabel>
           <DatePicker
             id="manual-date"
@@ -153,7 +153,7 @@ function TimeEntryForm({
             onChange={handleDateChange}
             onBlur={handleDateBlur}
             required
-            aria-label="วันที่"
+            aria-label="Date"
             aria-invalid={Boolean(fieldErrors.entry_date)}
             aria-describedby={fieldErrors.entry_date ? 'manual-date-error' : undefined}
           />
@@ -161,7 +161,7 @@ function TimeEntryForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="manual-mode" required>
-            วิธีระบุเวลา
+            Time entry method
           </FormLabel>
           <NativeSelect
             id="manual-mode"
@@ -172,14 +172,14 @@ function TimeEntryForm({
             aria-invalid={Boolean(fieldErrors.manual_mode)}
             aria-describedby={fieldErrors.manual_mode ? 'manual-mode-error' : undefined}
           >
-            <option value="RANGE">เวลาเริ่ม–สิ้นสุด</option>
-            <option value="DURATION">ระยะเวลา</option>
+            <option value="RANGE">Start time–End</option>
+            <option value="DURATION">Duration</option>
           </NativeSelect>
           <FieldError id="manual-mode-error" message={fieldErrors.manual_mode} />
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="manual-start" required>
-            เวลาเริ่ม
+            Start time
           </FormLabel>
           <Input
             id="manual-start"
@@ -196,7 +196,7 @@ function TimeEntryForm({
         {value.manual_mode === 'RANGE' ? (
           <div className="flex flex-col gap-1.5">
             <FormLabel htmlFor="manual-end" required>
-              เวลาสิ้นสุด
+              End time
             </FormLabel>
             <Input
               id="manual-end"
@@ -213,7 +213,7 @@ function TimeEntryForm({
         ) : (
           <div className="flex flex-col gap-1.5">
             <FormLabel htmlFor="manual-duration" required>
-              ระยะเวลา (นาที)
+              Duration (minutes)
             </FormLabel>
             <Input
               id="manual-duration"
@@ -232,10 +232,10 @@ function TimeEntryForm({
       </div>
       <div className="mt-[18px] flex justify-end gap-2 border-t border-border pt-[18px]">
         <Button variant="outline" className="h-10" type="button" onClick={onCancel}>
-          ยกเลิก
+          Cancel
         </Button>
         <Button variant="default" className="h-10" type="submit">
-          บันทึกรายการ
+          Save entry
         </Button>
       </div>
     </form>

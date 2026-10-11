@@ -15,10 +15,10 @@ export default function ProjectsTable({ projects, clients }: ProjectTableProps) 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>โปรเจกต์</TableHead>
-          <TableHead>ลูกค้า</TableHead>
-          <TableHead>สถานะ</TableHead>
-          <TableHead>รูปแบบราคา</TableHead>
+          <TableHead>Projects</TableHead>
+          <TableHead>Clients</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Billing type</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -39,7 +39,7 @@ export default function ProjectsTable({ projects, clients }: ProjectTableProps) 
               <TableCell>
                 <ProjectStatus status={project.status} />
               </TableCell>
-              <TableCell>{project.billing_type === 'HOURLY' ? 'รายชั่วโมง' : 'เหมาจ่าย'}</TableCell>
+              <TableCell>{project.billing_type === 'HOURLY' ? 'Hourly' : 'Fixed price'}</TableCell>
             </TableRow>
           )
         })}

@@ -6,7 +6,8 @@ import { Sheet, SheetContent, SheetTitle } from './ui/sheet'
 
 function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
   const Icon = icon
-  const isActive = usePathname() === to
+  const pathname = usePathname()
+  const isActive = pathname === to || (to === '/finance' && pathname.startsWith('/finance/'))
   return (
     <Link
       href={to}
@@ -32,44 +33,28 @@ function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
   return (
     <div className="flex h-full flex-col">
       <div className="mb-[22px] flex items-center gap-[11px] px-[5px]">
-        <img src="/logo-light.svg" alt="" className="size-[39px] shrink-0 object-contain" />
+        <span
+          aria-hidden="true"
+          className="grid size-[34px] shrink-0 place-items-center rounded-lg bg-[#1f2430] text-xs font-bold text-white"
+        >
+          FF
+        </span>
         <div className="min-w-0">
           <div className="text-base font-bold tracking-[-0.02em]">FreelanceFlow</div>
-          <div className="mt-px text-sm text-text-secondary uppercase">พื้นที่ทำงาน</div>
+          <div className="mt-px text-[10px] font-semibold tracking-[0.16em] text-text-secondary uppercase">
+            Workspace
+          </div>
         </div>
       </div>
 
-      {/* <div className="workspace-switcher">
-          <span className="avatar avatar-small">{initials(name)}</span>
-          <span><strong>พื้นที่ทำงานส่วนตัว</strong><small>ฟรีแลนซ์</small></span>
-          <span className="workspace-chevron">⌄</span>
-        </div> */}
-
       <div className="mt-4 mb-[7px] px-[11px] text-xs font-bold tracking-[0.12em] text-subtle uppercase">
-        งานของคุณ
+        Workspace
       </div>
       <nav className="flex flex-col gap-[3px]" onClick={onClose}>
         {workspaceLinks.map((link) => (
           <SidebarLink key={link.to} {...link} />
         ))}
       </nav>
-
-      {/* <div className="mt-4 mb-[7px] px-[11px] text-xs font-bold tracking-[0.12em] text-subtle uppercase">จัดการ</div>
-        <nav className="flex flex-col gap-[3px]" onClick={onClose}>
-          {manageLinks.map((link) => <SidebarLink key={link.to} {...link} />)}
-        </nav> */}
-
-      {/* <div className="sidebar-bottom">
-          <Link className="help-card" href="/reports" onClick={onClose}>
-            <span className="help-icon">?</span>
-            <span><strong>ต้องการความช่วยเหลือ?</strong><small>ดูรายงานและคู่มือ</small></span>
-            <span>↗</span>
-          </Link>
-          <div className="profile-row">
-            <span className="avatar">{initials(name)}</span>
-            <span className="profile-copy"><strong>{name}</strong><small>{profile?.email || user?.email}</small></span>
-          </div>
-        </div> */}
     </div>
   )
 }
@@ -77,7 +62,7 @@ function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
 function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <>
-      <aside className="hidden h-screen w-[258px] shrink-0 flex-col border-r border-border bg-sidebar px-[18px] pt-6 pb-[18px] lg:sticky lg:top-0 lg:z-40 lg:flex print:hidden">
+      <aside className="hidden h-screen w-[244px] shrink-0 flex-col border-r border-border bg-sidebar px-[14px] pt-6 pb-[18px] lg:sticky lg:top-0 lg:z-40 lg:flex print:hidden">
         <SidebarContent onClose={onClose} />
       </aside>
       <Sheet
@@ -88,9 +73,9 @@ function Sidebar({ open, onClose }: SidebarProps) {
       >
         <SheetContent
           side="left"
-          className="w-[258px] gap-0 overflow-y-auto px-[18px] py-6 sm:max-w-[258px] lg:hidden"
+          className="w-[244px] gap-0 overflow-y-auto px-[14px] py-6 sm:max-w-[244px] lg:hidden"
         >
-          <SheetTitle className="sr-only">เมนูหลัก</SheetTitle>
+          <SheetTitle className="sr-only">Main menu</SheetTitle>
           <SidebarContent onClose={onClose} />
         </SheetContent>
       </Sheet>

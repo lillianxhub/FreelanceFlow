@@ -140,6 +140,30 @@ class TimerServiceImplTest {
     }
 
     @Test
+    void explicitlySwitchesTimersByStoppingAndSavingTheCurrentEntry() {
+        stubOwnedUserAndProject();
+        when(taskRepository.findByIdAndProjectIdAndProjectOwnerId(TASK_ID, PROJECT_ID, OWNER_ID))
+                .thenReturn(Optional.of(task));
+        TimeEntry previous = TimeEntry.startTimer(owner, project, null, "Previous work", NOW.minusSeconds(75));
+        ReflectionTestUtils.setField(previous, "id", ENTRY_ID);
+        when(timeEntryRepository.existsByOwnerIdAndEntryTypeAndEndedAtIsNullAndIsActiveTrue(OWNER_ID, EntryType.TIMER))
+                .thenReturn(true, false);
+        when(timeEntryRepository.findLockedByOwnerIdAndEntryTypeAndEndedAtIsNullAndIsActiveTrue(OWNER_ID, EntryType.TIMER))
+                .thenReturn(Optional.of(previous));
+        when(timeEntryRepository.saveAndFlush(any(TimeEntry.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        var current = timerService.startTimer(OWNER_ID, StartTimerRequest.builder()
+                .projectId(PROJECT_ID).taskId(TASK_ID).stopCurrentTimer(true).build());
+
+        assertThat(previous.getEndedAt()).isEqualTo(NOW);
+        assertThat(previous.getDurationSeconds()).isEqualTo(75L);
+        assertThat(current.getTaskId()).isEqualTo(TASK_ID);
+        assertThat(current.isRunning()).isTrue();
+        verify(eventPublisher).publishEvent(any(TimerStoppedEvent.class));
+    }
+
+    @Test
     void startsTimerWithoutOptionalTask() {
         stubOwnedUserAndProject();
         when(timeEntryRepository
@@ -225,7 +249,7 @@ class TimerServiceImplTest {
                 StartTimerRequest.builder().projectId(PROJECT_ID).build()
         ))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
 
         verify(timeEntryRepository, never()).saveAndFlush(any());
     }
@@ -240,7 +264,7 @@ class TimerServiceImplTest {
                 StartTimerRequest.builder().projectId(PROJECT_ID).build()
         ))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("กรุณาคืนสถานะลูกค้าก่อนบันทึกเวลา");
+                .hasMessage("Restore the client before tracking time");
 
         verify(timeEntryRepository, never()).saveAndFlush(any());
     }
@@ -294,7 +318,7 @@ class TimerServiceImplTest {
                 OWNER_ID,
                 StartTimerRequest.builder().projectId(PROJECT_ID).taskId(TASK_ID).build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("ไม่สามารถเริ่มงานที่เสร็จสิ้นแล้ว");
+                .hasMessage("Completed tasks cannot be started");
 
         assertThat(task.getStatus()).isEqualTo(TaskStatus.COMPLETED);
         verify(taskRepository, never()).saveAndFlush(any(Task.class));

@@ -14,12 +14,14 @@ import {
 import { Avatar, AvatarFallback } from './ui/avatar'
 
 const labels: Record<string, string> = {
-  dashboard: 'วันนี้',
-  clients: 'ลูกค้า',
-  projects: 'โปรเจกต์',
-  'time-tracker': 'บันทึกเวลา',
-  reports: 'รายงาน',
-  profile: 'โปรไฟล์',
+  dashboard: 'Dashboard',
+  'task-board': 'Task Board',
+  clients: 'Clients',
+  projects: 'Projects',
+  'time-tracker': 'Time tracker',
+  reports: 'Reports',
+  finance: 'Finance',
+  profile: 'Profile',
 }
 
 function Topbar({ onMenu }: TopbarProps) {
@@ -27,8 +29,8 @@ function Topbar({ onMenu }: TopbarProps) {
   const router = useRouter()
   const { user, logout } = useAuth()
   const segment = pathname.split('/').filter(Boolean)[0] || 'dashboard'
-  const label = labels[segment] || 'พื้นที่ทำงาน'
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'โปรไฟล์'
+  const label = labels[segment] || 'Workspace'
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Profile'
 
   const handleLogout = async () => {
     await logout()
@@ -36,18 +38,18 @@ function Topbar({ onMenu }: TopbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-background/90 px-8 backdrop-blur-md lg:px-4 print:hidden">
+    <header className="sticky top-0 z-20 flex h-[70px] items-center justify-between border-b border-border bg-background/90 px-8 backdrop-blur-md max-[760px]:h-[62px] lg:px-6 print:hidden">
       <Button
         variant="ghost"
         className="grid size-9 place-items-center rounded-lg border border-border bg-background p-0 text-muted-foreground lg:hidden"
         type="button"
-        aria-label="เปิดเมนู"
+        aria-label="Open menu"
         onClick={onMenu}
       >
         <FiMenu aria-hidden="true" />
       </Button>
       <div className="hidden items-center gap-2 text-sm text-text-secondary lg:flex">
-        <span>พื้นที่ทำงาน</span>
+        <span>Workspace</span>
         <span>/</span>
         <strong className="text-text-primary">{label}</strong>
       </div>
@@ -77,8 +79,8 @@ function Topbar({ onMenu }: TopbarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-44">
-            <DropdownMenuItem onSelect={() => router.push('/profile')}>โปรไฟล์</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => void handleLogout()}>ออกจากระบบ</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => router.push('/profile')}>Profile</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void handleLogout()}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

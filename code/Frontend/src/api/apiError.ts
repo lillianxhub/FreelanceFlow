@@ -21,6 +21,9 @@ export class ApiError extends Error {
   }
 }
 
-export function getErrorMessage(error: unknown, fallback = 'เกิดข้อผิดพลาด กรุณาลองใหม่'): string {
+export function getErrorMessage(
+  error: unknown,
+  fallback = 'Something went wrong. Please try again.',
+): string {
   return error instanceof Error && error.message ? error.message : fallback
 }

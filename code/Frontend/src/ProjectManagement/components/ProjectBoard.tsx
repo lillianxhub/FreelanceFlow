@@ -29,9 +29,9 @@ import type { Task, TaskStatus } from '../../types/task'
 
 type Mode = 'AUTO' | 'MANUAL'
 const columns: { status: TaskStatus; label: string }[] = [
-  { status: 'OPEN', label: 'งานค้าง' },
-  { status: 'IN_PROGRESS', label: 'กำลังทำ' },
-  { status: 'COMPLETED', label: 'เสร็จ' },
+  { status: 'OPEN', label: 'Open' },
+  { status: 'IN_PROGRESS', label: 'In progress' },
+  { status: 'COMPLETED', label: 'Done' },
 ]
 function BoardCard({
   task,
@@ -40,6 +40,7 @@ function BoardCard({
   onStart,
   onStop,
   busy,
+  readOnly,
 }: {
   task: Task
   running: boolean
@@ -47,8 +48,9 @@ function BoardCard({
   onStart: () => void
   onStop: () => void
   busy: boolean
+  readOnly: boolean
 }) {
-  const sortable = useSortable({ id: `task:${task.id}` })
+  const sortable = useSortable({ id: `task:${task.id}`, disabled: readOnly })
   return (
     <div
       ref={sortable.setNodeRef}
@@ -61,11 +63,11 @@ function BoardCard({
       <div className="flex items-start gap-2">
         <button
           type="button"
-          aria-label={`ลาก ${task.name}`}
+          aria-label={`Drag ${task.name}`}
           {...sortable.attributes}
           {...sortable.listeners}
           className="cursor-grab text-subtle"
-          disabled={busy}
+          disabled={busy || readOnly}
         >
           ⋮⋮
         </button>
@@ -79,37 +81,37 @@ function BoardCard({
       <div className="mt-3 flex flex-wrap items-center gap-1 text-xs">
         {running && (
           <span className="mr-auto rounded bg-primary-soft px-2 py-1 text-primary">
-            ● จับเวลาอยู่
+            ● Timer running
           </span>
         )}
         {task.status === 'OPEN' && (
           <button
             type="button"
-            disabled={busy}
+            disabled={busy || readOnly}
             onClick={() => onMove('IN_PROGRESS')}
             className="rounded border border-border px-2 py-1"
           >
-            เริ่มทำ
+            Start work
           </button>
         )}
         {task.status === 'IN_PROGRESS' && (
           <button
             type="button"
-            disabled={busy}
+            disabled={busy || readOnly}
             onClick={() => onMove('COMPLETED')}
             className="rounded border border-border px-2 py-1"
           >
-            เสร็จ
+            Done
           </button>
         )}
         {task.status === 'COMPLETED' && (
           <button
             type="button"
-            disabled={busy}
+            disabled={busy || readOnly}
             onClick={() => onMove('IN_PROGRESS')}
             className="rounded border border-border px-2 py-1"
           >
-            ทำต่อ
+            Resume
           </button>
         )}
         {task.status === 'IN_PROGRESS' &&
@@ -120,16 +122,16 @@ function BoardCard({
               onClick={onStop}
               className="rounded border border-border px-2 py-1"
             >
-              หยุดเวลา
+              Stop timer
             </button>
           ) : (
             <button
               type="button"
-              disabled={busy}
+              disabled={busy || readOnly}
               onClick={onStart}
               className="rounded border border-border px-2 py-1"
             >
-              จับเวลา
+              Track time
             </button>
           ))}
       </div>
@@ -142,6 +144,7 @@ function BoardColumn({
   tasks,
   runningId,
   busy,
+  readOnly,
   onMove,
   onStart,
   onStop,
@@ -151,6 +154,7 @@ function BoardColumn({
   tasks: Task[]
   runningId?: string
   busy: boolean
+  readOnly: boolean
   onMove: (task: Task, status: TaskStatus) => void
   onStart: (task: Task) => void
   onStop: () => void
@@ -176,13 +180,14 @@ function BoardColumn({
               task={task}
               running={runningId === task.id}
               busy={busy}
+              readOnly={readOnly}
               onMove={(next) => onMove(task, next)}
               onStart={() => onStart(task)}
               onStop={onStop}
             />
           ))}
           {!tasks.length && (
-            <p className="py-8 text-center text-xs text-text-secondary">ลากงานมาวางที่นี่</p>
+            <p className="py-8 text-center text-xs text-text-secondary">Drop a task here</p>
           )}
         </div>
       </SortableContext>
@@ -193,10 +198,12 @@ export default function ProjectBoard({
   projectId,
   tasks,
   onChanged,
+  readOnly = false,
 }: {
   projectId: string
   tasks: Task[]
   onChanged: () => Promise<void>
+  readOnly?: boolean
 }) {
   const { currentTimer, refreshCurrentTimer } = useCurrentTimer()
   const [mode, setMode] = useState<Mode>('AUTO')
@@ -220,14 +227,15 @@ export default function ProjectBoard({
     setPreview(null)
   }
   const move = async (task: Task, status: TaskStatus) => {
-    if (busy || status === task.status) return
+    if (busy || readOnly || status === task.status) return
     if (status === 'OPEN') {
-      toast.error('งานที่เริ่มแล้วไม่สามารถกลับเป็นงานค้างได้')
+      toast.error('A started task cannot return to Open.')
       return
     }
     const otherRunning = currentTimer?.running && currentTimer.timeEntry?.task?.id !== task.id
     const switchTimer = mode === 'AUTO' && status === 'IN_PROGRESS' && otherRunning
-    if (switchTimer && !window.confirm('หยุดและบันทึกงานเดิม แล้วเริ่มจับเวลางานนี้?')) return
+    if (switchTimer && !window.confirm('Stop and save the current task, then start this one?'))
+      return
     setBusy(true)
     setPreview(current.map((item) => (item.id === task.id ? { ...item, status } : item)))
     try {
@@ -238,24 +246,30 @@ export default function ProjectBoard({
       })
       await sync()
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'ย้ายงานไม่สำเร็จ'))
+      toast.error(getErrorMessage(error, 'Could not move task'))
       await sync()
     } finally {
       setBusy(false)
     }
   }
   const start = async (task: Task) => {
-    if (busy) return
-    if (currentTimer?.running) {
-      toast.error('หยุดและบันทึกงานที่กำลังจับเวลาก่อน')
+    if (busy || readOnly) return
+    if (
+      currentTimer?.running &&
+      !window.confirm('Stop and save the current task, then start this task?')
+    )
       return
-    }
     setBusy(true)
     try {
-      await startTimer({ projectId, taskId: task.id, description: '' })
+      await startTimer({
+        projectId,
+        taskId: task.id,
+        description: '',
+        stopCurrentTimer: Boolean(currentTimer?.running),
+      })
       await sync()
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'เริ่มจับเวลาไม่สำเร็จ'))
+      toast.error(getErrorMessage(error, 'Could not start timer'))
       await sync()
     } finally {
       setBusy(false)
@@ -267,14 +281,14 @@ export default function ProjectBoard({
       await stopTimer()
       await sync()
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'หยุดเวลาไม่สำเร็จ'))
+      toast.error(getErrorMessage(error, 'Could not stop timer'))
       await sync()
     } finally {
       setBusy(false)
     }
   }
   const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || busy) return
+    if (!over || busy || readOnly) return
     const task = current.find((item) => `task:${item.id}` === active.id)
     if (!task) return
     const target = String(over.id)
@@ -293,7 +307,7 @@ export default function ProjectBoard({
       )
         .then(sync)
         .catch(async (error: unknown) => {
-          toast.error(getErrorMessage(error, 'เรียงงานไม่สำเร็จ'))
+          toast.error(getErrorMessage(error, 'Could not reorder tasks'))
           await sync()
         })
         .finally(() => setBusy(false))
@@ -301,12 +315,22 @@ export default function ProjectBoard({
   }
   return (
     <div className="space-y-3">
+      {readOnly && (
+        <p
+          role="status"
+          className="rounded-lg border border-border bg-surface-soft p-3 text-sm text-text-secondary"
+        >
+          This project is not active. Task actions are unavailable.
+        </p>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-text-secondary">ลากงานระหว่างคอลัมน์ หรือใช้ปุ่มบนการ์ด</p>
+        <p className="text-xs text-text-secondary">
+          Drag tasks between columns or use the card buttons.
+        </p>
         <label className="flex items-center gap-2 text-xs">
-          เมื่อย้ายไปกำลังทำ{' '}
+          When moving to In progress{' '}
           <select
-            aria-label="โหมดจับเวลาบนบอร์ด"
+            aria-label="Board timer mode"
             value={mode}
             onChange={(event) => {
               const next = event.target.value as Mode
@@ -314,13 +338,13 @@ export default function ProjectBoard({
                 .patch<{ boardTimerMode: Mode }>('/workspace/preferences', { boardTimerMode: next })
                 .then(() => setMode(next))
                 .catch((error: unknown) =>
-                  toast.error(getErrorMessage(error, 'บันทึกการตั้งค่าไม่สำเร็จ')),
+                  toast.error(getErrorMessage(error, 'Could not save preference')),
                 )
             }}
             className="rounded border border-border bg-white p-1"
           >
-            <option value="AUTO">จับเวลาอัตโนมัติ</option>
-            <option value="MANUAL">กดจับเวลาเอง</option>
+            <option value="AUTO">Automatic timer</option>
+            <option value="MANUAL">Manual timer</option>
           </select>
         </label>
       </div>
@@ -333,6 +357,7 @@ export default function ProjectBoard({
               tasks={current.filter((task) => task.status === column.status)}
               runningId={runningId}
               busy={busy}
+              readOnly={readOnly}
               onMove={move}
               onStart={start}
               onStop={() => void stop()}

@@ -21,11 +21,12 @@ Backend เป็น source of truth สำหรับ ownership/status/timer/v
 
 ## UI และ accessibility
 
-- minimal light theme, Anuphan, shared tokens/components; semantic status colors และ blue primary action ไม่เพิ่ม gradient/shadow เพื่อแต่งแต่ละหน้า
+- minimal light theme ตาม Demo, DM Sans และ Anuphan สำหรับข้อมูลไทย, shared tokens/components, semantic status colors และ blue primary action
 - มี loading/error/empty/disabled ที่สอดคล้องกัน label/error สัมพันธ์กับ input และไม่ใช้สีอย่างเดียว
-- ลูกค้า/โปรเจกต์ใช้ cards กับ side panel, Task ใช้ dialog และ Today table/Project Board มี keyboard/touch และปุ่มให้ผลเดียวกับ drag
+- ลูกค้า/โปรเจกต์ใช้ cards กับ side panel, Task ใช้ dialog; `/task-board` มี Today table และ Kanban รายโปรเจกต์ พร้อม keyboard/touch และปุ่มให้ผลเดียวกับ drag
 - focus เข้า/ออก dialog/panel ถูกต้อง คืน focus ให้ trigger; mobile panel เต็มจอและไม่ล้น viewport
 - Board column status แยกจาก Today membership; sorting ไม่เริ่ม timer; switching งานต้องยืนยัน explicit choice และไม่เปลี่ยน timer เพราะเปลี่ยนโหมด
+- ข้อความระบบเป็นอังกฤษ; ข้อมูลผู้ใช้ภาษาไทยคงเดิม; Finance เป็น prototype ที่ใช้ข้อมูลสมมติร่วมกันใน workspace provider และรีเซ็ตเมื่อรีโหลด/logout ห้ามนำยอดตัวอย่างไปรวมกับ API จริง
 - ทดสอบ hydration, direct URL, reload และ layout persistence ไม่อาศัย unit test ของ component เพียงอย่างเดียว
 
 ## เพิ่ม แก้ไข หรือลบ UI

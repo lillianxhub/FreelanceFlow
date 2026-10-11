@@ -23,6 +23,8 @@ Async Server Components ที่เครื่องมือ unit ไม่�
 - auth: login/refresh/logout, cookie ผ่าน proxy, expired session, tabs และไม่รั่ว user data ผ่าน rendering/cache
 - Today: drag/add/remove/reorder, reload/device persistence, Bangkok day boundary, explicit carry-over, completed/deleted/unavailable task
 - Board/timer: AUTO/MANUAL, same-column reorder, active timer marker, switching/cancel, mode change while running, API failure rollback และหนึ่ง timer ต่อ owner
+- Task Board: Today/Kanban URL ตรงและย้อนกลับได้, Dashboard ไม่มี Today planner, start/stop ไม่ redirect, timer ต่อเนื่องระหว่างเปลี่ยนหน้า
+- Finance prototype: invoice draft/issued → partial/full payment, ยอด income/outstanding ไม่ซ้ำ, ป้องกันยอดเกินและ invalid amount, รีเซ็ตเมื่อรีโหลด/logout, SAMPLE ใน print และไม่มี finance API write
 - UX: keyboard, touch, panel/dialog focus, loading/error/empty และ mobile layout
 
 ## คำสั่งมาตรฐาน
