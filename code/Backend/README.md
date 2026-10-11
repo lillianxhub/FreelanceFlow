@@ -1,3 +1,3 @@
 # FreelanceFlow Backend
 
-ดูวิธีตั้งค่า รัน และตรวจสอบที่ [README หลัก](../../README.md) ใช้ Maven artifact `freelanceflow`; คง Java package และ Flyway migrations เดิม ไม่ใช้ deployment/credentials ของ Freelance Hub
+ดู [README หลัก](../../README.md) สำหรับการรันและตรวจสอบ Maven artifact คือ `freelanceflow` Java package และ Flyway V1–V20 รับต่อจาก Freelance Hub; V21 เพิ่ม daily plan และ workspace preferences

@@ -194,8 +194,8 @@ jobs:
             - name: Verify migrated tables
               run: |
                   table_count=$(docker exec backend-ci-postgres psql -U ci_user -d freelanceflow -tAc \
-                    "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('users', 'user_profiles', 'clients', 'projects', 'tasks', 'time_entries', 'refresh_tokens');")
-                  test "$table_count" -eq 7
+                    "select count(*) from information_schema.tables where table_schema = 'public' and table_name in ('users', 'user_profiles', 'clients', 'projects', 'tasks', 'time_entries', 'refresh_tokens', 'daily_plans', 'daily_plan_items', 'workspace_preferences');")
+                  test "$table_count" -eq 10
                   legacy_table_count=$(docker exec backend-ci-postgres psql -U ci_user -d freelanceflow -tAc \
                     "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'revoked_tokens';")
                   test "$legacy_table_count" -eq 0
