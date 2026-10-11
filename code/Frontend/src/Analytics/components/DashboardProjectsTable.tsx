@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { FiArrowRight } from 'react-icons/fi'
 import StatusBadge from '../../components/StatusBadge'
 import { Button } from '../../components/ui/button'
@@ -33,7 +33,7 @@ export default function DashboardProjectsTable({ projects }: Props) {
         <CardDescription>ติดตามความคืบหน้าของงานในแต่ละโปรเจกต์</CardDescription>
         <CardAction>
           <Button asChild variant="ghost" size="sm">
-            <Link to="/projects">
+            <Link href="/projects">
               ดูทั้งหมด <FiArrowRight aria-hidden="true" />
             </Link>
           </Button>
@@ -56,7 +56,7 @@ export default function DashboardProjectsTable({ projects }: Props) {
                   <TableCell>
                     <Link
                       className="flex min-w-0 max-w-full items-center gap-3 overflow-hidden font-semibold text-text-primary hover:text-primary"
-                      to={`/projects/${project.id}`}
+                      href={`/projects/${project.id}`}
                       title={project.name}
                     >
                       <span

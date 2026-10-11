@@ -1,7 +1,8 @@
 import { Button } from '../../components/ui/button'
 import AuthenticationLayout from './AuthenticationLayout'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import AuthInput from './AuthInput'
 import { useAuth } from '../useAuthentication'
 import { getErrorMessage } from '../../api/apiError'
@@ -10,7 +11,7 @@ function LoginForm() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { login } = useAuth()
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -24,7 +25,7 @@ function LoginForm() {
 
     try {
       await login(form.email, form.password)
-      navigate('/dashboard', { replace: true })
+      router.replace('/dashboard')
     } catch (err) {
       setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'))
     } finally {
@@ -63,7 +64,7 @@ function LoginForm() {
         </Button>
 
         <p className="auth-footer">
-          ยังไม่มีบัญชี? <Link to="/register">สมัครสมาชิก</Link>
+          ยังไม่มีบัญชี? <Link href="/register">สมัครสมาชิก</Link>
         </p>
       </form>
     </AuthenticationLayout>

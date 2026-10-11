@@ -2,7 +2,7 @@ import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { NativeSelect } from '../../components/ui/native-select'
 import { Progress } from '../../components/ui/progress'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { FiEdit2 } from 'react-icons/fi'
 import type { Project, ProjectStatus } from '../../types/project'
 import { formatDate } from '../../utils/date'
@@ -63,7 +63,7 @@ export default function ProjectCard({
       >
         <Link
           className="absolute inset-0 z-0 rounded-xl"
-          to={`/projects/${project.id}`}
+          href={`/projects/${project.id}`}
           aria-label={`เปิด ${project.name}`}
         />
 

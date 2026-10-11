@@ -13,7 +13,7 @@ import { useState } from 'react'
 import type { TaskListProps } from '../../types/projectDetailPage'
 import type { Task } from '../../types/task'
 import StatusBadge from '../../components/StatusBadge'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { FiArrowDown, FiArrowUp, FiCheck, FiEdit2, FiTrash2 } from 'react-icons/fi'
 
 export default function TaskList({
@@ -60,7 +60,7 @@ export default function TaskList({
               <Link
                 className="block truncate text-sm font-semibold text-text-primary hover:text-primary hover:underline"
                 title={`จับเวลา: ${task.name}`}
-                to={`/time-tracker?projectId=${encodeURIComponent(task.project_id)}&taskId=${encodeURIComponent(task.id)}`}
+                href={`/time-tracker?projectId=${encodeURIComponent(task.project_id)}&taskId=${encodeURIComponent(task.id)}`}
               >
                 {task.name}
               </Link>

@@ -1,10 +1,10 @@
 import { Suspense, useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import { Spinner } from './ui/spinner'
 
-function AppLayout() {
+function AppLayout({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -21,7 +21,7 @@ function AppLayout() {
               </div>
             }
           >
-            <Outlet />
+            {children}
           </Suspense>
         </main>
       </div>

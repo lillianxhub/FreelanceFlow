@@ -7,7 +7,8 @@ import {
 } from '../../../components/ui/card'
 import { Progress } from '../../../components/ui/progress'
 import PaginationControls from '../../../components/PaginationControls'
-import { Link, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { FiArrowLeft, FiArrowRight, FiBriefcase, FiClock, FiList } from 'react-icons/fi'
 import { useCallback, useState } from 'react'
 import PageHeader from '../../../components/PageHeader'
@@ -32,7 +33,7 @@ interface ClientDetailData {
 const emptyData: ClientDetailData = { client: null, projects: [], totalSeconds: 0, entryCount: 0 }
 
 function ClientDetailPage() {
-  const { clientId } = useParams()
+  const { clientId } = useParams<{ projectId: string; clientId: string }>()
   const load = useCallback(async (): Promise<ClientDetailData> => {
     if (!clientId) throw new Error('ไม่พบรหัสลูกค้า')
     const [client, projects, summary] = await Promise.all([
@@ -65,7 +66,7 @@ function ClientDetailPage() {
     <div className="mx-auto w-full max-w-screen-2xl">
       <Link
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary no-underline hover:text-primary-dark"
-        to="/clients"
+        href="/clients"
       >
         <FiArrowLeft aria-hidden="true" /> กลับไปหน้าลูกค้า
       </Link>
@@ -123,7 +124,7 @@ function ClientDetailPage() {
                       <Link
                         className="group grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-3 rounded-xl border-b border-border p-3 transition-colors last:border-b-0 hover:bg-secondary sm:grid-cols-[auto_minmax(0,1fr)_minmax(16rem,auto)] sm:items-center sm:gap-3"
                         key={project.id}
-                        to={`/projects/${project.id}`}
+                        href={`/projects/${project.id}`}
                       >
                         <span
                           className="mt-1.5 size-2.5 shrink-0 rounded-full sm:mt-0"

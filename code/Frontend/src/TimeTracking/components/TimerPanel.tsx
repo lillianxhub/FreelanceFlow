@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'next/navigation'
 import { FiLoader, FiPlay, FiSquare, FiTrash2 } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../api/apiError'
@@ -26,7 +26,7 @@ export default function TimerPanel({
   onProjectOptionsOpen,
   onTimerChanged,
 }: TimerPanelProps) {
-  const [searchParams] = useSearchParams()
+  const searchParams = useSearchParams()
   const timer = useTimer(workspace, {
     loadTaskOptions: true,
     initialProjectId: searchParams.get('projectId') ?? '',

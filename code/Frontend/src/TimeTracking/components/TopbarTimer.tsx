@@ -1,7 +1,7 @@
 import { Button } from '../../components/ui/button'
 import { useEffect, useState } from 'react'
 import { FiClock, FiSquare } from 'react-icons/fi'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { getErrorMessage } from '../../api/apiError'
 import { formatTimer } from '../../utils/duration'
 import { stopTimer as stopTimerRequest } from '../../services/timeTracking'
@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 
 function TopbarTimer() {
   const { currentTimer, refreshCurrentTimer } = useCurrentTimer()
-  const navigate = useNavigate()
+  const router = useRouter()
   const [stopping, setStopping] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const entry = currentTimer?.running ? currentTimer.timeEntry : null
@@ -46,7 +46,7 @@ function TopbarTimer() {
           variant="ghost"
           className="h-auto min-w-0 gap-2 bg-transparent px-[9px] py-[5px] text-left text-primary-dark hover:bg-primary/10 max-[560px]:gap-[5px] max-[560px]:px-[7px]"
           type="button"
-          onClick={() => navigate('/time-tracker')}
+          onClick={() => router.push('/time-tracker')}
         >
           <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white">
             <FiClock className="size-[14px]" aria-hidden="true" />

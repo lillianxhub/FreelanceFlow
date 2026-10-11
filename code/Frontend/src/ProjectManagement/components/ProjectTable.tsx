@@ -6,7 +6,7 @@ import {
   TableBody,
   TableCell,
 } from '../../components/ui/table'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import type { ProjectTableProps } from '../../types/projectsPage'
 import ProjectStatus from './ProjectStatus'
 
@@ -30,7 +30,7 @@ export default function ProjectsTable({ projects, clients }: ProjectTableProps) 
               <TableCell>
                 <Link
                   className="font-medium text-primary hover:underline"
-                  to={`/projects/${project.id}`}
+                  href={`/projects/${project.id}`}
                 >
                   {project.name}
                 </Link>

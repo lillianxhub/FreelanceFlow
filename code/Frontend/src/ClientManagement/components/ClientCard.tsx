@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../../components/ui/alert-dialog'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useState } from 'react'
 import { FiArchive, FiEdit2, FiRotateCcw } from 'react-icons/fi'
 import type { ClientCardProps } from '../../types/clientsPage'
@@ -48,7 +48,7 @@ export default function ClientCard({
       <article className="relative p-5 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(30,48,83,0.1)]">
         <Link
           className="absolute inset-0 z-0 rounded-[inherit]"
-          to={`/clients/${client.id}`}
+          href={`/clients/${client.id}`}
           aria-label={`เปิด ${displayName}`}
         />
 

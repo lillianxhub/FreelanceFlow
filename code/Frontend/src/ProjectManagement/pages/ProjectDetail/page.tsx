@@ -18,7 +18,8 @@ import {
   TableCell,
 } from '../../../components/ui/table'
 import { useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { FiArrowLeft, FiCheckSquare, FiClock, FiPlus } from 'react-icons/fi'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
 import {
@@ -40,6 +41,7 @@ import type { Task } from '../../../types/task'
 import type { TaskDraft } from '../../../types/projectDetailPage'
 import TaskForm from '../../components/TaskForm'
 import TaskList from '../../components/TaskList'
+import ProjectBoard from '../../components/ProjectBoard'
 import { formatDate } from '../../../utils/date'
 import { formatDurationSeconds } from '../../../utils/duration'
 import { changeTaskStatus, reorderTask } from '../../../services/task'
@@ -72,13 +74,14 @@ function formatEntryStartTime(value: string) {
 }
 
 function ProjectDetailPage() {
-  const { projectId } = useParams()
+  const { projectId } = useParams<{ projectId: string; clientId: string }>()
   const { data, loading, error, refresh, saveTask: persistTask, deleteTask } = useProjects()
   const [modalOpen, setModalOpen] = useState(false)
   const [taskForm, setTaskForm] = useState(emptyTask)
   const [formError, setFormError] = useState('')
   const [savingTask, setSavingTask] = useState(false)
   const [changingTaskId, setChangingTaskId] = useState<string | null>(null)
+  const [taskView, setTaskView] = useState<'BOARD' | 'TABLE'>('BOARD')
   const [taskWithoutTime, setTaskWithoutTime] = useState<Task | null>(null)
   const [taskPage, setTaskPage] = useState(1)
   const [changingProjectStatus, setChangingProjectStatus] = useState(false)
@@ -213,7 +216,7 @@ function ProjectDetailPage() {
     <div className="mx-auto w-full min-w-0 max-w-screen-2xl">
       <Link
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary no-underline hover:text-primary-dark"
-        to="/projects"
+        href="/projects"
       >
         <FiArrowLeft aria-hidden="true" /> กลับไปหน้าโปรเจกต์
       </Link>
@@ -243,7 +246,7 @@ function ProjectDetailPage() {
             <Button asChild variant="default" className="h-10">
               <Link
                 className="!text-primary-foreground hover:text-primary-foreground"
-                to="/time-tracker"
+                href="/time-tracker"
               >
                 <FiClock aria-hidden="true" />
                 เริ่มจับเวลา
@@ -300,32 +303,56 @@ function ProjectDetailPage() {
                 </Button>
               </CardHeader>
               <CardContent className="p-6 pt-0">
-                <TaskList
-                  tasks={visibleTasks}
-                  startIndex={taskStartIndex}
-                  totalTasks={tasks.length}
-                  changingTaskId={changingTaskId}
-                  onToggle={(task) => {
-                    void toggleTask(task)
-                  }}
-                  onMove={moveTask}
-                  onEdit={openTask}
-                  onDelete={(task) => deleteTask(project.id, task.id)}
-                />
-                {tasks.length > 0 && (
-                  <div className="mt-4 grid gap-2 border-t border-border pt-4">
-                    <p className="text-center text-xs text-text-secondary">
-                      แสดง {taskStartIndex + 1}–
-                      {Math.min(taskStartIndex + TASK_PAGE_SIZE, tasks.length)} จาก {tasks.length}{' '}
-                      งาน · หน้า {currentTaskPage}/{taskTotalPages}
-                    </p>
-                    <PaginationControls
-                      page={currentTaskPage}
-                      totalPages={taskTotalPages}
-                      onPageChange={setTaskPage}
-                      queryParam="taskPage"
+                <div className="mb-4 flex gap-2" role="group" aria-label="รูปแบบแสดงงาน">
+                  <button
+                    type="button"
+                    aria-pressed={taskView === 'BOARD'}
+                    onClick={() => setTaskView('BOARD')}
+                    className={`rounded border px-3 py-1 text-sm ${taskView === 'BOARD' ? 'border-primary text-primary' : 'border-border'}`}
+                  >
+                    บอร์ด
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={taskView === 'TABLE'}
+                    onClick={() => setTaskView('TABLE')}
+                    className={`rounded border px-3 py-1 text-sm ${taskView === 'TABLE' ? 'border-primary text-primary' : 'border-border'}`}
+                  >
+                    ตาราง
+                  </button>
+                </div>
+                {taskView === 'BOARD' ? (
+                  <ProjectBoard projectId={project.id} tasks={tasks} onChanged={refresh} />
+                ) : (
+                  <>
+                    <TaskList
+                      tasks={visibleTasks}
+                      startIndex={taskStartIndex}
+                      totalTasks={tasks.length}
+                      changingTaskId={changingTaskId}
+                      onToggle={(task) => {
+                        void toggleTask(task)
+                      }}
+                      onMove={moveTask}
+                      onEdit={openTask}
+                      onDelete={(task) => deleteTask(project.id, task.id)}
                     />
-                  </div>
+                    {tasks.length > 0 && (
+                      <div className="mt-4 grid gap-2 border-t border-border pt-4">
+                        <p className="text-center text-xs text-text-secondary">
+                          แสดง {taskStartIndex + 1}–
+                          {Math.min(taskStartIndex + TASK_PAGE_SIZE, tasks.length)} จาก{' '}
+                          {tasks.length} งาน · หน้า {currentTaskPage}/{taskTotalPages}
+                        </p>
+                        <PaginationControls
+                          page={currentTaskPage}
+                          totalPages={taskTotalPages}
+                          onPageChange={setTaskPage}
+                          queryParam="taskPage"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </section>
@@ -425,7 +452,7 @@ function ProjectDetailPage() {
                     title={
                       client?.company_name || client?.name || project.client_name || 'ไม่พบลูกค้า'
                     }
-                    to={`/clients/${client?.id}`}
+                    href={`/clients/${client?.id}`}
                   >
                     <strong className="break-words [overflow-wrap:anywhere]">
                       {client?.company_name || client?.name || project.client_name || 'ไม่พบลูกค้า'}

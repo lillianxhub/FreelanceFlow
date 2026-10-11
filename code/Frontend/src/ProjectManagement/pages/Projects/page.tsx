@@ -3,7 +3,7 @@ import { Button } from '../../../components/ui/button'
 import { NativeSelect } from '../../../components/ui/native-select'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { FiBriefcase, FiPlus } from 'react-icons/fi'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../../components/ui/sheet'
 import PageHeader from '../../../components/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '../../../components/ViewState'
 import { useProjects } from '../../useProjects'
@@ -337,16 +337,16 @@ function ProjectsPage() {
         className="mt-6"
       />
 
-      <Dialog
+      <Sheet
         open={modalOpen}
         onOpenChange={(open) => {
           if (!open) setModalOpen(false)
         }}
       >
-        <DialogContent className="!max-w-3xl max-h-[calc(100dvh-2rem)] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{form.id ? 'แก้ไขโปรเจกต์' : 'เพิ่มโปรเจกต์'}</DialogTitle>
-          </DialogHeader>
+        <SheetContent className="!w-full !max-w-full overflow-y-auto sm:!w-[640px] sm:!max-w-[640px]">
+          <SheetHeader>
+            <SheetTitle>{form.id ? 'แก้ไขโปรเจกต์' : 'เพิ่มโปรเจกต์'}</SheetTitle>
+          </SheetHeader>
           <ProjectForm
             value={form}
             clients={data.clients}
@@ -357,8 +357,8 @@ function ProjectsPage() {
             onSubmit={handleSubmit}
             onCancel={() => setModalOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

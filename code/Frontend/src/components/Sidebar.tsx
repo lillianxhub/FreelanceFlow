@@ -1,16 +1,16 @@
-import { NavLink } from 'react-router-dom'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { workspaceLinks } from '../constants/navigation'
 import type { SidebarLinkProps, SidebarProps } from '../types/ui'
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet'
 
 function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
   const Icon = icon
+  const isActive = usePathname() === to
   return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `group/nav grid min-h-10 grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[9px] px-[11px] py-2 text-sm no-underline transition-colors ${isActive ? 'active bg-primary-soft font-semibold text-primary-dark' : 'text-text-secondary hover:bg-surface-soft hover:text-text-primary'}`
-      }
+    <Link
+      href={to}
+      className={`group/nav grid min-h-10 grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[9px] px-[11px] py-2 text-sm no-underline transition-colors ${isActive ? 'active bg-primary-soft font-semibold text-primary-dark' : 'text-text-secondary hover:bg-surface-soft hover:text-text-primary'}`}
     >
       <span
         className="grid size-[18px] place-items-center text-base text-subtle group-[.active]/nav:text-primary"
@@ -24,7 +24,7 @@ function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
           {badge}
         </span>
       )}
-    </NavLink>
+    </Link>
   )
 }
 
@@ -60,11 +60,11 @@ function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
         </nav> */}
 
       {/* <div className="sidebar-bottom">
-          <NavLink className="help-card" to="/reports" onClick={onClose}>
+          <Link className="help-card" href="/reports" onClick={onClose}>
             <span className="help-icon">?</span>
             <span><strong>ต้องการความช่วยเหลือ?</strong><small>ดูรายงานและคู่มือ</small></span>
             <span>↗</span>
-          </NavLink>
+          </Link>
           <div className="profile-row">
             <span className="avatar">{initials(name)}</span>
             <span className="profile-copy"><strong>{name}</strong><small>{profile?.email || user?.email}</small></span>

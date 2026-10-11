@@ -100,6 +100,7 @@ export interface ApiTask {
   description?: string
   status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED'
   sortOrder: number
+  version?: number
   createdAt?: string
   updatedAt?: string
 }

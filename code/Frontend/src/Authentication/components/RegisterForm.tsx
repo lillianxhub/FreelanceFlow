@@ -1,6 +1,7 @@
 import AuthenticationLayout from './AuthenticationLayout'
 import { useState, type ChangeEvent, type FocusEvent, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import AuthInput from './AuthInput'
 import { Button } from '../../components/ui/button'
 import { useAuth } from '../useAuthentication'
@@ -27,7 +28,7 @@ function RegisterForm() {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({})
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { register } = useAuth()
 
   const validateField = (
@@ -116,10 +117,7 @@ function RegisterForm() {
         phone: form.phone,
         password: form.password,
       })
-      navigate('/login', {
-        replace: true,
-        state: { message: 'สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ' },
-      })
+      router.replace('/login')
     } catch (err) {
       setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'))
     } finally {
@@ -219,7 +217,7 @@ function RegisterForm() {
         </Button>
 
         <p className="auth-footer">
-          มีบัญชีอยู่แล้ว? <Link to="/login">เข้าสู่ระบบ</Link>
+          มีบัญชีอยู่แล้ว? <Link href="/login">เข้าสู่ระบบ</Link>
         </p>
       </form>
     </AuthenticationLayout>

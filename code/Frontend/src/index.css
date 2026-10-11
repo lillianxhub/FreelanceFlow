@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -12,21 +12,21 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --primary: #4f6bff;
-  --brand-secondary: #7c3aed;
+  --primary: #315ac6;
+  --brand-secondary: #315ac6;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
   --border: #e2e8f0;
   --background: #ffffff;
-  --bg: #f8fafc;
+  --bg: #f7f8fa;
   --surface: var(--background);
   --surface-soft: #f8fafc;
   --sidebar: var(--background);
   --border-strong: #cbd5e1;
   --text: var(--text-primary);
   --subtle: #94a3b8;
-  --primary-dark: #4059e8;
-  --primary-soft: #eef2ff;
+  --primary-dark: #294bad;
+  --primary-soft: #eff3fc;
   --green: #1b9c68;
   --green-soft: #eaf8f2;
   --orange: #e97834;
@@ -35,7 +35,7 @@
   --red-soft: #fff0f3;
   --violet: var(--brand-secondary);
   --violet-soft: #f5f3ff;
-  --shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
   --font-size-xs: 11px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -62,7 +62,7 @@
   --accent-foreground: #4059e8;
   --destructive: #dc4c64;
   --input: #e2e8f0;
-  --ring: #4f6bff;
+  --ring: #315ac6;
   --chart-1: #4f6bff;
   --chart-2: #7c3aed;
   --chart-3: #1b9c68;
@@ -70,12 +70,12 @@
   --chart-5: #dc4c64;
   --radius: 0.625rem;
   --sidebar-foreground: #0f172a;
-  --sidebar-primary: #4f6bff;
+  --sidebar-primary: #315ac6;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f8fafc;
   --sidebar-accent-foreground: #4059e8;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #4f6bff;
+  --sidebar-ring: #315ac6;
 }
 
 * { box-sizing: border-box; }

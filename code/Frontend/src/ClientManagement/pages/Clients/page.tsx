@@ -3,7 +3,7 @@ import { Button } from '../../../components/ui/button'
 import { NativeSelect } from '../../../components/ui/native-select'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { FiPlus, FiUsers } from 'react-icons/fi'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../../components/ui/sheet'
 import PageHeader from '../../../components/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '../../../components/ViewState'
 import { useClients } from '../../useClients'
@@ -298,16 +298,16 @@ function ClientsPage() {
         className="mt-6"
       />
 
-      <Dialog
+      <Sheet
         open={modalOpen}
         onOpenChange={(open) => {
           if (!open) setModalOpen(false)
         }}
       >
-        <DialogContent className="max-h-[calc(100dvh-2rem)] !max-w-4xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{form.id ? 'แก้ไขข้อมูลลูกค้า' : 'เพิ่มลูกค้า'}</DialogTitle>
-          </DialogHeader>
+        <SheetContent className="!w-full !max-w-full overflow-y-auto sm:!w-[640px] sm:!max-w-[640px]">
+          <SheetHeader>
+            <SheetTitle>{form.id ? 'แก้ไขข้อมูลลูกค้า' : 'เพิ่มลูกค้า'}</SheetTitle>
+          </SheetHeader>
           <ClientForm
             value={form}
             error={formError}
@@ -317,8 +317,8 @@ function ClientsPage() {
             onSubmit={handleSubmit}
             onCancel={() => setModalOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

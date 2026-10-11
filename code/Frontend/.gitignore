@@ -25,3 +25,9 @@ dist-ssr
 
 .env.prod
 .env
+.next/
+next-env.d.ts
+test-results/
+playwright-report/
+
+*.tsbuildinfo

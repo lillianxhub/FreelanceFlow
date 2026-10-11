@@ -1,5 +1,5 @@
 import { Button } from './ui/button'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../Authentication/useAuthentication'
 import { initials } from '../utils/string'
 import type { TopbarProps } from '../types/ui'
@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarFallback } from './ui/avatar'
 
 const labels: Record<string, string> = {
-  dashboard: 'ภาพรวม',
+  dashboard: 'วันนี้',
   clients: 'ลูกค้า',
   projects: 'โปรเจกต์',
   'time-tracker': 'บันทึกเวลา',
@@ -23,16 +23,16 @@ const labels: Record<string, string> = {
 }
 
 function Topbar({ onMenu }: TopbarProps) {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuth()
-  const segment = location.pathname.split('/').filter(Boolean)[0] || 'dashboard'
+  const segment = pathname.split('/').filter(Boolean)[0] || 'dashboard'
   const label = labels[segment] || 'พื้นที่ทำงาน'
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'โปรไฟล์'
 
   const handleLogout = async () => {
     await logout()
-    navigate('/login', { replace: true })
+    router.replace('/login')
   }
 
   return (
@@ -77,7 +77,7 @@ function Topbar({ onMenu }: TopbarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-44">
-            <DropdownMenuItem onSelect={() => navigate('/profile')}>โปรไฟล์</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => router.push('/profile')}>โปรไฟล์</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => void handleLogout()}>ออกจากระบบ</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
