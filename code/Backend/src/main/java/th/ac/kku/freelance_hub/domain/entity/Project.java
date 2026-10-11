@@ -1,0 +1,396 @@
+package th.ac.kku.freelance_hub.domain.entity;
+import th.ac.kku.freelance_hub.domain.enums.ProjectStatus;
+import th.ac.kku.freelance_hub.domain.state.ProjectState;
+import th.ac.kku.freelance_hub.domain.state.ProjectStates;
+
+import java.util.Map;
+import th.ac.kku.freelance_hub.exception.InvalidStateException;
+import th.ac.kku.freelance_hub.exception.InvalidArgumentException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+
+
+
+@Entity
+@Table(
+        name = "projects",
+        indexes = {
+                @Index(
+                        name = "idx_projects_owner_status",
+                        columnList = "owner_id,status"
+                ),
+                @Index(
+                        name = "idx_projects_client_status",
+                        columnList = "client_id,status"
+                ),
+                @Index(
+                        name = "idx_projects_owner_start_date",
+                        columnList = "owner_id,start_date"
+                ),
+                @Index(
+                        name = "idx_projects_owner_is_active",
+                        columnList = "owner_id,is_active"
+                )
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_projects_id_owner",
+                        columnNames = {"id", "owner_id"}
+                )
+        }
+)
+public class Project {
+
+    @Id //PK
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    //1 user มีได้หลายโปรเจค
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false) //เก็บ owner_id ในตาราง projects ใช้ project.owner_id เป็น FK ไปยัง user.id
+    private User owner;
+
+    //1ลูกค้ามีได้หลายโปรเจค
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "client_id", nullable = false) //เก็บ client_id ในตาราง projects ใช้ project.client_id เป็น FK ไปยัง client.id
+    private Client client;
+
+    //attribute ของ Project
+    @Column(nullable = false, length = 180)
+    private String name;
+
+    @Column(columnDefinition = "text")
+    private String description;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    @Column(length = 7)
+    private String color;
+
+    @Column(name = "target_minutes")
+    private Integer targetMinutes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProjectStatus status = ProjectStatus.PLANNED;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+    //เอาไว้ทำ Soft_delete คือการลบแบบไม่ลบจริงๆ แต่จะทำให้ไม่สามารถเข้าถึงได้
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    //กำหนดความสัมพันธ์กับ Task
+    @OneToMany(
+            mappedBy = "project",
+            fetch = FetchType.LAZY
+    )
+    private List<Task> tasks = new ArrayList<>();
+
+
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
+    private Instant createdAt;
+
+    @Column(
+            name = "updated_at",
+            nullable = false
+    )
+    private Instant updatedAt;
+
+    //ใช้สำหรับ Optimistic Locking เพื่อป้องกันการแก้ไขข้อมูลพร้อมกัน
+    //เมื่อมีการแก้ไขข้อมูล จะทำการตรวจสอบ version ถ้า version ไม่ตรงกัน จะเกิด OptimisticLockException
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
+    protected Project() {
+    }
+
+
+    public Project(
+            User owner,
+            Client client,
+            String name
+    ) {
+        this.owner = Objects.requireNonNull(
+                owner,
+                "owner is required"
+        );
+
+        this.client = requireOwnedClient(this.owner, client);
+
+        this.name = requireName(name);
+
+    }
+
+    //แก้รายละเอียดของ Project
+    public void updateDetails(
+            String name,
+            String description,
+            LocalDate startDate,
+            LocalDate endDate,
+            String color,
+            Integer targetMinutes
+    ) {
+        validateDates(startDate, endDate);
+        validateColor(color);
+        validateTargetMinutes(targetMinutes);
+
+        this.name = requireName(name);
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.color = color;
+        this.targetMinutes = targetMinutes;
+    }
+
+
+    public void changeClient(Client client) {
+        this.client = requireOwnedClient(owner, client);
+    }
+
+
+    public void changeStatus(ProjectStatus nextStatus) {
+        Objects.requireNonNull(nextStatus, "nextStatus is required");
+
+        ProjectState currentState = ProjectStates.from(status);
+        if (!currentState.canTransitionTo(nextStatus)) {
+            throw new InvalidStateException(
+                    "ไม่สามารถเปลี่ยนสถานะโปรเจกต์ตามที่ร้องขอได้",
+                    Map.of("currentStatus", status.name(), "requestedStatus", nextStatus.name())
+            );
+        }
+
+        if (status == ProjectStatus.ARCHIVED
+                && nextStatus != ProjectStatus.ARCHIVED
+                && (!Boolean.TRUE.equals(client.getIsActive())
+                        || client.getDeletedAt() != null)) {
+            throw new InvalidStateException("ไม่สามารถคืนสถานะโปรเจกต์ได้ เพราะลูกค้าถูกจัดเก็บอยู่");
+        }
+
+        status = nextStatus;
+
+        if (nextStatus == ProjectStatus.ARCHIVED) {
+            isActive = false;
+        } else if (currentState.status() == ProjectStatus.ARCHIVED) {
+            isActive = true;
+        }
+    }
+
+    //จัดเก็บข้อมูลของ Project ให้เป็น Archived และทำ Soft_delete
+    public void archive() {
+        changeStatus(ProjectStatus.ARCHIVED);
+        isActive = false;
+        deletedAt = Instant.now();
+    }
+
+    //เช็กว่าแต่ละสถานะของ Project สามารถทำงานได้หรือไม่
+    public boolean canTrackTime() {
+        return ProjectStates.from(status).canTrackTime();
+    }
+    public boolean canEditTasks() {
+        return ProjectStates.from(status).canEditTasks();
+    }
+
+    //คำนวณความคืบหน้าของ Project โดยใช้เวลาที่ติดตามและเป้าหมายเวลาที่กำหนด
+    public BigDecimal progress(int trackedMinutes) {
+        if (trackedMinutes < 0) {
+            throw new IllegalArgumentException(
+                    "เวลาที่บันทึกต้องไม่ติดลบ"
+            );
+        }
+        if (targetMinutes == null || targetMinutes == 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(trackedMinutes)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(
+                        BigDecimal.valueOf(targetMinutes),
+                        2,
+                        RoundingMode.HALF_UP
+                );
+    }
+
+
+
+    void addTask(Task task) {
+        tasks.add(
+                Objects.requireNonNull(
+                        task,
+                        "task is required"
+                )
+        );
+    }
+
+
+    private static String requireName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new InvalidArgumentException(
+                    "กรุณาระบุชื่อ", Map.of("field", "name")
+            );
+        }
+        return name.trim();
+    }
+
+
+
+    private static Client requireOwnedClient(User owner, Client client) {
+        Client requiredClient = Objects.requireNonNull(client, "client is required");
+        User clientOwner = requiredClient.getOwner();
+        boolean sameOwner = clientOwner == owner
+                || (clientOwner != null && owner.getId() != null
+                && owner.getId().equals(clientOwner.getId()));
+        if (!sameOwner) {
+            throw new InvalidArgumentException("ลูกค้าไม่ถูกต้อง");
+        }
+        return requiredClient;
+    }
+
+    private static void validateDates(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        if (startDate != null
+                && endDate != null
+                && endDate.isBefore(startDate)) {
+            throw new InvalidArgumentException(
+                    "วันที่สิ้นสุดต้องไม่อยู่ก่อนวันที่เริ่มต้น", Map.of("field", "endDate")
+            );
+        }
+    }
+
+
+    private static void validateColor(String color) {
+        if (color != null
+                && !color.matches("#[0-9A-Fa-f]{6}")) {
+            throw new InvalidArgumentException(
+                    "กรุณาระบุสีในรูปแบบ #RRGGBB", Map.of("field", "color")
+            );
+        }
+    }
+
+    private static void validateTargetMinutes(
+            Integer targetMinutes
+    ) {
+        if (targetMinutes != null && targetMinutes <= 0) {
+            throw new InvalidArgumentException(
+                    "เวลาเป้าหมายต้องมากกว่าศูนย์", Map.of("field", "targetMinutes")
+            );
+        }
+    }
+
+    @PrePersist
+    void onCreate() {
+        Instant now = Instant.now();
+
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = Instant.now();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+
+    public Integer getTargetMinutes() {
+        return targetMinutes;
+    }
+
+    public ProjectStatus getStatus() {
+        return status;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public Instant getDeletedAt() {
+        return deletedAt;
+    }
+
+    public List<Task> getTasks() {
+        return Collections.unmodifiableList(tasks);
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+
+}

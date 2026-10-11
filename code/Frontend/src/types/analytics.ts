@@ -1,0 +1,119 @@
+import type { Project } from './project'
+import type { TimeEntry } from './timeTracking'
+import type { Client } from './client'
+import type { Task } from './task'
+import type { ProjectStatus } from './project'
+
+export interface AnalyticsData {
+  clients: Client[]
+  projects: Project[]
+  tasks: Task[]
+  time_entries: TimeEntry[]
+}
+export type TimeSummaryEntry = Pick<TimeEntry, 'duration_minutes' | 'billable' | 'rate_snapshot'>
+export interface ProductivityPoint {
+  key: string
+  day: string
+  totalSeconds: number
+}
+
+export interface ProductivityChartProps {
+  data: readonly ProductivityPoint[]
+}
+
+export interface ProjectTimePoint {
+  key: string
+  name: string
+  hours: number
+}
+
+export interface ProjectTimeChartProps {
+  data: readonly ProjectTimePoint[]
+}
+
+export interface RecentActivityProps {
+  entries: readonly TimeEntry[]
+  projects: readonly Project[]
+}
+
+export interface ReportSummaryQuery {
+  from: string
+  to: string
+  clientId?: string
+  projectId?: string
+  status?: ProjectStatus
+}
+
+export interface ReportFilterOption {
+  id: string
+  name: string
+}
+
+export interface ReportProjectOption extends ReportFilterOption {
+  clientId: string
+  status: ProjectStatus
+}
+
+export interface ReportSummaryKpi {
+  totalTrackedSeconds: number
+  trackedTimeTrendPercent: number | null
+  timeEntryCount: number
+  projectsWithTime: number
+  totalProjects: number
+  clientsWithTime: number
+  totalClients: number
+}
+
+export interface ReportClientTime {
+  clientId: string
+  clientName: string
+  trackedSeconds: number
+  percent: number
+}
+
+export interface ReportProjectUsage {
+  projectId: string
+  projectName: string
+  clientId: string
+  clientName: string
+  color: string
+  targetSeconds: number | null
+  trackedSeconds: number
+  usagePercent: number | null
+  taskProgressPercent: number
+  status: ProjectStatus
+}
+
+export interface ReportSummaryData {
+  generatedAt: string
+  filters: {
+    clients: ReportFilterOption[]
+    projects: ReportProjectOption[]
+  }
+  summary: ReportSummaryKpi
+}
+
+export interface ReportDistributionData {
+  groupBy: 'CLIENT' | 'PROJECT'
+  items: Array<ReportFilterOption & { trackedSeconds: number; percent: number }>
+}
+
+export interface ReportWorkTrendData {
+  granularity: 'DAY' | 'WEEK' | 'MONTH'
+  points: Array<{ periodStart: string; trackedSeconds: number }>
+}
+
+export interface ReportWorkPatternData {
+  mostProductiveDay: string | null
+  mostActiveHour: number | null
+  trackedTimeTrendPercent: number | null
+  timeByWeekday: Array<{ day: string; trackedSeconds: number }>
+  timeByHour: Array<{ hour: number; trackedSeconds: number }>
+}
+
+export interface ReportProjectPage {
+  items: ReportProjectUsage[]
+  page: number
+  totalPages: number
+  total: number
+}

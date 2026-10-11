@@ -1,0 +1,493 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { ApiError } from './apiError'
+import {
+  api,
+  fetchClient,
+  fetchMultipartClient,
+  getApiToken,
+  refreshApiToken,
+  setApiToken,
+  subscribeToSessionInvalidation,
+} from './apiClient'
+
+test('a delayed refresh cannot restore a logged-out session or overwrite a new login', async () => {
+  const originalFetch = globalThis.fetch
+  try {
+    for (const nextToken of [null, 'new-login-token']) {
+      setApiToken('old-token')
+      let finish!: (response: Response) => void
+      globalThis.fetch = async () =>
+        new Promise<Response>((resolve) => {
+          finish = resolve
+        })
+      const pending = refreshApiToken()
+      setApiToken(nextToken)
+      finish(Response.json({ data: { token: 'stale-refresh-token' } }))
+      assert.equal(await pending, false)
+      assert.equal(getApiToken(), nextToken)
+    }
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+
+test('refresh failures invalidate the session and subscribers can unsubscribe', async () => {
+  const originalFetch = globalThis.fetch
+  let invalidations = 0
+  const unsubscribe = subscribeToSessionInvalidation(() => {
+    invalidations++
+  })
+  try {
+    for (const response of [new Response(null, { status: 401 }), Response.json({ data: {} })]) {
+      setApiToken('expired-token')
+      globalThis.fetch = async () => response
+      assert.equal(await refreshApiToken(), false)
+      assert.equal(getApiToken(), null)
+    }
+    assert.equal(invalidations, 2)
+    unsubscribe()
+    setApiToken(null)
+    assert.equal(invalidations, 2)
+  } finally {
+    unsubscribe()
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+
+test('failed stale refresh does not invalidate a newer session', async () => {
+  const originalFetch = globalThis.fetch
+  let fail!: (reason: Error) => void
+  globalThis.fetch = async () =>
+    new Promise<Response>((_resolve, reject) => {
+      fail = reject
+    })
+  try {
+    setApiToken('old-token')
+    const pending = refreshApiToken()
+    setApiToken('new-token')
+    fail(new Error('Network failed'))
+    assert.equal(await pending, false)
+    assert.equal(getApiToken(), 'new-token')
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+
+test('401 received after logout does not start a refresh', async () => {
+  const originalFetch = globalThis.fetch
+  let finish!: (response: Response) => void
+  let calls = 0
+  globalThis.fetch = async () => {
+    calls++
+    return new Promise<Response>((resolve) => {
+      finish = resolve
+    })
+  }
+  try {
+    setApiToken('old-token')
+    const pending = api.get('/delayed-private')
+    setApiToken(null)
+    finish(new Response(null, { status: 401 }))
+    await assert.rejects(
+      pending,
+      (error: unknown) => error instanceof ApiError && error.status === 401,
+    )
+    assert.equal(calls, 1)
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+
+const values = new Map<string, string>()
+
+test('a new session refresh is independent of the previous session in flight', async () => {
+  const originalFetch = globalThis.fetch
+  const finishes: ((response: Response) => void)[] = []
+  globalThis.fetch = async () =>
+    new Promise<Response>((resolve) => {
+      finishes.push(resolve)
+    })
+  try {
+    setApiToken('old-access')
+    const old = refreshApiToken()
+    setApiToken('new-login')
+    const current = refreshApiToken()
+    finishes[0](Response.json({ data: { token: 'stale-token' } }))
+    assert.equal(await old, false)
+    assert.equal(refreshApiToken(), current)
+    finishes[1](Response.json({ data: { token: 'new-access' } }))
+    assert.equal(await current, true)
+    assert.equal(getApiToken(), 'new-access')
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+Object.defineProperty(globalThis, 'localStorage', {
+  configurable: true,
+  value: {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      values.set(key, value)
+    },
+    removeItem: (key: string) => {
+      values.delete(key)
+    },
+  },
+})
+
+test('api helpers send JSON and attach the in-memory token', async () => {
+  const originalFetch = globalThis.fetch
+  setApiToken('test-token')
+  globalThis.fetch = async (input, init) => {
+    assert.equal(input, '/api/items')
+    assert.equal(init?.method, 'POST')
+    assert.equal(init?.body, JSON.stringify({ name: 'Acme' }))
+    const headers = new Headers(init?.headers)
+    assert.equal(headers.get('Content-Type'), 'application/json')
+    assert.equal(headers.get('Authorization'), 'Bearer test-token')
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'สร้างสำเร็จ',
+        data: { id: '1' },
+        meta: null,
+        error: null,
+      }),
+      { status: 201 },
+    )
+  }
+  try {
+    assert.deepEqual((await api.post<{ id: string }>('/items', { name: 'Acme' })).data, { id: '1' })
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+
+test('401 rotates the refresh cookie once and retries with the new access token', async () => {
+  const originalFetch = globalThis.fetch
+  let calls = 0
+  setApiToken('expired-access')
+  globalThis.fetch = async (input, init) => {
+    calls++
+    assert.equal(init?.credentials, 'same-origin')
+    if (input === '/api/auth/refresh') {
+      return new Response(JSON.stringify({ data: { token: 'renewed-access' } }), { status: 200 })
+    }
+    const authorization = new Headers(init?.headers).get('Authorization')
+    if (authorization === 'Bearer expired-access') return new Response(null, { status: 401 })
+    assert.equal(authorization, 'Bearer renewed-access')
+    return new Response(
+      JSON.stringify({ success: true, message: '', data: { id: '1' }, meta: null, error: null }),
+      { status: 200 },
+    )
+  }
+  try {
+    assert.deepEqual((await api.get<{ id: string }>('/items')).data, { id: '1' })
+    assert.equal(calls, 3)
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+  }
+})
+
+test('multipart wrapper passes FormData and leaves Content-Type to fetch', async () => {
+  const originalFetch = globalThis.fetch
+  const formData = new FormData()
+  formData.append('file', new Blob(['hello']), 'note.txt')
+  globalThis.fetch = async (_input, init) => {
+    assert.equal(init?.method, 'PATCH')
+    assert.equal(init?.body, formData)
+    assert.equal(new Headers(init?.headers).has('Content-Type'), false)
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: '',
+        data: { uploaded: true },
+        meta: null,
+        error: null,
+      }),
+      { status: 200 },
+    )
+  }
+  try {
+    const response = await fetchMultipartClient<{ uploaded: boolean }>('/upload', formData, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    assert.deepEqual(response.data, { uploaded: true })
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('request wrappers keep ApiError status and handle empty responses', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ message: 'Denied' }), { status: 401 })
+  try {
+    await assert.rejects(
+      fetchClient('/private'),
+      (error: unknown) =>
+        error instanceof ApiError && error.status === 401 && error.message === 'Denied',
+    )
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+
+  globalThis.fetch = async (_input, init) => {
+    assert.equal(init?.method, 'DELETE')
+    return new Response(null, { status: 204 })
+  }
+  try {
+    const response = await api.delete('/items/1')
+    assert.equal(response.success, true)
+    assert.equal(response.data, undefined)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('error responses ignore fields with unexpected types', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ message: { text: 'bad' }, errors: { email: 123 } }), {
+      status: 400,
+    })
+  try {
+    await assert.rejects(
+      fetchClient('/invalid'),
+      (error: unknown) => error instanceof ApiError && error.message === 'API error (400)',
+    )
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('response exposes pagination metadata from the shared API format', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        success: true,
+        message: '',
+        data: [{ id: '1' }],
+        meta: { page: 1, limit: 20, total: 125, totalPages: 7 },
+        error: null,
+      }),
+      { status: 200 },
+    )
+  try {
+    const response = await api.get<Array<{ id: string }>>('/items')
+    assert.deepEqual(response.data, [{ id: '1' }])
+    assert.deepEqual(response.meta, { page: 1, limit: 20, total: 125, totalPages: 7 })
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('concurrent identical GETs share one request, then a later GET is fresh', async () => {
+  const originalFetch = globalThis.fetch
+  let calls = 0
+  let finishFirst: ((response: Response) => void) | undefined
+  const success = () =>
+    Response.json({ success: true, message: '', data: { id: '1' }, meta: null, error: null })
+  globalThis.fetch = async () => {
+    calls++
+    if (calls === 1)
+      return new Promise<Response>((resolve) => {
+        finishFirst = resolve
+      })
+    return success()
+  }
+  try {
+    const first = api.get<{ id: string }>('/shared-items')
+    const second = api.get<{ id: string }>('/shared-items')
+    assert.equal(calls, 1)
+    finishFirst?.(success())
+    assert.deepEqual(
+      (await Promise.all([first, second])).map((response) => response.data.id),
+      ['1', '1'],
+    )
+    await api.get('/shared-items')
+    assert.equal(calls, 2)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('a mutation does not reuse an older in-flight GET', async () => {
+  const originalFetch = globalThis.fetch
+  let getCalls = 0
+  let finishFirst: ((response: Response) => void) | undefined
+  const success = () =>
+    Response.json({ success: true, message: '', data: {}, meta: null, error: null })
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === 'POST') return success()
+    getCalls++
+    if (getCalls === 1)
+      return new Promise<Response>((resolve) => {
+        finishFirst = resolve
+      })
+    return success()
+  }
+  try {
+    const beforeWrite = api.get('/changed-items')
+    await api.post('/changed-items', { name: 'new' })
+    await api.get('/changed-items')
+    assert.equal(getCalls, 2)
+    finishFirst?.(success())
+    await beforeWrite
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('success false is rejected even when HTTP status is successful', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        success: false,
+        message: '',
+        data: {},
+        meta: null,
+        error: { code: 'INVALID_REQUEST', message: 'ข้อมูลไม่ถูกต้อง' },
+      }),
+      { status: 200 },
+    )
+  try {
+    await assert.rejects(
+      api.get('/items'),
+      (error: unknown) => error instanceof ApiError && error.message === 'ข้อมูลไม่ถูกต้อง',
+    )
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('legacy Spring pages are normalized during API response migration', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        content: [{ id: 'legacy-1' }],
+        totalElements: 21,
+        totalPages: 2,
+        size: 20,
+        number: 0,
+      }),
+      { status: 200 },
+    )
+  try {
+    const response = await api.get<Array<{ id: string }>>('/legacy-items')
+    assert.deepEqual(response.data, [{ id: 'legacy-1' }])
+    assert.deepEqual(response.meta, { page: 1, limit: 20, total: 21, totalPages: 2 })
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('legacy direct objects are normalized during API response migration', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ id: 'legacy-user' }), { status: 200 })
+  try {
+    const response = await api.get<{ id: string }>('/legacy-user')
+    assert.deepEqual(response.data, { id: 'legacy-user' })
+    assert.equal(response.meta, null)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+for (const status of [400, 200]) {
+  test(`error metadata survives ${status === 200 ? 'success=false' : 'HTTP failure'}`, async () => {
+    const originalFetch = globalThis.fetch
+    const metadata = {
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      details: { field: 'name' },
+      fieldErrors: { name: 'กรุณาระบุชื่อ' },
+      timestamp: '2026-10-09T10:00:00Z',
+      traceId: 'test-trace',
+    }
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          message: 'ข้อมูลที่ส่งมาไม่ถูกต้อง',
+          data: null,
+          meta: null,
+          error: metadata,
+        }),
+        { status },
+      )
+    try {
+      await assert.rejects(fetchClient('/test'), (error: unknown) => {
+        assert.ok(error instanceof ApiError)
+        assert.equal(error.status, status)
+        assert.equal(error.message, 'ข้อมูลที่ส่งมาไม่ถูกต้อง')
+        assert.equal(error.code, metadata.code)
+        assert.deepEqual(error.details, metadata.details)
+        assert.deepEqual(error.fieldErrors, metadata.fieldErrors)
+        assert.equal(error.timestamp, metadata.timestamp)
+        assert.equal(error.traceId, metadata.traceId)
+        return true
+      })
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+}
+
+test('non-JSON error keeps HTTP status and a usable fallback', async () => {
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = async () => new Response('<html>gateway failure</html>', { status: 502 })
+  try {
+    await assert.rejects(fetchClient('/test'), (error: unknown) => {
+      assert.ok(error instanceof ApiError)
+      assert.equal(error.status, 502)
+      assert.equal(error.message, 'API error (502)')
+      assert.equal(error.details, null)
+      assert.equal(error.code, undefined)
+      return true
+    })
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
+test('refresh uses the FreelanceFlow browser lock', async () => {
+  const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+  const originalFetch = globalThis.fetch
+  let lockName = ''
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: {
+      locks: {
+        request: async (name: string, callback: () => Promise<boolean>) => {
+          lockName = name
+          return callback()
+        },
+      },
+    },
+  })
+  globalThis.fetch = async () => Response.json({ data: { token: 'flow-token' } })
+  try {
+    setApiToken('expired')
+    assert.equal(await refreshApiToken(), true)
+    assert.equal(lockName, 'freelanceflow-refresh')
+  } finally {
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+    if (originalNavigator) Object.defineProperty(globalThis, 'navigator', originalNavigator)
+    else Reflect.deleteProperty(globalThis, 'navigator')
+  }
+})

@@ -1,0 +1,94 @@
+package th.ac.kku.freelance_hub.mapper;
+
+import org.springframework.stereotype.Component;
+import th.ac.kku.freelance_hub.domain.entity.User;
+import th.ac.kku.freelance_hub.domain.entity.UserProfile;
+import th.ac.kku.freelance_hub.domain.valueobject.Address;
+import th.ac.kku.freelance_hub.dto.request.auth.RegisterRequest;
+import th.ac.kku.freelance_hub.dto.request.user.UpdateUserProfileRequest;
+import th.ac.kku.freelance_hub.dto.response.user.UserResponse;
+/**
+ * Mapper for User and UserProfile entities
+ */
+@Component
+public class UserMapper {
+
+    /**
+     * Convert User entity to UserResponse DTO
+     */
+    public UserResponse toResponse(User user) {
+        UserResponse.UserResponseBuilder builder = UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt());
+
+        // Add profile information if exists
+        if (user.getProfile() != null) {
+            UserProfile profile = user.getProfile();
+            builder.displayName(profile.getDisplayName())
+                    .firstName(profile.getFirstName())
+                    .lastName(profile.getLastName())
+                    .phone(profile.getPhone())
+                    .address(profile.getAddress())
+                    .subdistrict(profile.getSubdistrict())
+                    .district(profile.getDistrict())
+                    .province(profile.getProvince())
+                    .postalCode(profile.getPostalCode())
+                    .taxId(profile.getTaxId())
+                    .bio(profile.getBio());
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * Create UserProfile from RegisterRequest
+     */
+    public UserProfile toProfile(RegisterRequest request) {
+        return UserProfile.builder()
+                .displayName(request.getDisplayName())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phone(request.getPhone())
+                .build();
+    }
+
+    /** Applies non-null profile and flat address fields from a PATCH request. */
+    public void updateProfile(UpdateUserProfileRequest request, UserProfile profile) {
+        if (request.getDisplayName() != null) {
+            profile.setDisplayName(request.getDisplayName().trim());
+        }
+        if (request.getFirstName() != null) {
+            profile.setFirstName(request.getFirstName().trim());
+        }
+        if (request.getLastName() != null) {
+            profile.setLastName(request.getLastName().trim());
+        }
+        if (request.getPhone() != null) {
+            profile.setPhone(request.getPhone().trim());
+        }
+        if (request.getBio() != null) {
+            profile.setBio(request.getBio().trim());
+        }
+
+        if (request.getAddress() != null || request.getSubdistrict() != null
+                || request.getDistrict() != null || request.getProvince() != null
+                || request.getPostalCode() != null) {
+            profile.updateAddress(Address.ofNullable(
+                    keepIfNull(request.getAddress(), profile.getAddress()),
+                    keepIfNull(request.getSubdistrict(), profile.getSubdistrict()),
+                    keepIfNull(request.getDistrict(), profile.getDistrict()),
+                    keepIfNull(request.getProvince(), profile.getProvince()),
+                    keepIfNull(request.getPostalCode(), profile.getPostalCode())));
+        }
+        if (request.getTaxId() != null) {
+            profile.setTaxId(request.getTaxId().trim());
+        }
+    }
+
+    private static String keepIfNull(String requested, String current) {
+        return requested == null ? current : requested;
+    }
+}
