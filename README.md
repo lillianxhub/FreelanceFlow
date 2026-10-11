@@ -1,51 +1,45 @@
-# FreelanceFlow
+# FreelanceFlow — คู่มือพัฒนา
 
-FreelanceFlow เป็นระบบจัดการงานสำหรับฟรีแลนซ์ พัฒนาต่อจาก [Freelance Hub](https://github.com/lillianxhub/freelance-hub) ใน repository แยกกัน โดยรักษาเครดิตผู้พัฒนาเดิม
+FreelanceFlow พัฒนาต่อจาก [Freelance Hub](https://github.com/lillianxhub/freelance-hub) โดยแยก repository ระบบปัจจุบันใช้ Spring Boot 4.0 / Java 17, PostgreSQL 16, Flyway และ Next.js 16.4 App Router / React / TypeScript / Tailwind เวอร์ชันจริงให้ตรวจ `pom.xml` และ `package-lock.json`
 
-Frontend ใช้ Next.js App Router และธีม minimal แบบสว่าง ส่วน Backend ใช้ Spring Boot, PostgreSQL และ Flyway ระบบมีลูกค้า โปรเจกต์ งานย่อย จับเวลา รายงาน ลิสต์งานวันนี้ และ Project Board การเงิน (รับจ่าย ใบแจ้งหนี้ และยอดค้าง) อยู่ใน roadmap ระยะถัดไป ยังไม่แสดงยอดเงินจากฟิลด์ placeholder ในหน้าบ้านเดิม
+เอกสารชุดนี้เป็นกฎและแนวทางสำหรับเพิ่ม แก้ไข refactor และลบ feature ไม่ใช่รายงานว่าทุกส่วนของโค้ดผ่านมาตรฐานแล้ว หาก implementation ต่างจากกฎ ให้ระบุช่องว่างและปรับเฉพาะขอบเขตงาน ไม่ประกาศ compliance จากเอกสารอย่างเดียว
 
-## เริ่มใช้งานบนเครื่อง
+## เริ่มอ่าน
 
-ต้องมี Docker Compose, JDK 17+ สำหรับ Maven และ Node.js 22 สำหรับ Frontend
+- [กฎร่วมและวงจรเปลี่ยน feature](doc/feature-workflow.md): ขอบเขต acceptance criteria compatibility และ Definition of Done
+- [Spring Boot](code/Backend/README.md): ชั้นโค้ด transaction ownership และฐานข้อมูล
+- [Next.js](code/Frontend/README.md): routing, server/client boundary, state และ UX
+- [SOLID](doc/solid-analysis.md) และ [Design patterns](doc/design-patterns.md): เกณฑ์เลือก abstraction และตัวอย่างการ review
+- [Tests](test/README.md): ระดับการทดสอบ วิธีรัน และหลักฐาน
+- [ดัชนีเอกสาร](doc/README.md): API, schema, diagrams, CI และแหล่งอ้างอิง
+
+## ติดตั้งและรัน local
+
+ต้องมี Docker Compose, JDK 17+ และ Node.js 22 สร้าง configuration ของ FreelanceFlow เอง:
 
 ```bash
 cp code/Backend/.env.example code/Backend/.env
 cp code/Frontend/.env.example code/Frontend/.env
+openssl rand -base64 48
 ```
 
-ตั้ง `POSTGRES_PASSWORD` ใหม่ใน Backend `.env` และใช้ค่าเดียวกันใน `SPRING_DATASOURCE_PASSWORD` สร้าง `JWT_SECRET` ใหม่ด้วย `openssl rand -base64 48` ห้ามใช้ค่าจาก Freelance Hub
+ใส่ password ใหม่และ JWT secret ที่สร้างใน Backend `.env` ให้ datasource password ตรงกับ PostgreSQL ห้ามนำ credentials ของระบบเดิมมาใช้
 
 ```bash
+# terminal 1 จากราก repository
 cd code/Backend
 docker compose up -d --build
-# อีก terminal จากรากโปรเจกต์
+# terminal 2 จากราก repository
 cd code/Frontend
 npm ci
 npm run dev
 ```
 
-เปิด http://localhost:5174; Next.js ส่ง `/api` ไป Backend http://localhost:8081 ด้วย `BACKEND_ORIGIN` ซึ่งเป็นค่า server เท่านั้น PostgreSQL ใช้ localhost:5433 Docker project/volume คือ `freelanceflow`/`freelanceflow_postgres_data` และแยกจาก Freelance Hub หากไม่มี Node.js บน Linux/WSL ใช้ `docker run --rm -it --network host --user "$(id -u):$(id -g)" -e npm_config_cache=/tmp/npm-cache -v "$PWD:/workspace" -w /workspace node:22-bookworm sh -c 'npm ci && npm run dev -- --hostname 0.0.0.0'` จาก `code/Frontend`
+Frontend http://localhost:5174, Backend ผ่าน Compose ใช้ http://localhost:8080 ตามค่า default ใน working tree นี้ (ปรับด้วย `APP_PORT`), PostgreSQL localhost:5433 ใช้ `/api` ผ่าน Next.js rewrite โดย `BACKEND_ORIGIN` เป็น configuration ฝั่ง server เปลี่ยน origin แล้วต้อง build ใหม่ก่อนใช้ `npm run start` Compose project คือ `freelanceflow` ตรวจ host/container ports จาก Compose อย่าสมมติว่าเหมือนกัน การรัน Spring โดยตรงมี default port 8081 จึงต้องตั้ง `BACKEND_ORIGIN` ให้ตรงวิธีรันจริง
 
-## การใช้งาน
+## ขอบเขตผลิตภัณฑ์
 
-หน้า **วันนี้** เลือกงานค้างข้ามโปรเจกต์ ลากเข้าลิสต์และเรียงลำดับได้ ข้อมูลเก็บตามวันในเขตเวลา Asia/Bangkok งานค้างจากวันก่อนต้องเลือกยกมาทำต่อเอง หน้า Project มี Board งานค้าง → กำลังทำ → เสร็จ และสลับเป็นตารางได้ ค่าเริ่มต้นของ Board คือลากเข้า “กำลังทำ” แล้วเริ่มจับเวลา สามารถเลือกโหมดกดจับเวลาเองได้ การจับเวลามีได้หนึ่งงานต่อผู้ใช้ และงานที่เริ่มแล้วไม่สามารถย้อนสถานะกลับเป็น “งานค้าง” ตามกฎเดิมของระบบ
-
-## ตรวจสอบ
-
-```bash
-cd code/Backend
-./mvnw --batch-mode --no-transfer-progress verify
-# อีก terminal จากรากโปรเจกต์
-cd code/Frontend
-npm run lint
-npm run typecheck
-npm test
-npm run build
-npx playwright install chromium
-npm run test:e2e # เปิด Backend และ Next.js ที่ port 8081/5174 ก่อน
-```
-
-Flyway V1–V20 คงเดิม; V21 เพิ่มแผนรายวันและการตั้งค่าโหมด timer Java package ยังคง `th.ac.kku.freelance_hub` CI เก็บ unit tests/build/Flyway/Docker smoke test ส่วน Playwright เป็น integration test ที่ต้องเปิด Backend และ Frontend ก่อนรัน CI ไม่มี deploy jobs และยังไม่ deploy FreelanceFlow การเงินและ deployment ต้องออกแบบ/เตรียมระบบของโปรเจกต์นี้แยกต่างหาก
+มีระบบบัญชีผู้ใช้ ลูกค้า โปรเจกต์ งาน จับเวลา แผนงานวันนี้ Project Board และรายงาน การเงินเป็น roadmap: ต้องออกแบบการบันทึกและกฎจริงก่อนเพิ่ม schema/API ห้ามคำนวณยอดจาก placeholder หรือแสดงยอดสมมติ
 
 ## เครดิต
 

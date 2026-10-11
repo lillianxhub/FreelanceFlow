@@ -1,43 +1,21 @@
-# Feature Pull Request Template
+# PR: เพิ่ม feature
 
-## Feature Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short and descriptive pull request title in English. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] New feature
+- ปัญหาผู้ใช้, actor/owner, Given/When/Then และ negative paths
+- contract/schema/service/route/UI ที่เพิ่ม; business rules อยู่ Backend
+- transaction/version/constraints, loading/error/empty และ accessibility
+- SOLID/pattern ที่เลือกพร้อมเหตุผล ไม่สร้าง abstraction เพื่อให้ครบชื่อ
+- tests success/validation/owner/conflict และ integration ตามความเสี่ยง
 
-## Description of the Feature
+## ผลตรวจจริงและ evidence
 
-<!-- Describe the feature, its purpose, and the problem it solves. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Implementation Details
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- Describe the implementation approach and important design decisions. -->
-
-## Impact of the Feature
-
-<!-- Describe the impact on existing code, performance, and system behavior. -->
-
-## Testing Conducted
-
-- [ ] Main feature flow tested
-- [ ] Error and edge cases tested
-- [ ] Related test suite completed
-
-## Screenshots/Videos (if applicable)
-
-<!-- Attach supporting screenshots or videos when available. -->
-
-## Additional Remarks
-
-<!-- Add any additional information for reviewers. -->
-
-## Checklist
-
-- [ ] Code follows the project's coding standards
-- [ ] Self-review completed
-- [ ] Necessary tests added
-- [ ] Relevant documentation updated
-- [ ] No new warnings or errors introduced
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

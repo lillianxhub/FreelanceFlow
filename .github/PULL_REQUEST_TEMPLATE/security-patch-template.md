@@ -1,34 +1,21 @@
-# Security Patch Pull Request Template
+# PR: แก้ security behavior
 
-## Security Patch Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short English title without exposing unnecessary vulnerability details. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] Security patch
+- threat/trigger และผลกระทบโดยไม่เผย secret/ข้อมูลผู้ใช้
+- auth/owner/cookie/origin/rendering/cache ที่เกี่ยวข้องและ root cause
+- fix ที่รักษา business contract พร้อม unauthorized/owner isolation regression
+- migration/compatibility/recovery หากกระทบ sessions หรือ stored data
+- dependencies/lockfile และผล tests จริง; ไม่ลด security เพื่อให้ tests ผ่าน
 
-## Description of the Security Patch
+## ผลตรวจจริงและ evidence
 
-<!-- Describe the vulnerability and remediation without including sensitive details. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Impact of the Patch
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- Describe the impact on security and user data protection. -->
-
-## Testing Conducted
-
-- [ ] Remediation verified
-- [ ] Regression checks completed
-- [ ] Additional security impact reviewed
-
-## Additional Remarks
-
-<!-- Add security considerations or deployment notes. -->
-
-## Checklist
-
-- [ ] Identified vulnerability fully addressed
-- [ ] No new vulnerability or bug introduced
-- [ ] Project security practices followed
-- [ ] No sensitive information included in the pull request
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

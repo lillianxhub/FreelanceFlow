@@ -1,50 +1,20 @@
-# Bug Fix Pull Request Template
+# PR: แก้ bug
 
-## Bug Fix Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short and descriptive pull request title in English. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] Bug fix
+- trigger และ behavior ก่อน/หลัง; reproduction ที่ใช้ test data
+- root cause และขอบเขตผลกระทบต่อ Spring/Next/contract/data
+- regression test ที่จับอาการจริง หรือเหตุผลที่ test ไม่จำเป็น
+- compatibility ของ consumer และผลตรวจขอบเขตเดิมที่ต้องรักษา
 
-## Description of the Bug
+## ผลตรวจจริงและ evidence
 
-<!-- Describe the problem, root cause, and affected scenario. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Steps to Reproduce
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- Describe the steps used to reproduce the issue. -->
-
-1.
-2.
-3.
-
-## Description of the Fix
-
-<!-- Describe the solution and why this approach was chosen. -->
-
-## Impact of the Fix
-
-<!-- Describe the impact on existing functionality, performance, and behavior. -->
-
-## Testing Performed
-
-- [ ] Original issue verified as fixed
-- [ ] Related scenarios tested
-- [ ] Full test suite completed
-
-## Screenshots/Videos (if applicable)
-
-<!-- Attach supporting screenshots or videos when available. -->
-
-## Additional Comments
-
-<!-- Add any additional information for reviewers. -->
-
-## Checklist
-
-- [ ] Code follows the project's coding standards
-- [ ] Self-review completed
-- [ ] Necessary tests added or updated
-- [ ] No new warnings or errors introduced
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

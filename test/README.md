@@ -1,15 +1,13 @@
-> เอกสารประวัติที่รับต่อจาก Freelance Hub; ชื่อระบบ, URL และผลทดสอบเดิมไม่ใช่ deployment หรือผลตรวจของ FreelanceFlow ดู [README หลัก](../README.md) สำหรับการตั้งค่าปัจจุบัน
+# กฎเขียนและตรวจ tests
 
-# Test Artifacts
+Automated tests อยู่ใน Backend `src/test`, Frontend `src/**/*.test.ts(x)` และ `e2e/` โฟลเดอร์นี้เป็นคู่มือเลือก tests และบันทึก evidence
 
-โฟลเดอร์นี้เก็บเอกสารและหลักฐานการทดสอบสำหรับส่งรายวิชา ส่วน automated test source อยู่ใน `code/Backend/src/test/` และ `code/Frontend/src/` ไม่ใช่ test/ นี้
+- [Test plan](test-plan.md): ระดับและกรณีทดสอบสำหรับเพิ่ม/แก้/ลบ feature
+- [Test report](test-report.md): format บันทึกผลจริงและข้อจำกัด
+- [Coverage](coverage-report.md): ตีความ coverage และ gaps
 
-| เอกสาร | เนื้อหา |
-|---|---|
-| [Test Plan](test-plan.md) | Automated regression matrix, วิธีรัน และ manual/deployment scenarios ที่ยังต้องตรวจ |
-| [Test Report](test-report.md) | ผลวันที่ 10 ตุลาคม 2026: tests, lint, typecheck และ build ผ่าน; เก็บผลรอบ 9 ตุลาคมไว้แยกกัน |
-| [Coverage Report](coverage-report.md) | Frontend Node coverage แบบจำกัดขอบเขต; Backend coverage ยังไม่ได้เก็บ |
-| [Backend evidence](evidence/backend-results.json) | ผลรอบ 9 ตุลาคม: counts ราย suite จาก Surefire |
-| [Frontend evidence](evidence/frontend-results.json) | ผลรอบ 9 ตุลาคม: commands และ coverage summary |
+ต้องทดสอบ behavior/invariants ที่มีผลจริง ไม่เขียน test ที่คัด implementation หรือตรวจข้อความเอกสารแทน feature Bug ที่เสี่ยงควรมี regression test ล้มเหลวก่อนแก้ และผ่านหลังแก้ ห้ามแก้ expected ให้ตรง bug โดยไม่มี requirement ใหม่
 
-ผล local ไม่แทน CI, PostgreSQL migrations หรือ cloud deployment verification ต้องเก็บหลักฐาน release จริงเพิ่มเติมก่อนส่ง และไม่ใช้ผล coverage บางไฟล์อ้างว่า whole-project coverage
+JSON ใน `evidence/` เป็นหลักฐานประวัติที่รับต่อมา คงไฟล์เดิมไว้แต่ไม่ใช้เป็นผลปัจจุบัน ไม่กำหนดจำนวน tests ตายตัวเพื่อผ่าน gate
+
+อ้างอิง [Spring Boot 4 testing](https://docs.spring.io/spring-boot/4.0/reference/testing/index.html), [Next.js testing](https://nextjs.org/docs/app/guides/testing) และ [Playwright best practices](https://playwright.dev/docs/best-practices)
