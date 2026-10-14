@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import th.ac.kku.freelance_hub.domain.enums.UserRole;
+import th.ac.kku.freelance_hub.domain.enums.UserPlan;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -38,6 +39,11 @@ public class User {
     @Column(nullable = false, length = 50)
     @Builder.Default
     private UserRole role = UserRole.USER;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private UserPlan plan = UserPlan.FREE;
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
