@@ -84,7 +84,7 @@ class ClientControllerTest {
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", "/api/clients/" + clientId))
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.message").value("สร้างลูกค้าสำเร็จ"))
+            .andExpect(jsonPath("$.message").value("Client created"))
             .andExpect(jsonPath("$.data.id").value(clientId.toString()))
             .andExpect(jsonPath("$.data.name").value("Acme"))
             .andExpect(jsonPath("$.meta").value(org.hamcrest.Matchers.nullValue()))
@@ -100,7 +100,7 @@ class ClientControllerTest {
                 .content("{}"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("ข้อมูลที่ส่งมาไม่ถูกต้อง"))
+            .andExpect(jsonPath("$.message").value("Invalid request data"))
             .andExpect(jsonPath("$.data").value(org.hamcrest.Matchers.nullValue()))
             .andExpect(jsonPath("$.meta").value(org.hamcrest.Matchers.nullValue()))
             .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
@@ -121,7 +121,7 @@ class ClientControllerTest {
         mockMvc.perform(get("/api/clients"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.message").value("ดึงรายชื่อลูกค้าสำเร็จ"))
+            .andExpect(jsonPath("$.message").value("Clients retrieved"))
             .andExpect(jsonPath("$.data[0].name").value("Acme"))
             .andExpect(jsonPath("$.meta.page").value(1))
             .andExpect(jsonPath("$.meta.limit").value(20))
@@ -208,7 +208,7 @@ class ClientControllerTest {
         mockMvc.perform(get("/api/clients/{id}", clientId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.message").value("ดึงข้อมูลลูกค้าสำเร็จ"))
+            .andExpect(jsonPath("$.message").value("Client retrieved"))
             .andExpect(jsonPath("$.data.id").value(clientId.toString()))
             .andExpect(jsonPath("$.data.name").value("Acme"))
             .andExpect(jsonPath("$.meta").value(org.hamcrest.Matchers.nullValue()))
@@ -225,7 +225,7 @@ class ClientControllerTest {
         mockMvc.perform(get("/api/clients/{id}", clientId))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("ไม่พบลูกค้า"))
+            .andExpect(jsonPath("$.message").value("Client not found"))
             .andExpect(jsonPath("$.data").value(org.hamcrest.Matchers.nullValue()))
             .andExpect(jsonPath("$.meta").value(org.hamcrest.Matchers.nullValue()))
             .andExpect(jsonPath("$.error.code").value("CLIENT_NOT_FOUND"))
@@ -247,7 +247,7 @@ class ClientControllerTest {
                 .content("{\"name\":\"New Name\",\"ownerId\":999}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.message").value("อัปเดตข้อมูลลูกค้าสำเร็จ"))
+            .andExpect(jsonPath("$.message").value("Client updated"))
             .andExpect(jsonPath("$.data.id").value(clientId.toString()))
             .andExpect(jsonPath("$.data.name").value("New Name"));
 
@@ -290,7 +290,7 @@ class ClientControllerTest {
                 .content("{\"name\":\"New Name\",\"ownerId\":999}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.message").value("อัปเดตข้อมูลลูกค้าสำเร็จ"))
+            .andExpect(jsonPath("$.message").value("Client updated"))
             .andExpect(jsonPath("$.data.id").value(clientId.toString()))
             .andExpect(jsonPath("$.data.name").value("New Name"))
             .andExpect(jsonPath("$.meta").value(org.hamcrest.Matchers.nullValue()))
@@ -337,7 +337,7 @@ class ClientControllerTest {
                 .content("{\"isActive\":false}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.message").value("อัปเดตสถานะลูกค้าสำเร็จ"))
+            .andExpect(jsonPath("$.message").value("Client status updated"))
             .andExpect(jsonPath("$.data.id").value(clientId.toString()))
             .andExpect(jsonPath("$.data.status").value("ARCHIVED"))
             .andExpect(jsonPath("$.data.isActive").value(false));
@@ -457,7 +457,7 @@ class ClientControllerTest {
 
         mockMvc.perform(get("/api/clients/{id}", clientId))
             .andExpect(traceableError(500, "INTERNAL_SERVER_ERROR"))
-            .andExpect(jsonPath("$.message").value("เกิดข้อผิดพลาดภายในระบบ"))
+            .andExpect(jsonPath("$.message").value("Internal server error"))
             .andExpect(jsonPath("$.error.details").value(org.hamcrest.Matchers.nullValue()));
     }
 

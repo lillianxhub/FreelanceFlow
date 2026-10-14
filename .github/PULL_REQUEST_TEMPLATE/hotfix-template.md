@@ -1,34 +1,20 @@
-# Hotfix Pull Request Template
+# PR: Hotfix
 
-## Hotfix Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short and descriptive pull request title in English. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] Hotfix
+- อาการ, ผลกระทบและ trigger ที่ต้องแก้เร่งด่วน
+- fix ที่เล็กและ review ได้; รักษา ownership/data/transaction semantics
+- checks ที่รันจริงและข้อจำกัดเวลา; ห้ามอ้าง skipped ว่าผ่าน
+- recovery/ติดตามงานที่เหลือหากจำเป็น; deploy ต้องเป็น action ที่ได้รับคำสั่งแยก
 
-## Description of the Hotfix
+## ผลตรวจจริงและ evidence
 
-<!-- Describe the issue, urgency, and reason for the immediate fix. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Impact of the Hotfix
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- Describe the expected impact and potential risks. -->
-
-## Testing Conducted
-
-- [ ] Tested in a production-like environment
-- [ ] Original issue verified as fixed
-- [ ] Regression checks completed
-
-## Additional Remarks
-
-<!-- Add information for reviewers or deployment owners. -->
-
-## Checklist
-
-- [ ] Critical issue addressed correctly
-- [ ] Appropriate testing completed
-- [ ] Issue and urgency documented
-- [ ] Ready for deployment after approval
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

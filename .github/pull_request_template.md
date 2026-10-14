@@ -1,47 +1,34 @@
-# Pull Request Template
+# ปัญหาและผลหลังเปลี่ยน
 
-## Title
+<!-- ระบุ trigger/ปัญหาและ behavior หลังเปลี่ยนให้ reviewer ที่ไม่ได้อ่าน chat เข้าใจ -->
 
-<!-- Write a short, clear, and descriptive pull request title in English. -->
+## ประเภทและขอบเขต
 
-## Type of Change
+- [ ] เพิ่ม feature
+- [ ] แก้ bug
+- [ ] Refactor โดยรักษา behavior
+- [ ] ลบ/เลิกใช้ feature
+- [ ] UI/UX หรือเอกสาร
 
-- [ ] New feature
-- [ ] Bug fix
-- [ ] Documentation update
-- [ ] Refactoring
-- [ ] Hotfix
-- [ ] Security patch
-- [ ] UI/UX improvement
+<!-- ระบุ acceptance criteria และสิ่งที่กระทบ: Spring Boot / Next.js / API / schema / state / CI -->
 
-## Description
+## การออกแบบและ compatibility
 
-<!-- Describe the changes, motivation, and relevant context. -->
+<!-- อธิบาย responsibilities, transaction/owner/concurrency, SOLID/pattern ที่มีเหตุผลใช้, consumers และ migration/retention เมื่อเกี่ยวข้อง -->
 
-### Key Changes
+## ผลตรวจจริง
 
--
+<!-- ระบุ commands, environment/commit, passed/failed/skipped และ evidence ห้ามทำเครื่องหมายผ่านสิ่งที่ไม่ได้รัน -->
 
-## Testing
+| Check | ผล/evidence หรือเหตุผลที่ไม่ต้องรัน |
+| --- | --- |
+| Backend verify/contract/integration | |
+| Frontend lint/typecheck/unit/build | |
+| Flyway fresh + upgrade + validate | |
+| Browser/keyboard/touch/focus | |
 
-- [ ] Compilation or build completed successfully
-- [ ] Full test suite completed
-- [ ] Manual testing completed
-- [ ] Docker or database migration tested (if applicable)
+## ประเด็น review
 
-## Impact
+<!-- ระบุ material risk, breaking changes, recovery และข้อจำกัดที่เหลือ -->
 
-<!-- Describe the impact on the system, database, performance, or behavior. -->
-
-## Additional Information
-
-<!-- Add information or areas that reviewers should pay special attention to. -->
-
-## Checklist
-
-- [ ] Code follows the project's coding standards
-- [ ] Self-review completed
-- [ ] Comments added where necessary
-- [ ] Relevant documentation updated
-- [ ] No secrets or credentials were committed
-- [ ] No new warnings or errors introduced
+ใช้ [feature workflow](../doc/feature-workflow.md), [SOLID](../doc/solid-analysis.md), [patterns](../doc/design-patterns.md) และ [test plan](../test/test-plan.md) ตรวจเฉพาะสิ่งที่เกี่ยวข้อง การเปิด PR ไม่ใช่การ deploy

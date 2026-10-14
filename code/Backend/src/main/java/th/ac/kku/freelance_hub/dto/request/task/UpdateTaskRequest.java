@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateTaskRequest {
 
-    @NotBlank(message = "กรุณาระบุชื่องาน")
+    @NotBlank(message = "Enter a task name")
     @Size(
             max = 180,
-            message = "ชื่องานต้องไม่เกิน 180 ตัวอักษร"
+            message = "Task name must be at most 180 characters"
     )
     private String name;
 

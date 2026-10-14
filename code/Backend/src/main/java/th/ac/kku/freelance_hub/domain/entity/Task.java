@@ -156,7 +156,7 @@ public class Task {
     /** Returns true only when this call changes the task to in progress. */
     public boolean start() {
         if (status == TaskStatus.COMPLETED) {
-            throw new InvalidStateException("ไม่สามารถเริ่มงานที่เสร็จสิ้นแล้ว");
+            throw new InvalidStateException("Completed tasks cannot be started");
         }
         if (status == TaskStatus.IN_PROGRESS) {
             return false;
@@ -169,7 +169,7 @@ public class Task {
     public void complete(Instant completedAt) {
         if (status == TaskStatus.COMPLETED) {
             throw new InvalidStateException(
-                    "งานเสร็จสิ้นแล้ว"
+                    "Task is completed"
             );
         }
 
@@ -189,7 +189,7 @@ public class Task {
 
         switch (nextStatus) {
             case OPEN -> throw new InvalidStateException(
-                    "ไม่สามารถเปลี่ยนงานกลับเป็นสถานะยังไม่เริ่มได้", Map.of("currentStatus", status.name(), "requestedStatus", "OPEN")
+                    "Task cannot return to Open", Map.of("currentStatus", status.name(), "requestedStatus", "OPEN")
             );
             case IN_PROGRESS -> {
                 if (status == TaskStatus.COMPLETED) {
@@ -215,7 +215,7 @@ public class Task {
     public void reorder(int position) {
         if (position < 0) {
             throw new InvalidArgumentException(
-                    "ลำดับงานต้องไม่ติดลบ", Map.of("field", "sortOrder")
+                    "Task order cannot be negative", Map.of("field", "sortOrder")
             );
         }
         sortOrder = position;
@@ -225,7 +225,7 @@ public class Task {
     private static String requireName(String name) {
         if (name == null || name.isBlank()) {
             throw new InvalidArgumentException(
-                    "กรุณาระบุชื่อ", Map.of("field", "name")
+                    "Enter a name", Map.of("field", "name")
             );
         }
         return name.trim();

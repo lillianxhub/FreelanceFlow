@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { FiArrowRight } from 'react-icons/fi'
 import StatusBadge from '../../components/StatusBadge'
 import { Button } from '../../components/ui/button'
@@ -28,12 +28,12 @@ export default function DashboardTasksTable({ tasks }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>งานที่ต้องทำต่อ</CardTitle>
-        <CardDescription>งานที่ยังไม่เสร็จในโปรเจกต์ของคุณ</CardDescription>
+        <CardTitle>Upcoming tasks</CardTitle>
+        <CardDescription>Tasks you still need to complete.</CardDescription>
         <CardAction>
           <Button asChild variant="ghost" size="sm">
-            <Link to="/projects">
-              ดูทั้งหมด <FiArrowRight aria-hidden="true" />
+            <Link href="/projects">
+              View all <FiArrowRight aria-hidden="true" />
             </Link>
           </Button>
         </CardAction>
@@ -43,9 +43,9 @@ export default function DashboardTasksTable({ tasks }: Props) {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="!bg-transparent">งาน</TableHead>
-                <TableHead className="!bg-transparent">โปรเจกต์</TableHead>
-                <TableHead className="!bg-transparent">สถานะ</TableHead>
+                <TableHead className="!bg-transparent">Tasks</TableHead>
+                <TableHead className="!bg-transparent">Projects</TableHead>
+                <TableHead className="!bg-transparent">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -54,7 +54,7 @@ export default function DashboardTasksTable({ tasks }: Props) {
                   <TableCell>
                     <Link
                       className="flex min-w-0 max-w-full items-center gap-3 overflow-hidden font-semibold text-text-primary hover:text-primary"
-                      to={`/projects/${task.projectId}`}
+                      href={`/projects/${task.projectId}`}
                       title={task.name}
                     >
                       <span className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary text-xs text-primary">
@@ -72,7 +72,7 @@ export default function DashboardTasksTable({ tasks }: Props) {
             </TableBody>
           </Table>
         ) : (
-          <p className="py-10 text-center text-sm text-muted-foreground">ไม่มีงานค้างอยู่</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">No open tasks</p>
         )}
       </CardContent>
     </Card>

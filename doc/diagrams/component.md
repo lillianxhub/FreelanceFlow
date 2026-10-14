@@ -1,22 +1,26 @@
-> เอกสารประวัติที่รับต่อจาก Freelance Hub; ชื่อระบบ, URL และผลทดสอบเดิมไม่ใช่ deployment หรือผลตรวจของ FreelanceFlow ดู [README หลัก](../../README.md) สำหรับการตั้งค่าปัจจุบัน
+# แนวทาง Component และ Dependency Boundaries
 
-# Component View: Dashboard/Reports ในระบบ
+ใช้เมื่อเปลี่ยน feature ที่กระทบมุมมองนี้ อ่าน [กฎ diagrams](README.md) และ [feature workflow](../feature-workflow.md) ร่วมกัน
 
-คัดลอกจาก diagram ที่มีใน Nattadol Design และตรวจชื่อ components ณ `131305f` แสดงขอบเขต Frontend/API/Database ไม่ใช่ Deployment Diagram ของ cloud nodes และไม่อ้างว่าทุก process อยู่ host เดียวกัน
+## กฎ implementation และ review
+
+- ระบุ responsibility/runtime ไม่ผสม deployment servers กับ class details
+- Next route/layout ประกอบ client features; features เรียก service/api adapter ผ่าน same-origin proxy
+- Spring controller รับ HTTP; service/domain เป็น use case rules; repository จัด persistence
+- Diagram เป็น target boundary: code เดิมที่ผูก SQL กับ controller ต้องระบุ gap เมื่อแตะ ไม่ claim ว่าผ่าน architecture แล้ว
+- เพิ่ม/แก้/ลบ component ให้ระบุ public contract, consumers, lifecycle, state cleanup และ tests
+
+## ตัวอย่างเพื่อสื่อสารแนวทาง
 
 ```mermaid
 flowchart LR
-    Browser[Browser: React SPA built with Vite] --> API[Spring Boot API]
-    API --> DB[(PostgreSQL)]
-    subgraph BrowserUI[Frontend Analytics]
-      Dashboard[DashboardPage + DashboardProvider]
-      Reports[ReportsPage + report.ts]
-      Shared[SummaryCard / Table / Chart / ViewState]
-      Dashboard --> Shared
-      Reports --> Shared
-    end
-    Dashboard --> API
-    Reports --> API
+  Routes[Next routes and layouts] --> Client[Client features and providers]
+  Client --> Adapter[API services and adapter]
+  Adapter --> Proxy[Next api rewrite]
+  Proxy --> Controller[Spring MVC controllers]
+  Controller --> Service[Use cases and domain policies]
+  Service --> Repository[Persistence adapters]
+  Repository --> DB[(PostgreSQL)]
 ```
 
-Backend แยก controller, service, repository, domain และ DTO ตาม [Class Diagram](class-diagram.md#application-layers) Analytics ใช้ Timer/Project/Task/Client ที่ feature อื่นเปิดให้ ไม่เป็นเจ้าของ lifecycle ของข้อมูลเหล่านั้น
+ก่อนนำไปใช้เป็น diagram ปัจจุบัน ให้ระบุ source/commit ที่ตรวจและปรับ edges/guards ให้ตรง tests ตัวอย่างไม่แทน schema หรือสัญญา API

@@ -257,7 +257,7 @@ class ProjectServiceImplTest {
                 PROJECT_ID,
                 ChangeProjectStatusRequest.builder().status(nextStatus).build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("กรุณาหยุดจับเวลาก่อนเปลี่ยนสถานะโปรเจกต์");
+                .hasMessage("Stop the timer before changing project status");
 
         assertThat(project.getStatus()).isEqualTo(ProjectStatus.ACTIVE);
         verify(projectRepository, never()).save(any(Project.class));
@@ -311,7 +311,7 @@ class ProjectServiceImplTest {
                         .status(ProjectStatus.COMPLETED)
                         .build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("ยังมีงานย่อยที่ไม่เสร็จ");
+                .hasMessageContaining("Complete all tasks");
 
         assertThat(project.getStatus()).isEqualTo(ProjectStatus.ACTIVE);
         verify(projectRepository, never()).save(any(Project.class));
@@ -405,7 +405,7 @@ class ProjectServiceImplTest {
 
         assertThatThrownBy(() -> service.archive(OWNER_ID, PROJECT_ID))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("กรุณาหยุดจับเวลาก่อนเปลี่ยนสถานะโปรเจกต์");
+                .hasMessage("Stop the timer before changing project status");
 
         assertThat(project.getStatus()).isEqualTo(ProjectStatus.ACTIVE);
         assertThat(project.getIsActive()).isTrue();
@@ -656,7 +656,7 @@ class ProjectServiceImplTest {
 
         assertThatThrownBy(() -> service.update(OWNER_ID, PROJECT_ID, request))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("โปรเจกต์ที่จัดเก็บแล้ว");
+                .hasMessageContaining("Archived projects");
         assertThat(project.getName()).isEqualTo("Website");
         verifyNoInteractions(clientRepository);
         verify(projectRepository, never()).save(any(Project.class));
@@ -678,7 +678,7 @@ class ProjectServiceImplTest {
 
         assertThatThrownBy(() -> service.update(OWNER_ID, PROJECT_ID, request))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("ไม่สามารถแก้ไขโปรเจกต์ที่เสร็จสิ้นแล้วได้");
+                .hasMessage("Completed projects cannot be edited");
         assertThat(project.getName()).isEqualTo("Website");
         assertThat(project.getTargetMinutes()).isNull();
         assertThat(project.getStatus()).isEqualTo(ProjectStatus.COMPLETED);
@@ -729,7 +729,7 @@ class ProjectServiceImplTest {
                         .status(ProjectStatus.ACTIVE)
                         .build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("ลูกค้าถูกจัดเก็บ");
+                .hasMessageContaining("client before restoring");
         assertThat(project.getStatus()).isEqualTo(ProjectStatus.ARCHIVED);
         verify(projectRepository, never()).save(any(Project.class));
     }

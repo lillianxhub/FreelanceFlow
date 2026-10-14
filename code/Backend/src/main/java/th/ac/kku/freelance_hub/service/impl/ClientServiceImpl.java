@@ -113,10 +113,10 @@ public class ClientServiceImpl implements ClientService {
         int pageSize = filter.getLimit() != null ? filter.getLimit() : filter.getSize();
         if (filter.getPage() < 1 || filter.getSize() < 1 || filter.getSize() > 100
                 || pageSize < 1 || pageSize > 100) {
-            throw new InvalidArgumentException("หมายเลขหน้าหรือจำนวนลูกค้าต่อหน้าไม่ถูกต้อง");
+            throw new InvalidArgumentException("Invalid client page or page size");
         }
         if (!SORT_FIELDS.contains(filter.getSortBy()) || filter.getDirection() == null) {
-            throw new InvalidArgumentException("ฟิลด์หรือทิศทางการเรียงลูกค้าไม่ถูกต้อง");
+            throw new InvalidArgumentException("Invalid client sort field or direction");
         }
 
         Specification<Client> specification = (root, query, cb) -> {
@@ -162,7 +162,7 @@ public class ClientServiceImpl implements ClientService {
             UUID ownerId, Instant fromInclusive, Instant toExclusive) {
         Objects.requireNonNull(ownerId, "ownerId is required");
         if (fromInclusive == null || toExclusive == null || !fromInclusive.isBefore(toExclusive)) {
-            throw new InvalidArgumentException("ช่วงเวลาที่ใช้สรุปต้องมีจุดเริ่มต้นก่อนจุดสิ้นสุด");
+            throw new InvalidArgumentException("Summary start must be before end");
         }
         return clientRepository.sumCompletedTimeByClient(ownerId, fromInclusive, toExclusive)
                 .stream()
@@ -200,7 +200,7 @@ public class ClientServiceImpl implements ClientService {
                             project.getId().equals(projectId)))
                     .ifPresent(projectId -> {
                         throw new InvalidStateException(
-                                "กรุณาหยุดจับเวลาก่อนเก็บถาวรลูกค้า");
+                                "Stop the timer before archiving this client");
                     });
             // JPA persists these managed projects with the Client in this transaction.
             projects.forEach(project -> project.changeStatus(ProjectStatus.ARCHIVED));

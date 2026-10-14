@@ -1,7 +1,7 @@
 import type { ApiMeta, ApiOptions, ApiResponse, ApiResponseError, JsonMethod } from '../types/api'
 import { ApiError } from './apiError'
 
-const apiBase = (import.meta.env?.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+const apiBase = '/api'
 let accessToken: string | null = null
 let refreshInFlight: Promise<boolean> | null = null
 let refreshRevision = 0
@@ -237,7 +237,7 @@ async function request<T>(
   const body: unknown = await response.json()
   const normalized = normalizeResponse<T>(body)
   if (!normalized.success)
-    throw createApiError(normalized, response.status, 'API ไม่สามารถดำเนินการได้')
+    throw createApiError(normalized, response.status, 'API Could not complete action')
   return normalized
 }
 

@@ -1,38 +1,21 @@
-# UI/UX Improvement Pull Request Template
+# PR: ปรับ UI/UX
 
-## UI/UX Improvement Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short and descriptive pull request title in English. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] UI/UX improvement
+- flow/หน้าจอและผลต่อผู้ใช้ก่อน/หลัง; screenshots ใช้ข้อมูลทดสอบ
+- Next routing/layout/provider และ API service boundary
+- minimal tokens, Thai labels, responsive, keyboard/touch/focus/loading/error/empty
+- drag และปุ่มต้องผ่าน use-case rules เดียวกัน; failure rollback และ timer consistency
+- browser checks ที่รันจริง ไม่ใช้ screenshot แทนผลทดสอบ
 
-## Description of the UI/UX Improvement
+## ผลตรวจจริงและ evidence
 
-<!-- Describe the improvement and its usability goals. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Impact of the Improvement
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- Describe the impact on usability, accessibility, and system behavior. -->
-
-## Testing Conducted
-
-- [ ] Relevant screen sizes tested
-- [ ] Manual interaction testing completed
-- [ ] Basic accessibility checks completed
-
-## Screenshots/Videos (if applicable)
-
-<!-- Attach before-and-after screenshots or videos when available. -->
-
-## Additional Remarks
-
-<!-- Add any additional information for reviewers. -->
-
-## Checklist
-
-- [ ] User experience goals are met
-- [ ] Responsive behavior verified
-- [ ] Accessibility considered
-- [ ] Relevant documentation updated
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

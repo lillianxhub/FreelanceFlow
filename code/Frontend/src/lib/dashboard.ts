@@ -5,17 +5,17 @@ import { splitDurationSeconds } from '../utils/duration'
 export function formatChartDuration(totalSeconds: number): string {
   const { hours, minutes, seconds } = splitDurationSeconds(totalSeconds)
   const parts = [
-    hours ? `${hours} ชม.` : '',
-    minutes ? `${minutes} นาที` : '',
-    seconds ? `${seconds} วิ` : '',
+    hours ? `${hours} h` : '',
+    minutes ? `${minutes} min` : '',
+    seconds ? `${seconds} s` : '',
   ].filter(Boolean)
-  return parts.join(' ') || '0 วินาที'
+  return parts.join(' ') || '0 s'
 }
 
 export function weeklyChartPoints(days: DashboardDailyWork[]): ProductivityPoint[] {
   return days.map((item) => ({
     key: item.date,
-    day: new Intl.DateTimeFormat('th-TH', { weekday: 'short' }).format(
+    day: new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(
       new Date(`${item.date}T12:00:00+07:00`),
     ),
     totalSeconds: item.trackedSeconds,
@@ -30,7 +30,7 @@ export function activityChartPoints(
     key: item.date,
     day:
       period === 'YEAR'
-        ? new Intl.DateTimeFormat('th-TH', { month: 'short' }).format(
+        ? new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
             new Date(`${item.date}T12:00:00+07:00`),
           )
         : String(Number(item.date.slice(8, 10))),

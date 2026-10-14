@@ -66,7 +66,7 @@ class JwtAuthenticationFailureIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("เกิดข้อผิดพลาดภายในระบบ"))
+                .andExpect(jsonPath("$.message").value("Internal server error"))
                 .andExpect(jsonPath("$.error.code").value("INTERNAL_SERVER_ERROR"))
                 .andExpect(jsonPath("$.error.status").value(500))
                 .andReturn().getResponse();

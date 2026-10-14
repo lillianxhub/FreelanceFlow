@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProjectTaskReorderRequest {
 
-    @NotNull(message = "กรุณาระบุงานย่อยที่ต้องการย้าย")
+    @NotNull(message = "Select a task to move")
     private UUID taskId;
 
-    @NotNull(message = "กรุณาระบุลำดับงาน")
-    @PositiveOrZero(message = "ลำดับงานต้องไม่ติดลบ")
-    @Schema(description = "ตำแหน่งใหม่ในรายการงานที่ยังใช้งาน เริ่มจาก 0", example = "0")
+    @NotNull(message = "Enter task order")
+    @PositiveOrZero(message = "Task order cannot be negative")
+    @Schema(description = "New position among active tasks, starting at 0", example = "0")
     private Integer sortOrder;
 }

@@ -66,7 +66,7 @@ public class TimerController {
         return ResponseEntity
                 .created(URI.create("/api/time-entries/" + response.getId()))
                 .body(ApiResult.success(
-                        "เริ่มจับเวลาเรียบร้อยแล้ว",
+                        "Timer started",
                         StartedTimerResponse.from(response)
                 ));
     }
@@ -83,8 +83,8 @@ public class TimerController {
                 .map(CurrentTimerResponse::active)
                 .orElseGet(CurrentTimerResponse::inactive);
         String message = currentTimer.isPresent()
-                ? "ดึงข้อมูลตัวจับเวลาที่กำลังทำงานเรียบร้อยแล้ว"
-                : "ไม่มีตัวจับเวลาที่กำลังทำงาน";
+                ? "Current timer retrieved"
+                : "No running timer";
 
         return ResponseEntity.ok(
                 ApiResult.success(
@@ -111,7 +111,7 @@ public class TimerController {
         );
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "หยุดจับเวลาเรียบร้อยแล้ว",
+                        "Timer stopped",
                         StoppedTimerResponse.from(stoppedTimer)
                 )
         );
@@ -133,7 +133,7 @@ public class TimerController {
         return ResponseEntity.ok(
                 ApiResult
                         .<Void>success(
-                                "ยกเลิกการจับเวลาเรียบร้อยแล้ว",
+                                "Timer canceled",
                                 null
                         )
         );

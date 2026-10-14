@@ -21,11 +21,11 @@ import th.ac.kku.freelance_hub.security.EmailNormalizer;
 @Builder
 public class RegisterRequest {
 
-    @NotBlank(message = "กรุณาระบุอีเมล")
+    @NotBlank(message = "Enter an email address")
     private String email;
 
-    @Email(message = "รูปแบบอีเมลไม่ถูกต้อง")
-    @Size(max = 255, message = "อีเมลต้องไม่เกิน 255 ตัวอักษร")
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email must be at most 255 characters")
     public String getEmail() {
         return email == null ? null : EmailNormalizer.normalize(email);
     }
@@ -34,27 +34,27 @@ public class RegisterRequest {
         this.email = email == null ? null : EmailNormalizer.normalize(email);
     }
 
-    @NotBlank(message = "กรุณาระบุรหัสผ่าน")
-    @Size(min = 8, max = 100, message = "รหัสผ่านต้องมี 8–100 ตัวอักษร")
+    @NotBlank(message = "Enter a password")
+    @Size(min = 8, max = 100, message = "Password must be 8–100 characters")
     private String password;
 
-    @AssertTrue(message = "รหัสผ่านต้องไม่เกิน 72 ไบต์ UTF-8")
+    @AssertTrue(message = "Password must be at most 72 UTF-8 bytes")
     @JsonIgnore
     public boolean isPasswordWithinByteLimit() {
         return password == null || password.getBytes(StandardCharsets.UTF_8).length <= 72;
     }
 
-    @NotBlank(message = "กรุณาระบุชื่อที่แสดง")
-    @Size(max = 255, message = "ชื่อที่แสดงต้องไม่เกิน 255 ตัวอักษร")
+    @NotBlank(message = "Enter a display name")
+    @Size(max = 255, message = "Display name must be at most 255 characters")
     private String displayName;
 
-    @Size(max = 100, message = "ชื่อต้องไม่เกิน 100 ตัวอักษร")
+    @Size(max = 100, message = "First name must be at most 100 characters")
     private String firstName;
 
-    @Size(max = 100, message = "นามสกุลต้องไม่เกิน 100 ตัวอักษร")
+    @Size(max = 100, message = "Last name must be at most 100 characters")
     private String lastName;
 
-    @Size(max = 20, message = "เบอร์โทรศัพท์ต้องไม่เกิน 20 ตัวอักษร")
+    @Size(max = 20, message = "Phone must be at most 20 characters")
     private String phone;
 
 }

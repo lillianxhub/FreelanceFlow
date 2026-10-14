@@ -162,7 +162,7 @@ function TimeTrackerPage() {
           entries: [],
           meta: { page: timeEntryPage, limit: TIME_ENTRY_PAGE_LIMIT, total: 0, totalPages: 0 },
           summary: { entryCount: 0, totalSeconds: 0 },
-          error: getErrorMessage(reason, 'ไม่สามารถโหลดรายการเวลาได้'),
+          error: getErrorMessage(reason, 'Could not load time entries'),
         })
       })
 
@@ -171,7 +171,7 @@ function TimeTrackerPage() {
     }
   }, [filters, loading, timeEntryPage, timeEntryQueryKey])
 
-  if (loading) return <LoadingState label="กำลังโหลดรายการเวลา..." />
+  if (loading) return <LoadingState label="Loading time entries…" />
   if (error) return <ErrorState message={error} onRetry={refresh} />
 
   const entries = serverEntries.filter((entry) => entry.ended_at)
@@ -220,7 +220,7 @@ function TimeTrackerPage() {
     event.preventDefault()
     const project = data.projects.find((item) => item.id === manualForm.project_id)
     if (!project) {
-      setFormError('กรุณาเลือกโปรเจกต์')
+      setFormError('Select a project')
       return
     }
 
@@ -235,7 +235,7 @@ function TimeTrackerPage() {
       endedAt = new Date(startedAt.getTime() + duration * 60000)
     }
     if (!Number.isFinite(duration) || duration <= 0) {
-      setFormError('เวลาเริ่มต้องน้อยกว่าเวลาสิ้นสุดและระยะเวลาต้องมากกว่า 0')
+      setFormError('Start must be before end and duration must exceed 0')
       return
     }
 
@@ -262,7 +262,7 @@ function TimeTrackerPage() {
       reloadTimeEntryData()
       setManualOpen(false)
     } catch (saveError: unknown) {
-      setFormError(getErrorMessage(saveError, 'บันทึกรายการเวลาไม่สำเร็จ'))
+      setFormError(getErrorMessage(saveError, 'Could not save time entry'))
     }
   }
 
@@ -303,10 +303,10 @@ function TimeTrackerPage() {
   return (
     <div className="mx-auto w-full max-w-auto">
       <PageHeader
-        title="บันทึกเวลา"
+        title="Time tracking"
         actions={
           <Button variant="default" className="h-10" type="button" onClick={() => openManual()}>
-            <FiPlus aria-hidden="true" /> เพิ่มเวลาด้วยตนเอง
+            <FiPlus aria-hidden="true" /> Add manual entry
           </Button>
         }
       />
@@ -374,7 +374,7 @@ function TimeTrackerPage() {
       >
         <DialogContent className="max-h-[calc(100dvh-2rem)] !max-w-4xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{manualForm.id ? 'แก้ไขเวลา' : 'เพิ่มเวลา'}</DialogTitle>
+            <DialogTitle>{manualForm.id ? 'Edit time' : 'Add time'}</DialogTitle>
           </DialogHeader>
           <TimeEntryForm
             value={manualForm}

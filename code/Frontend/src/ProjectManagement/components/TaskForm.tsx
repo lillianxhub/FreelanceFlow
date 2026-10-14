@@ -21,7 +21,7 @@ export default function TaskForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="col-span-full flex flex-col gap-1.5">
           <FormLabel htmlFor="task-name" required>
-            ชื่องาน
+            Task name
           </FormLabel>
           <Input
             id="task-name"
@@ -32,7 +32,7 @@ export default function TaskForm({
           />
         </div>
         <div className="col-span-full flex flex-col gap-1.5">
-          <FormLabel htmlFor="task-description">รายละเอียด</FormLabel>
+          <FormLabel htmlFor="task-description">Details</FormLabel>
           <Textarea
             id="task-description"
             value={value.description}
@@ -49,7 +49,7 @@ export default function TaskForm({
           disabled={saving}
           onClick={onCancel}
         >
-          ยกเลิก
+          Cancel
         </Button>
         <Button
           variant="default"
@@ -59,7 +59,7 @@ export default function TaskForm({
           aria-busy={saving}
         >
           {saving && <FiLoader className="animate-spin" aria-hidden="true" />}
-          {saving ? 'กำลังบันทึกงาน...' : 'บันทึกงาน'}
+          {saving ? 'Saving task…' : 'Save task'}
         </Button>
       </div>
     </form>

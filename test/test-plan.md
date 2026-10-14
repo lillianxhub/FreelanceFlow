@@ -1,73 +1,53 @@
-> เอกสารประวัติที่รับต่อจาก Freelance Hub; ชื่อระบบ, URL และผลทดสอบเดิมไม่ใช่ deployment หรือผลตรวจของ FreelanceFlow ดู [README หลัก](../README.md) สำหรับการตั้งค่าปัจจุบัน
+# แนวทางวางแผนทดสอบทุกการเปลี่ยน feature
 
-# Test Plan - Freelance Hub
+## เลือกระดับตามความเสี่ยง
 
-ขอบเขต release/source `ca77d74` วันที่ 9 ตุลาคม 2026 ครอบคลุม Authentication/Profile, Client, Project/Task, Time Tracking, Dashboard/Reports และ shared response/security contracts แผนนี้แยก automated tests ที่รันแล้วออกจาก manual/production checks ที่ยังไม่ได้ทำ
+| ระดับ | ตรวจอะไร | แนวทาง |
+| --- | --- | --- |
+| Backend unit | domain/service policies, validation, state, orchestration | JUnit/Mockito ตาม runner เดิม; mock ที่ boundary ไม่ mock business rule ที่กำลังตรวจ |
+| HTTP/security | DTO/envelope/status/owner/unauthenticated | Spring MVC/Boot test slice ที่ตรง Boot 4 และ security wiring |
+| PostgreSQL integration | queries, constraints, locking, atomic rollback | database สำหรับ tests เท่านั้น; H2 หรือ mocks ไม่แทน PostgreSQL semantics |
+| Flyway | fresh schema + upgrade with existing data | migrate แล้ว validate; ตรวจ version/checksum/constraints |
+| Frontend unit/component | mapper/validator/hooks/form/API handling | Node test runner + tsx/jsdom ปัจจุบัน แยก global mocks และ cleanup |
+| Browser integration | route/layout/cookie/hydration/interaction | production Next + Backend จริงผ่าน proxy, Playwright desktop/mobile |
 
-ผลจริงและคำสั่งรันดู [Test Report](test-report.md); coverage ดู [Coverage Report](coverage-report.md) การมี test case ในแผนไม่ใช่หลักฐานว่าผ่านแล้ว
+Async Server Components ที่เครื่องมือ unit ไม่รองรับต้องตรวจผ่าน integration/E2E ตาม [Next testing guidance](https://nextjs.org/docs/app/guides/testing) อย่าใช้ DOM mock อ้างว่า SSR ผ่าน
 
-## Automated regression matrix
+## Matrix สำหรับเพิ่ม แก้ไข และลบ
 
-| หมวด | สิ่งที่ตรวจ | Test source หลัก |
-|---|---|---|
-| Auth/Profile | Register/login, normalized email, password change, refresh rotation/replay, logout และ owner จาก JWT | AuthServiceTest, AuthControllerTest, UserAuthIntegrationTest, UserServiceTest, RefreshTokenServiceTest |
-| Security/error contract | ไม่มี/ผิด JWT, origin validation, CORS, login limit, error fields และ trace ID | JwtAuthenticationFailureIntegrationTest, CorsSecurityIntegrationTest, LoginAttemptLimiterTest, ApiErrorContractTest, HttpStatusContractIntegrationTest |
-| Client | CRUD/PUT/PATCH, isActive/archive cascade, soft delete, prefix search, one-based page, include และ totalTrackedSeconds | ClientControllerTest, ClientServiceImplTest, ClientRepositoryTest, ClientIntegrationTest, ClientMapperTest |
-| Project/Task | Ownership, transition, running timer guard, Task completion, reorder และ Project completion locking | ProjectStateTest, ProjectServiceImplTest, TaskServiceImplTest, ProjectRepositoryTest, TaskRepositoryTest, TaskControllerTest, TaskDetailControllerTest |
-| Timer/Time Entry | Start/stop/cancel, manual input, duration seconds, nullable Task, filter bounds, locked/deleted entry และ owner isolation | TimeEntryTest, TimerServiceImplTest, TimeEntryServiceImplTest, TimeEntryRepositoryTest, TimeEntryIntegrationTest |
-| Progress events | Threshold 80%/100%, no target, after-commit workflow และ log listener | ProjectProgressThresholdsTest, TimerStoppedProgressListenerTest, ProjectProgressThresholdListenerTest |
-| Dashboard/Reports | Empty data, owner isolation, date bounds, filters, aggregation, pagination และ DTO contract | DashboardIntegrationTest, ReportControllerTest, ReportServiceImplTest, ReportIntegrationTest |
-| OpenAPI | API schemas/contracts และ production setting ที่ปิด docs | OpenApiContractTest, OpenApiProductionSecurityTest |
-| Frontend API/utilities | JWT retry/refresh, error/meta parsing, request deduplication, task mapping, report params, seconds formatting, date filtering, CSV escaping และ Vercel rewrites | src/api/*.test.ts, src/services/*.test.ts, src/lib/*.test.ts, src/utils/*.test.ts |
+- เพิ่ม: success, invalid input, auth/owner, unavailable state, empty/paging และ retry/conflict ที่เกี่ยวข้อง
+- แก้ bug: regression ที่จับ trigger จริงและขอบเขตเดิมที่ต้องคง
+- refactor: observable contract เดิมและ integration boundaries ที่ย้าย
+- ลบ: route/API/deprecation outcome, consumers ที่เหลือ, history/retention และ migration compatibility
+- persistence: optimistic stale version, simultaneous writes และ rollback ของ command หลาย writes
+- auth: login/refresh/logout, cookie ผ่าน proxy, expired session, tabs และไม่รั่ว user data ผ่าน rendering/cache
+- Today: drag/add/remove/reorder, reload/device persistence, Bangkok day boundary, explicit carry-over, completed/deleted/unavailable task
+- Board/timer: AUTO/MANUAL, same-column reorder, active timer marker, switching/cancel, mode change while running, API failure rollback และหนึ่ง timer ต่อ owner
+- Task Board: Today/Kanban URL ตรงและย้อนกลับได้, Dashboard ไม่มี Today planner, start/stop ไม่ redirect, timer ต่อเนื่องระหว่างเปลี่ยนหน้า
+- Finance prototype: invoice draft/issued → partial/full payment, ยอด income/outstanding ไม่ซ้ำ, ป้องกันยอดเกินและ invalid amount, รีเซ็ตเมื่อรีโหลด/logout, SAMPLE ใน print และไม่มี finance API write
+- UX: keyboard, touch, panel/dialog focus, loading/error/empty และ mobile layout
 
-Backend test source อยู่ใน `code/Backend/src/test/java/th/ac/kku/freelance_hub/`; Frontend test source อยู่ใน `code/Frontend/src/` Tests .tsx ใต้ Analytics ไม่ถูกเลือกโดย npm test script ปัจจุบัน จึงไม่ถือว่ารัน React component tests ทั้งหมดแล้ว
+## คำสั่งมาตรฐาน
 
-## ขั้นตอนรันซ้ำ
-
-Backend ใช้ JDK 17 ตาม pom/CI และ Maven Wrapper จาก code/Backend:
-
-```powershell
-.\mvnw.cmd --batch-mode --no-transfer-progress verify
+```bash
+# จาก code/Backend
+./mvnw --batch-mode --no-transfer-progress verify
+# จาก code/Frontend
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npx playwright install chromium
+# เปิด Backend ตาม port ที่กำหนด และ production Next.js port 5174
+# ตั้ง BACKEND_ORIGIN ให้ตรง Backend ก่อน build
+npm run test:e2e -- --workers=1
 ```
 
-ถ้าเครื่องใช้ JDK 23 แบบเครื่องที่จัดรายงานนี้ ใช้ annotation-processing override เฉพาะ command โดยไม่ต้องแก้ pom:
+Flyway ตรวจโดย pipeline หรือ tool/runtime ที่รองรับ PostgreSQL ใช้ empty test database และอีก database ที่ migrate ถึง version ก่อนหน้า แล้วเพิ่ม migrations ใหม่/validate ห้าม flyway clean/reset กับฐานข้อมูลจริง
 
-```powershell
-.\mvnw.cmd --batch-mode --no-transfer-progress "-Dmaven.compiler.proc=full" verify
-```
+## ความเสถียรของ tests
 
-Frontend จาก code/Frontend:
+ใช้ test data แยก owner และ unique IDs ไม่พึ่งลำดับ suite/time ปัจจุบัน ใช้ fixed clock สำหรับ date/time policy; browser ใช้ locator ตาม role/label และ await state/network outcome หลีกเลี่ยง arbitrary sleeps ถ้ากฎ timer ต้อง elapsed time ให้ระบุเหตุผล ใช้ output directory แยกเมื่อรันหลาย process ไม่ชน artifacts
 
-```powershell
-npm.cmd ci
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd test
-npm.cmd run build
-```
-
-รัน dependency installation ให้ตรง package-lock.json ก่อนตรวจ gates; อย่าใช้ npm audit fix --force เป็นขั้นตอนของแผนนี้ เพราะอาจเปลี่ยน dependency contract ของทีม
-
-## Manual acceptance / deployment checks ที่ต้องรันเพิ่ม
-
-| ID | Scenario | ขั้นตอนและผลที่คาดหวัง | สถานะรอบนี้ |
-|---|---|---|---|
-| M-01 | PostgreSQL migrations | ใช้ฐาน PostgreSQL ว่างแบบ disposable รัน V1–V20 แล้ว validate; ตรวจ constraints/indexes และ 7 business tables | ไม่ได้รัน |
-| M-02 | Cloud health | เปิด URL ที่กำหนดใน README และ GET /actuator/health; แนบเวลา/environment และผลจริง | ไม่ได้รัน |
-| M-03 | Browser session | Local/staging test accounts: register/login/reload/refresh/logout; ตรวจ HttpOnly/SameSite/Secure ตาม environment | ไม่ได้รันด้วย browser |
-| M-04 | Cross-account isolation | สร้าง User A/B ในฐานทดสอบ; ใช้ B เรียก Client/Project/Task/Time Entry ของ A ต้องไม่เห็นข้อมูล; รายงานต้องเป็นของ B | API automated tests รันแล้ว; manual ยังไม่ได้รัน |
-| M-05 | Client → Project archive | ตั้ง Client inactive แล้วตรวจ Project ที่ยังไม่ deleted เป็น ARCHIVED; เปิด Client ไม่ restore Project; DELETE Client คง isActive | Automated regression รันแล้ว; browser ยังไม่ได้รัน |
-| M-06 | Timer concurrency | ส่ง start สองคำขอพร้อมกันของ owner เดียวบน PostgreSQL; ต้องมี running row เดียวและคำขออื่นได้ conflict | ไม่ได้ stress test PostgreSQL |
-| M-07 | Completion/locking | ทำ active Tasks ให้เสร็จ หยุด timer แล้วปิด Project; existing entries มี lockedAt และแก้/ลบได้ 409 | H2 integration รันแล้ว; PostgreSQL/browser ยังไม่ได้รัน |
-| M-08 | Date/time boundaries | ข้อมูลใกล้เที่ยงคืนและข้ามวัน; เทียบ Bangkok day bounds และการลง duration ตาม startedAt ไม่ใช่ split overlap | Automated regression รันแล้ว; UI ยังไม่ได้รัน |
-| M-09 | Reports/CSV | เปลี่ยน Client/Project/date/page/groupBy; CSV ต้องเป็น Project ของหน้าปัจจุบัน และตัวเลขตรงกับกฎของ Reports | API/utilities รันแล้ว; browser download ยังไม่ได้ตรวจ |
-| M-10 | Empty UI และ nullable Task | บัญชีไม่มีข้อมูลแสดง 0/empty state; Timer/Entry ที่ไม่มี Task แสดงได้โดยไม่ crash | API tests รันแล้ว; browser/UI ยังไม่ได้รัน |
-
-ใช้ disposable/local test database และ test accounts เท่านั้น ไม่ใช้แผนนี้เป็นการอนุญาต reset/seed production database หรือ deploy ระบบ ใน test profile H2 สร้าง/ลบ schema ใน memory และปิด Flyway จึงไม่ทำให้ข้อมูล PostgreSQL/Supabase ของผู้ใช้หาย
-
-## เกณฑ์สรุปผล
-
-- Automated regression: คำสั่งจบด้วย exit code 0 และไม่มี failing/error cases
-- Release verification: ต้องตรวจ Java/Node versions ตาม CI, PostgreSQL migrations, browser acceptance และ public deployment แยกจาก local automated results
-- Coverage เป็นผลของ instrumented/executed code เท่านั้น ไม่ใช้จำนวน tests แทนเปอร์เซ็นต์ และไม่ใช้ coverage บางไฟล์อ้างว่า whole-project coverage
-- ข้อจำกัด requirement ที่มีอยู่ยังคงระบุใน [Use Case Description](../doc/use-case-description.md); tests ผ่านไม่ทำให้ feature ที่ยังไม่ implement กลายเป็นเสร็จ
+mock failure ที่ boundary เพื่อพิสูจน์ recovery และเพิ่ม integration สำหรับ atomic writes ใช้ evidence จริง ไม่ตั้ง coverage/จำนวน tests เป็นข้อสรุป correctness

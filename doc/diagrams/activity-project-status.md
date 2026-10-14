@@ -1,29 +1,24 @@
-> เอกสารประวัติที่รับต่อจาก Freelance Hub; ชื่อระบบ, URL และผลทดสอบเดิมไม่ใช่ deployment หรือผลตรวจของ FreelanceFlow ดู [README หลัก](../../README.md) สำหรับการตั้งค่าปัจจุบัน
+# แนวทาง Activity: Project Status
 
-# Activity: เปลี่ยนสถานะ Project
+ใช้เมื่อเปลี่ยน feature ที่กระทบมุมมองนี้ อ่าน [กฎ diagrams](README.md) และ [feature workflow](../feature-workflow.md) ร่วมกัน
 
-ที่มา: Kantavit ณ `131305f` ใช้กับ Project API; Client archive cascade เรียก Project.changeStatus โดยตรงจึงไม่ผ่าน running-timer guard นี้
+## กฎ implementation และ review
+
+- อ่าน allowed transitions และ policy จริงจาก service/domain ก่อนวาด ไม่อนุญาต transition ใหม่เพราะ diagram มีลูกศร
+- ตรวจ owner, project availability และผลต่อ tasks/timer/time history ก่อน write
+- invalid input กับ stale version เป็นคนละ outcome ต้องมี recovery ที่เหมาะสม
+- เปลี่ยน/ลบ state ต้องประเมิน records เดิม, filters, enum consumers, migration/backfill และ regression tests
+
+## ตัวอย่างเพื่อสื่อสารแนวทาง
 
 ```mermaid
 flowchart TD
-    A[User requests Project status change] --> B[Load owned non-deleted Project]
-    B --> C{This Project has a running timer?}
-    C -- Yes --> D[Return 409; stop timer first]
-    C -- No --> E{ACTIVE to COMPLETED?}
-    E -- Yes --> N[Count active Tasks and completed Tasks]
-    N --> O{All active Tasks completed?}
-    O -- No --> G[Return 409]
-    O -- Yes --> P[ProjectStates selects current State]
-    E -- No --> P
-    P --> F{State permits the next status?}
-    F -- No --> G
-    F -- Yes --> H{Restoring from ARCHIVED?}
-    H -- Yes --> I{Client active and not soft-deleted?}
-    I -- No --> G
-    I -- Yes --> J[Update status and isActive]
-    H -- No --> J
-    J --> K{Newly entered COMPLETED?}
-    K -- Yes --> L[TimeEntryService.lockByProject in the same transaction]
-    K -- No --> M[Save Project; commit and return response]
-    L --> M
+  Request[Request transition] --> Owner{Owned resource?}
+  Owner -->|No| Reject[Reject safely]
+  Owner -->|Yes| Rules{Transition and dependent resources valid?}
+  Rules -->|No| Conflict[Return validation or conflict]
+  Rules -->|Yes| Write[Apply transaction]
+  Write --> Result[Return canonical state]
 ```
+
+ก่อนนำไปใช้เป็น diagram ปัจจุบัน ให้ระบุ source/commit ที่ตรวจและปรับ edges/guards ให้ตรง tests ตัวอย่างไม่แทน schema หรือสัญญา API

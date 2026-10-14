@@ -49,7 +49,7 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .header(HttpHeaders.SET_COOKIE,
                                                 refreshTokenCookie.set(result.refreshToken(), result.refreshExpiresAt()))
-                                .body(ApiResult.success("สมัครสมาชิกสำเร็จ", result.response()));
+                                .body(ApiResult.success("Registration successful", result.response()));
         }
 
         @Operation(summary = "Login user", description = "Authenticate user with email and password")
@@ -68,7 +68,7 @@ public class AuthController {
                                 .header(HttpHeaders.SET_COOKIE,
                                                 refreshTokenCookie.set(result.refreshToken(),
                                                                 result.refreshExpiresAt()))
-                                .body(ApiResult.success("เข้าสู่ระบบสำเร็จ",
+                                .body(ApiResult.success("Signed in",
                                                 result.response()));
         }
 

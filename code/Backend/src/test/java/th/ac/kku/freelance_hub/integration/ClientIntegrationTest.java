@@ -352,7 +352,7 @@ class ClientIntegrationTest {
                 .content("{}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("ข้อมูลที่ส่งมาไม่ถูกต้อง"))
+                .andExpect(jsonPath("$.message").value("Invalid request data"))
                 .andExpect(jsonPath("$.data").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.meta").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))

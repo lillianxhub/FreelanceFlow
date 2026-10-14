@@ -87,7 +87,7 @@ public class Client {
     @PreUpdate void onUpdate() { updatedAt = Instant.now(); }
 
     private static String requireName(String value) {
-        if (value == null || value.isBlank()) throw new InvalidArgumentException("กรุณาระบุชื่อ", Map.of("field", "name"));
+        if (value == null || value.isBlank()) throw new InvalidArgumentException("Enter a name", Map.of("field", "name"));
         return value.trim();
     }
     private static String trimToNull(String value) { return value == null || value.isBlank() ? null : value.trim(); }

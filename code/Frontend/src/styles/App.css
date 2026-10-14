@@ -4,7 +4,7 @@
     height: 39px;
     border-radius: 11px;
     color: #fff;
-    background: linear-gradient(145deg, var(--primary), var(--brand-secondary));
+    background: var(--primary);
     box-shadow: 0 8px 20px rgba(79, 107, 255, 0.23);
     font-size: var(--font-size-base);
     font-weight: 700;
@@ -556,7 +556,7 @@ select[data-slot="native-select"] { padding-right: 32px; }
     overflow: hidden;
     border-radius: 20px;
     color: #fff;
-    background: linear-gradient(135deg, var(--primary), var(--brand-secondary));
+    background: var(--primary);
     font-size: var(--font-size-2xl);
     font-weight: 800;
     place-items: center;
@@ -603,7 +603,7 @@ select[data-slot="native-select"] { padding-right: 32px; }
     margin-bottom: 8px;
     border-radius: 11px;
     color: #fff;
-    background: linear-gradient(135deg, var(--primary), var(--brand-secondary));
+    background: var(--primary);
     flex-direction: column;
 }
 .cashflow-total span {
@@ -639,9 +639,7 @@ select[data-slot="native-select"] { padding-right: 32px; }
     display: grid;
     min-height: 100vh;
     padding: 30px 18px;
-    background:
-        radial-gradient(circle at 50% 0%, var(--primary-soft), transparent 36%),
-        var(--bg);
+    background: var(--bg);
     place-items: center;
 }
 .auth-form {
@@ -649,9 +647,9 @@ select[data-slot="native-select"] { padding-right: 32px; }
     width: min(100%, 420px);
     padding: 34px;
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: 12px;
     background: #fff;
-    box-shadow: 0 25px 70px rgba(33, 54, 95, 0.1);
+    box-shadow: var(--shadow);
     flex-direction: column;
 }
 .auth-brand {
@@ -799,3 +797,8 @@ select[data-slot="native-select"] { padding-right: 32px; }
         box-shadow: none;
     }
 }
+
+/* FreelanceFlow minimal light theme */
+.panel, .metric-card, .auth-form { box-shadow: var(--shadow); }
+.auth-page { background: var(--bg); }
+.auth-form { border: 1px solid var(--border); }

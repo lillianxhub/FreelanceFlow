@@ -265,7 +265,7 @@ class ProjectControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("ลบโปรเจกต์สำเร็จ"))
+                        .value("Project deleted"))
                 .andExpect(jsonPath("$.data").value(nullValue()))
                 .andExpect(jsonPath("$.meta").value(nullValue()))
                 .andExpect(jsonPath("$.error").value(nullValue()));
@@ -301,7 +301,7 @@ class ProjectControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("แก้ไขโปรเจกต์สำเร็จ"))
+                        .value("Project updated"))
                 .andExpect(jsonPath("$.data.id")
                         .value(PROJECT_ID.toString()))
                 .andExpect(jsonPath("$.data.name")
@@ -344,7 +344,7 @@ class ProjectControllerTest {
     void completedProjectUpdateReturnsConflictWithDomainMessage() throws Exception {
         when(userService.currentUserId()).thenReturn(OWNER_ID);
         when(projectService.update(eq(OWNER_ID), eq(PROJECT_ID), any(UpdateProjectRequest.class)))
-                .thenThrow(new InvalidStateException("ไม่สามารถแก้ไขโปรเจกต์ที่เสร็จสิ้นแล้วได้"));
+                .thenThrow(new InvalidStateException("Completed projects cannot be edited"));
         mockMvc.perform(put("/api/projects/{id}", PROJECT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -352,7 +352,7 @@ class ProjectControllerTest {
                                 """.formatted(CLIENT_ID)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("INVALID_STATE"))
-                .andExpect(jsonPath("$.message").value("ไม่สามารถแก้ไขโปรเจกต์ที่เสร็จสิ้นแล้วได้"));
+                .andExpect(jsonPath("$.message").value("Completed projects cannot be edited"));
     }
 
         @Test
@@ -379,7 +379,7 @@ class ProjectControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message")
-                        .value("เปลี่ยนสถานะโปรเจกต์สำเร็จ"))
+                        .value("Project status changed"))
                 .andExpect(jsonPath("$.data.status").value("ARCHIVED"))
                 .andExpect(jsonPath("$.meta").value(nullValue()))
                 .andExpect(jsonPath("$.error").value(nullValue()));
@@ -419,7 +419,7 @@ class ProjectControllerTest {
         mockMvc.perform(get("/api/projects/{id}", PROJECT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("ดึงรายละเอียดโปรเจกต์สำเร็จ"))
+                .andExpect(jsonPath("$.message").value("Project retrieved"))
                 .andExpect(jsonPath("$.data.id").value(PROJECT_ID.toString()))
                 .andExpect(jsonPath("$.data.name").value("Website"))
                 .andExpect(jsonPath("$.data.status").value("ACTIVE"))

@@ -32,8 +32,8 @@ test('pagination clamps the current page and blocks moving beyond its boundaries
   )
   try {
     const links = [...view.container.querySelectorAll('a')]
-    const previous = links.find((link) => link.textContent?.includes('ก่อนหน้า'))
-    const next = links.find((link) => link.textContent?.includes('ถัดไป'))
+    const previous = links.find((link) => link.textContent?.includes('Previous'))
+    const next = links.find((link) => link.textContent?.includes('Next'))
     assert.ok(previous && next)
     await act(async () => {
       previous.click()

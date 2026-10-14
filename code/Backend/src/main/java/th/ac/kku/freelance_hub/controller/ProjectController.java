@@ -61,7 +61,7 @@ public class ProjectController {
 
         return ResponseEntity.created(URI.create("/api/projects/" + response.getId()))
                 .body(ApiResult.success(
-                        "สร้างโปรเจกต์สำเร็จ", response));
+                        "Project created", response));
     }
 
     @Operation(
@@ -93,7 +93,7 @@ public class ProjectController {
             case "end_date" -> "endDate";
             case "project_name" -> "name";
             default -> throw new InvalidArgumentException(
-                    "ฟิลด์ที่ใช้เรียงลำดับไม่ถูกต้อง"
+                    "Invalid sort field"
             );
         };
 
@@ -139,7 +139,7 @@ public class ProjectController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ดึงรายการโปรเจกต์สำเร็จ",
+                        "Projects retrieved",
                         projects.getContent(),
                         meta
                 )
@@ -162,7 +162,7 @@ public class ProjectController {
         ProjectListItemResponse project = projectService.getById(currentOwnerId(), id);
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ดึงรายละเอียดโปรเจกต์สำเร็จ", project
+                        "Project retrieved", project
                 )
         );
     }
@@ -205,7 +205,7 @@ public class ProjectController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "แก้ไขโปรเจกต์สำเร็จ",
+                        "Project updated",
                         response
                 )
         );
@@ -256,7 +256,7 @@ public class ProjectController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "เปลี่ยนสถานะโปรเจกต์สำเร็จ",
+                        "Project status changed",
                         response
                 )
         );
@@ -291,7 +291,7 @@ public class ProjectController {
 
         return ResponseEntity.ok(
                 ApiResult.<Void>success(
-                        "ลบโปรเจกต์สำเร็จ",
+                        "Project deleted",
                         null
                 )
         );

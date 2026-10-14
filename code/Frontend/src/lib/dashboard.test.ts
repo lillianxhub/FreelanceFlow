@@ -8,8 +8,8 @@ test('dashboard chart keeps exact seconds, including durations shorter than one 
     5400,
   )
   assert.equal(weeklyChartPoints([{ date: '2026-10-01', trackedSeconds: 15 }])[0].totalSeconds, 15)
-  assert.equal(formatChartDuration(15), '15 วิ')
-  assert.equal(formatChartDuration(1800), '30 นาที')
+  assert.equal(formatChartDuration(15), '15 s')
+  assert.equal(formatChartDuration(1800), '30 min')
   assert.deepEqual(
     activityChartPoints('MONTH', [
       { date: '2026-10-01', trackedSeconds: 3600 },

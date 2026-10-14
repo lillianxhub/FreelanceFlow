@@ -3,7 +3,7 @@ import { formatDuration } from '../../utils/duration'
 import type { RecentActivityProps } from '../../types/analytics'
 
 export default function RecentActivity({ entries, projects }: RecentActivityProps) {
-  if (!entries.length) return <p className="inline-empty">ยังไม่มีรายการเวลาในช่วงที่เลือก</p>
+  if (!entries.length) return <p className="inline-empty">No time entries for this period</p>
   return (
     <div className="list-stack">
       {entries.map((entry) => {
@@ -18,7 +18,7 @@ export default function RecentActivity({ entries, projects }: RecentActivityProp
               </small>
             </span>
             <span>{formatDuration(entry.duration_minutes)}</span>
-            {/* <strong>{entry.billable ? formatMoney(calculateTimeValue(entry), entry.currency) : 'ไม่billable'}</strong> */}
+            {/* <strong>{entry.billable ? formatMoney(calculateTimeValue(entry), entry.currency) : 'Nobillable'}</strong> */}
           </div>
         )
       })}

@@ -26,7 +26,7 @@ public class ValidationErrorHandler implements ErrorHandler {
                 result.getResolvableErrors().forEach(error -> fields.putIfAbsent(name == null ? "parameter" : name, text(error.getDefaultMessage())));
             });
         } else return Optional.empty();
-        return Optional.of(new ErrorDescriptor(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "ข้อมูลที่ส่งมาไม่ถูกต้อง", null, fields, null));
+        return Optional.of(new ErrorDescriptor(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Invalid request data", null, fields, null));
     }
-    private String text(String value) { return value == null ? "ข้อมูลไม่ถูกต้อง" : value; }
+    private String text(String value) { return value == null ? "Invalid data" : value; }
 }

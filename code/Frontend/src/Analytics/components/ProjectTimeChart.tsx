@@ -3,11 +3,11 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../compone
 import type { ProjectTimeChartProps } from '../../types/analytics'
 
 export default function ProjectTimeChart({ data }: ProjectTimeChartProps) {
-  if (!data.length) return <p className="inline-empty">ไม่มีข้อมูลในช่วงวันที่นี้</p>
+  if (!data.length) return <p className="inline-empty">No data for this date range</p>
   return (
     <ChartContainer
       className="h-[270px] w-full aspect-auto"
-      config={{ hours: { label: 'ชั่วโมง', color: '#4F6BFF' } }}
+      config={{ hours: { label: 'hours', color: '#4F6BFF' } }}
     >
       <BarChart data={[...data]}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -19,7 +19,7 @@ export default function ProjectTimeChart({ data }: ProjectTimeChartProps) {
         />
         <YAxis tick={{ fontSize: 'var(--font-size-sm)' }} axisLine={false} tickLine={false} />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="hours" name="ชั่วโมง" fill="var(--color-hours)" radius={[5, 5, 0, 0]} />
+        <Bar dataKey="hours" name="hours" fill="var(--color-hours)" radius={[5, 5, 0, 0]} />
       </BarChart>
     </ChartContainer>
   )

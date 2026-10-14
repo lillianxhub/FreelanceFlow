@@ -85,7 +85,7 @@ class ProjectStateTest {
 
                 assertThatThrownBy(() -> project.changeStatus(nextStatus))
                         .isInstanceOf(InvalidStateException.class)
-                        .hasMessageContaining("ลูกค้าถูกจัดเก็บ");
+                        .hasMessageContaining("client before restoring");
                 assertThat(project.getStatus()).isEqualTo(ProjectStatus.ARCHIVED);
                 assertThat(project.getIsActive()).isFalse();
             }

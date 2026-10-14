@@ -15,27 +15,27 @@ public class RequestErrorHandler implements ErrorHandler {
         if (context.source() != ErrorContext.Source.MVC) return Optional.empty();
         if (exception instanceof HttpMessageNotReadableException)
             return Optional.of(ErrorDescriptor.of(HttpStatus.BAD_REQUEST,
-                    context.isAuthOrClient() ? "INVALID_REQUEST_BODY" : "INVALID_REQUEST", "ข้อมูลที่ส่งมาไม่ถูกต้อง"));
+                    context.isAuthOrClient() ? "INVALID_REQUEST_BODY" : "INVALID_REQUEST", "Invalid request data"));
         if (exception instanceof MethodArgumentTypeMismatchException ex)
             return Optional.of(new ErrorDescriptor(HttpStatus.BAD_REQUEST,
-                    context.isClient() ? "INVALID_ARGUMENT" : "INVALID_REQUEST", "พารามิเตอร์ไม่ถูกต้อง",
+                    context.isClient() ? "INVALID_ARGUMENT" : "INVALID_REQUEST", "Invalid parameters",
                     Map.of("field", ex.getName()), null, null));
         if (exception instanceof ErrorResponse ex) {
             var status = ex.getStatusCode();
             HttpStatus standard = HttpStatus.resolve(status.value());
             String code = standard == null ? "HTTP_" + status.value() : standard.name();
             String message = switch (status.value()) {
-                case 400 -> "ข้อมูลที่ส่งมาไม่ถูกต้อง";
-                case 401 -> "กรุณาเข้าสู่ระบบก่อนดำเนินการ";
-                case 403 -> "คุณไม่มีสิทธิ์ดำเนินการนี้";
-                case 404 -> "ไม่พบข้อมูลที่ร้องขอ";
-                case 405 -> "ไม่รองรับวิธีส่งคำขอนี้";
-                case 406 -> "ไม่สามารถส่งข้อมูลในรูปแบบที่ร้องขอได้";
-                case 409 -> "ไม่สามารถดำเนินการได้เนื่องจากสถานะปัจจุบัน";
-                case 413 -> "ข้อมูลที่ส่งมามีขนาดใหญ่เกินไป";
-                case 415 -> "ไม่รองรับชนิดข้อมูลที่ส่งมา";
-                case 429 -> "ส่งคำขอบ่อยเกินไป กรุณารอสักครู่";
-                default -> status.is5xxServerError() ? "เกิดข้อผิดพลาดภายในระบบ" : "ไม่สามารถดำเนินการตามคำขอได้";
+                case 400 -> "Invalid request data";
+                case 401 -> "Sign in to continue";
+                case 403 -> "You cannot perform this action";
+                case 404 -> "Requested data not found";
+                case 405 -> "Method not allowed";
+                case 406 -> "Cannot produce the requested format";
+                case 409 -> "Action conflicts with current state";
+                case 413 -> "Request payload is too large";
+                case 415 -> "Unsupported content type";
+                case 429 -> "Too many requests. Try again later.";
+                default -> status.is5xxServerError() ? "Internal server error" : "Could not complete the request";
             };
             return Optional.of(new ErrorDescriptor(status, code, message, null, null, ex.getHeaders()));
         }

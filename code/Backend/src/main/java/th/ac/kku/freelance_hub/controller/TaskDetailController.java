@@ -55,7 +55,7 @@ public class TaskDetailController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ดึงข้อมูลงานย่อยสำเร็จ", task
+                        "Task retrieved", task
                 )
         );
     }
@@ -83,7 +83,7 @@ public class TaskDetailController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "แก้ไขงานย่อยสำเร็จ", task
+                        "Task updated", task
                 )
         );
     }
@@ -113,7 +113,7 @@ public class TaskDetailController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "เปลี่ยนสถานะงานย่อยสำเร็จ", task
+                        "Task status changed", task
                 )
         );
     }
@@ -137,7 +137,7 @@ public class TaskDetailController {
         taskService.delete(userService.currentUserId(), taskId);
         return ResponseEntity.ok(
                 ApiResult.<Void>success(
-                        "ลบงานย่อยสำเร็จ", null
+                        "Task deleted", null
                 )
         );
     }

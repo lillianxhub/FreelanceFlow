@@ -20,10 +20,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StartTimerRequest {
 
-    @NotNull(message = "กรุณาระบุโปรเจกต์")
+    @NotNull(message = "Select a project")
     private UUID projectId;
 
     private UUID taskId;
 
     private String description;
+
+    /** Explicitly stop and save the owner's current timer before starting this one. */
+    private Boolean stopCurrentTimer;
 }

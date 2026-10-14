@@ -49,7 +49,7 @@ class ApiErrorContractTest {
     @ParameterizedTest
     @CsvSource({"400,INVALID_ARGUMENT", "401,INVALID_CREDENTIALS", "403,ORIGIN_NOT_ALLOWED", "404,CLIENT_NOT_FOUND",
             "409,TIMER_ALREADY_RUNNING", "429,LOGIN_RATE_LIMITED", "500,INTERNAL_SERVER_ERROR"})
-    void apiErrorsKeepStatusCodesThaiMessagesAndMetadata(int expectedStatus, String code) throws Exception {
+    void apiErrorsKeepStatusCodesEnglishMessagesAndMetadata(int expectedStatus, String code) throws Exception {
         var mvc = MockMvcBuilders.standaloneSetup(new FailingController())
                 .setControllerAdvice(th.ac.kku.freelance_hub.support.ErrorHandlingTestSupport.advice())
                 .addFilters(new RequestTraceFilter()).build();
@@ -59,7 +59,7 @@ class ApiErrorContractTest {
         assertThat(body.path("success").asBoolean()).isFalse();
         assertThat(body.path("data").isNull()).isTrue();
         assertThat(body.path("meta").isNull()).isTrue();
-        assertThat(body.path("message").asText()).containsPattern("[ก-๙]");
+        assertThat(body.path("message").asText()).isNotBlank().doesNotContainPattern("[ก-๙]");
         assertThat(body.path("error").path("status").asInt()).isEqualTo(expectedStatus);
         assertThat(body.path("error").path("code").asText()).isEqualTo(code);
         assertThat(body.path("error").path("details").isNull() || body.path("error").path("details").isObject()).isTrue();
@@ -85,7 +85,7 @@ class ApiErrorContractTest {
                 .andExpect(status().isBadRequest()).andReturn().getResponse();
         var body = mapper.readTree(validation.getContentAsString());
         assertThat(body.path("error").path("code").asText()).isEqualTo("VALIDATION_ERROR");
-        assertThat(body.path("error").path("fieldErrors").path("name").asText()).isEqualTo("กรุณาระบุชื่อ");
+        assertThat(body.path("error").path("fieldErrors").path("name").asText()).isEqualTo("Enter a name");
         assertThat(body.path("error").path("details").isNull()).isTrue();
     }
 
@@ -94,7 +94,7 @@ class ApiErrorContractTest {
         @GetMapping("/api/error/{status}")
         void error(@PathVariable int status) {
             switch (status) {
-                case 400 -> throw new InvalidArgumentException("กรุณาระบุชื่อ", java.util.Map.of("field", "name"));
+                case 400 -> throw new InvalidArgumentException("Enter a name", java.util.Map.of("field", "name"));
                 case 401 -> throw new InvalidCredentialsException();
                 case 403 -> throw new OriginNotAllowedException();
                 case 404 -> throw new ClientNotFoundException(UUID.randomUUID());
@@ -105,7 +105,7 @@ class ApiErrorContractTest {
         }
         @PostMapping(value = "/api/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
         void validate(@Valid @RequestBody Input input) { }
-        record Input(@NotBlank(message = "กรุณาระบุชื่อ") String name) { }
+        record Input(@NotBlank(message = "Enter a name") String name) { }
 
         @GetMapping("/api/fail")
         void fail() {

@@ -6,6 +6,6 @@ import org.springframework.http.HttpStatus;
 
 public class TimeEntryNotFoundException extends ApiException {
     public TimeEntryNotFoundException(UUID id) {
-        super(HttpStatus.NOT_FOUND, "TIME_ENTRY_NOT_FOUND", "ไม่พบรายการเวลา", Map.of("id", id));
+        super(HttpStatus.NOT_FOUND, "TIME_ENTRY_NOT_FOUND", "Time entry not found", Map.of("id", id));
     }
 }

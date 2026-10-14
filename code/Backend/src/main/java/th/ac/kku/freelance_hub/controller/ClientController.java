@@ -58,7 +58,7 @@ public class ClientController {
         UUID ownerId = userService.currentUserId();
         ClientResponse response = clientService.create(ownerId, request);
         return ResponseEntity.created(URI.create("/api/clients/" + response.getId()))
-                .body(ApiResult.success("สร้างลูกค้าสำเร็จ", response));
+                .body(ApiResult.success("Client created", response));
     }
 
     @Operation(summary = "List clients", description = "List the authenticated user's clients with optional filters, sorting, and pagination")
@@ -79,7 +79,7 @@ public class ClientController {
                 .totalPages(clients.getTotalPages())
                 .build();
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงรายชื่อลูกค้าสำเร็จ", clients.getContent(), meta));
+                "Clients retrieved", clients.getContent(), meta));
     }
 
     @Operation(summary = "Get a client", description = "Get one owned client; include=projects or include=projects.tasks adds selected related fields")
@@ -102,7 +102,7 @@ public class ClientController {
                         includeProjects = true;
                         includeTasks = true;
                     }
-                    default -> throw new InvalidArgumentException("ไม่รองรับข้อมูลเพิ่มเติมที่ร้องขอ", Map.of("field", "include"));
+                    default -> throw new InvalidArgumentException("Requested include is not supported", Map.of("field", "include"));
                 }
             }
         }
@@ -110,7 +110,7 @@ public class ClientController {
                 ? clientService.getById(ownerId, id, includeProjects, includeTasks)
                 : clientService.getById(ownerId, id);
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงข้อมูลลูกค้าสำเร็จ", client));
+                "Client retrieved", client));
     }
 
     @Operation(summary = "Replace a client", description = "Replace editable details of a client belonging to the authenticated user")
@@ -124,7 +124,7 @@ public class ClientController {
             @PathVariable UUID id, @Valid @RequestBody CreateClientRequest request) {
         UUID ownerId = userService.currentUserId();
         return ResponseEntity.ok(ApiResult.success(
-                "อัปเดตข้อมูลลูกค้าสำเร็จ", clientService.replace(ownerId, id, request)));
+                "Client updated", clientService.replace(ownerId, id, request)));
     }
 
     @Operation(summary = "Update a client", description = "Update fields of a client belonging to the authenticated user")
@@ -139,7 +139,7 @@ public class ClientController {
             @Valid @RequestBody UpdateClientRequest request) {
         UUID ownerId = userService.currentUserId();
         return ResponseEntity.ok(ApiResult.success(
-                "อัปเดตข้อมูลลูกค้าสำเร็จ", clientService.update(ownerId, id, request)));
+                "Client updated", clientService.update(ownerId, id, request)));
     }
 
     @Operation(summary = "Change client status", description = "Deactivate a client and archive its non-deleted projects without soft deletion; reactivating the client does not restore project statuses")
@@ -153,7 +153,7 @@ public class ClientController {
             @PathVariable UUID id, @Valid @RequestBody ChangeClientStatusRequest request) {
         UUID ownerId = userService.currentUserId();
         return ResponseEntity.ok(ApiResult.success(
-                "อัปเดตสถานะลูกค้าสำเร็จ", clientService.changeStatus(ownerId, id, request.getIsActive())));
+                "Client status updated", clientService.changeStatus(ownerId, id, request.getIsActive())));
     }
 
     /** Soft-delete: preserve the client and its active status while hiding it from Client APIs. */

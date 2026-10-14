@@ -33,13 +33,13 @@ export default function ProjectForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="project-name" required>
-            ชื่อโปรเจกต์
+            Project name
           </FormLabel>
           <Input id="project-name" name="name" value={value.name} onChange={onChange} required />
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="project-client" required>
-            ลูกค้า
+            Clients
           </FormLabel>
           <NativeSelect
             id="project-client"
@@ -58,20 +58,20 @@ export default function ProjectForm({
           </NativeSelect>
         </div>
         {/* <div className="flex flex-col gap-1.5">
-          <label htmlFor="project-billing">รูปแบบราคา</label>
+          <label htmlFor="project-billing">Billing type</label>
           <select
             id="project-billing"
             name="billing_type"
             value={value.billing_type}
             onChange={onChange}
           >
-            <option value="HOURLY">รายชั่วโมง</option>
-            <option value="FIXED_PRICE">เหมาจ่าย</option>
+            <option value="HOURLY">Hourly</option>
+            <option value="FIXED_PRICE">Fixed price</option>
           </select>
         </div> */}
         {/* {value.billing_type === "HOURLY" ? (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="hourly-rate">อัตราต่อชั่วโมง</label>
+            <label htmlFor="hourly-rate">Hourly rate</label>
             <input
               id="hourly-rate"
               name="hourly_rate"
@@ -85,7 +85,7 @@ export default function ProjectForm({
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="fixed-price">มูลค่างาน</label>
+            <label htmlFor="fixed-price">Project value</label>
             <input
               id="fixed-price"
               name="fixed_price"
@@ -100,7 +100,7 @@ export default function ProjectForm({
         )} */}
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="budget-hours" required>
-            จำนวนชั่วโมง
+            Hours
           </FormLabel>
           <Input
             id="budget-hours"
@@ -115,14 +115,14 @@ export default function ProjectForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="start-date" required>
-            วันที่เริ่ม
+            Start date
           </FormLabel>
           <DatePicker
             id="start-date"
             value={value.start_date || ''}
             onChange={(nextValue) => handleDateChange('start_date', nextValue)}
             required
-            aria-label="วันที่เริ่ม"
+            aria-label="Start date"
             aria-invalid={Boolean(dateErrors.start_date)}
             aria-describedby={dateErrors.start_date ? 'start-date-error' : undefined}
           />
@@ -134,14 +134,14 @@ export default function ProjectForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="end-date" required>
-            วันที่สิ้นสุด
+            End date
           </FormLabel>
           <DatePicker
             id="end-date"
             value={value.end_date || ''}
             onChange={(nextValue) => handleDateChange('end_date', nextValue)}
             required
-            aria-label="วันที่สิ้นสุด"
+            aria-label="End date"
             aria-invalid={Boolean(dateErrors.end_date)}
             aria-describedby={dateErrors.end_date ? 'end-date-error' : undefined}
           />
@@ -153,7 +153,7 @@ export default function ProjectForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="project-color" required>
-            สีโปรเจกต์
+            Project color
           </FormLabel>
           <ColorPicker
             id="project-color"
@@ -167,7 +167,7 @@ export default function ProjectForm({
           />
         </div>
         {/* <div className="flex flex-col gap-1.5">
-          <label htmlFor="project-currency">สกุลเงิน</label>
+          <label htmlFor="project-currency">Currency</label>
           <select
             id="project-currency"
             name="currency"
@@ -180,7 +180,7 @@ export default function ProjectForm({
           </select>
         </div> */}
         <div className="col-span-full flex flex-col gap-1.5">
-          <FormLabel htmlFor="project-description">รายละเอียด</FormLabel>
+          <FormLabel htmlFor="project-description">Details</FormLabel>
           <Textarea
             id="project-description"
             name="description"
@@ -191,10 +191,10 @@ export default function ProjectForm({
       </div>
       <div className="mt-4 flex justify-end gap-2 border-t border-border pt-4">
         <Button variant="outline" className="h-10" type="button" onClick={onCancel}>
-          ยกเลิก
+          Cancel
         </Button>
         <Button variant="default" className="h-10" type="submit" disabled={saving}>
-          {saving ? 'กำลังบันทึก...' : 'บันทึกโปรเจกต์'}
+          {saving ? 'Saving…' : 'Save project'}
         </Button>
       </div>
     </form>

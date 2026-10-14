@@ -177,7 +177,7 @@ class TimeEntryServiceImplTest {
                         .durationSeconds(90L)
                         .build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("ไม่สามารถเริ่มงานที่เสร็จสิ้นแล้ว");
+                .hasMessage("Completed tasks cannot be started");
 
         assertThat(task.getStatus()).isEqualTo(TaskStatus.COMPLETED);
         verify(timeEntryRepository, never()).save(any(TimeEntry.class));
@@ -209,7 +209,7 @@ class TimeEntryServiceImplTest {
                         .durationSeconds(90L)
                         .build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
 
         verify(timeEntryRepository, never()).save(any(TimeEntry.class));
         verify(taskRepository, never()).saveAndFlush(any(Task.class));
@@ -225,7 +225,7 @@ class TimeEntryServiceImplTest {
         assertThatThrownBy(() -> service.createManual(OWNER_ID, request))
                 .isInstanceOf(InvalidArgumentException.class)
                 .hasMessage(
-                        "กรุณาระบุเวลาสิ้นสุดหรือระยะเวลาอย่างใดอย่างหนึ่ง"
+                        "Enter an end time or duration"
                 );
 
         verifyNoInteractions(userRepository, projectRepository, taskRepository);
@@ -244,7 +244,7 @@ class TimeEntryServiceImplTest {
         assertThatThrownBy(() -> service.createManual(OWNER_ID, request))
                 .isInstanceOf(InvalidArgumentException.class)
                 .hasMessage(
-                        "กรุณาระบุเวลาสิ้นสุดหรือระยะเวลาอย่างใดอย่างหนึ่ง"
+                        "Enter an end time or duration"
                 );
 
         verify(timeEntryRepository, never()).save(any(TimeEntry.class));
@@ -374,7 +374,7 @@ class TimeEntryServiceImplTest {
                         .durationSeconds(90L)
                         .build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
 
         assertThat(entry.getProject()).isSameAs(project);
         assertThat(entry.getStartedAt()).isEqualTo(originalStart);
@@ -398,7 +398,7 @@ class TimeEntryServiceImplTest {
                         .durationSeconds(90L)
                         .build()
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
 
         verifyNoInteractions(projectRepository, taskRepository);
         verify(timeEntryRepository, never()).flush();
@@ -499,7 +499,7 @@ class TimeEntryServiceImplTest {
                 UpdateTimeEntryRequest.builder().build()
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("กรุณาระบุโปรเจกต์");
+                .hasMessage("Select a project");
 
         verify(timeEntryRepository, never())
                 .findByIdAndOwnerIdAndIsActiveTrue(any(), any());
@@ -547,7 +547,7 @@ class TimeEntryServiceImplTest {
 
         assertThatThrownBy(() -> service.delete(OWNER_ID, ENTRY_ID))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("กรุณายกเลิกตัวจับเวลาก่อนลบรายการเวลา");
+                .hasMessage("Cancel the timer before deleting this entry");
 
         verify(timeEntryRepository, never()).delete(any(TimeEntry.class));
     }
@@ -789,7 +789,7 @@ class TimeEntryServiceImplTest {
             assertThatThrownBy(() -> queryService.list(OWNER_ID, filter))
                     .isInstanceOf(InvalidArgumentException.class)
                     .hasMessage(
-                            "หมายเลขหน้าต้องเริ่มจาก 1 และจำนวนรายการต่อหน้าต้องอยู่ระหว่าง 1 ถึง 100"
+                            "Page must start at 1 and page size must be between 1 and 100"
                     );
 
             verify(timeEntryRepository, never()).findAll(
@@ -806,7 +806,7 @@ class TimeEntryServiceImplTest {
 
             assertThatThrownBy(() -> queryService.list(OWNER_ID, filter))
                     .isInstanceOf(InvalidArgumentException.class)
-                    .hasMessage("ฟิลด์ที่ใช้เรียงลำดับไม่ถูกต้อง");
+                    .hasMessage("Invalid sort field");
         }
 
         @Test
@@ -817,7 +817,7 @@ class TimeEntryServiceImplTest {
 
             assertThatThrownBy(() -> queryService.list(OWNER_ID, filter))
                     .isInstanceOf(InvalidArgumentException.class)
-                    .hasMessage("กรุณาระบุทิศทางการเรียงรายการเวลา");
+                    .hasMessage("Select a time entry sort direction");
         }
 
         @Test
@@ -829,7 +829,7 @@ class TimeEntryServiceImplTest {
 
             assertThatThrownBy(() -> queryService.list(OWNER_ID, filter))
                     .isInstanceOf(InvalidArgumentException.class)
-                    .hasMessage("เวลาเริ่มต้นต้องอยู่ก่อนเวลาสิ้นสุด");
+                    .hasMessage("Start time must be before end time");
         }
 
         @Test
@@ -926,7 +926,7 @@ class TimeEntryServiceImplTest {
 
             assertThatThrownBy(() -> queryService.summarize(OWNER_ID, filter))
                     .isInstanceOf(InvalidArgumentException.class)
-                    .hasMessage("เวลาเริ่มต้นต้องอยู่ก่อนเวลาสิ้นสุด");
+                    .hasMessage("Start time must be before end time");
 
             verify(timeEntryRepository, never()).findAll(
                     ArgumentMatchers.<Specification<TimeEntry>>any()

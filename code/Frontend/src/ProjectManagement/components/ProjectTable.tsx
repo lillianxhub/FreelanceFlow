@@ -6,7 +6,7 @@ import {
   TableBody,
   TableCell,
 } from '../../components/ui/table'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import type { ProjectTableProps } from '../../types/projectsPage'
 import ProjectStatus from './ProjectStatus'
 
@@ -15,10 +15,10 @@ export default function ProjectsTable({ projects, clients }: ProjectTableProps) 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>โปรเจกต์</TableHead>
-          <TableHead>ลูกค้า</TableHead>
-          <TableHead>สถานะ</TableHead>
-          <TableHead>รูปแบบราคา</TableHead>
+          <TableHead>Projects</TableHead>
+          <TableHead>Clients</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Billing type</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -30,7 +30,7 @@ export default function ProjectsTable({ projects, clients }: ProjectTableProps) 
               <TableCell>
                 <Link
                   className="font-medium text-primary hover:underline"
-                  to={`/projects/${project.id}`}
+                  href={`/projects/${project.id}`}
                 >
                   {project.name}
                 </Link>
@@ -39,7 +39,7 @@ export default function ProjectsTable({ projects, clients }: ProjectTableProps) 
               <TableCell>
                 <ProjectStatus status={project.status} />
               </TableCell>
-              <TableCell>{project.billing_type === 'HOURLY' ? 'รายชั่วโมง' : 'เหมาจ่าย'}</TableCell>
+              <TableCell>{project.billing_type === 'HOURLY' ? 'Hourly' : 'Fixed price'}</TableCell>
             </TableRow>
           )
         })}

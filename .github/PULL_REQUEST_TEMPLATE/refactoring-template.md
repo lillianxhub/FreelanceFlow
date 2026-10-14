@@ -1,34 +1,21 @@
-# Refactoring Pull Request Template
+# PR: Refactor
 
-## Refactoring Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short and descriptive pull request title in English. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] Refactoring
+- responsibility/coupling/duplication ที่เป็นปัญหา
+- boundaries ก่อน/หลังและเหตุผลเลือก SOLID/design pattern
+- observable behavior/API/schema ที่ต้องรักษา พร้อม regression/contract tests
+- หากเปลี่ยน behavior ให้แยกและระบุ criteria ไม่เรียกรวมว่า refactor
+- abstraction/dependency ที่ถอดเมื่อไม่มี consumer
 
-## Description of Refactoring
+## ผลตรวจจริงและ evidence
 
-<!-- Describe what was refactored and why the change was needed. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Impact of Refactoring
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- Describe the impact on readability, maintainability, performance, and existing behavior. -->
-
-## Testing Conducted
-
-- [ ] Related functionality tested
-- [ ] Full test suite completed
-- [ ] No unintended behavior changes identified
-
-## Additional Remarks
-
-<!-- Add any additional information for reviewers. -->
-
-## Checklist
-
-- [ ] Refactored code remains readable and maintainable
-- [ ] Self-review completed
-- [ ] Necessary tests added or updated
-- [ ] No new warnings or errors introduced
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

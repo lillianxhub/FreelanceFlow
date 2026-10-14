@@ -6,6 +6,6 @@ import org.springframework.http.HttpStatus;
 
 public class TimeEntryLockedException extends ApiException {
     public TimeEntryLockedException(UUID id) {
-        super(HttpStatus.CONFLICT, "TIME_ENTRY_LOCKED", "รายการเวลาถูกล็อกแล้ว ไม่สามารถแก้ไขได้", Map.of("id", id));
+        super(HttpStatus.CONFLICT, "TIME_ENTRY_LOCKED", "Locked time entries cannot be edited", Map.of("id", id));
     }
 }

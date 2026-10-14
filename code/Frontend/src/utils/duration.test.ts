@@ -8,8 +8,8 @@ import {
 } from './duration'
 
 test('formatDuration converts minute values to the shared time display format', () => {
-  assert.equal(formatDuration(135), '02:15:00 นาที')
-  assert.equal(formatDuration(45), '00:45:00 นาที')
+  assert.equal(formatDuration(135), '02:15:00')
+  assert.equal(formatDuration(45), '00:45:00')
 })
 
 test('formatTimer pads each time segment', () => {
@@ -18,6 +18,6 @@ test('formatTimer pads each time segment', () => {
 
 test('duration seconds are split and formatted for display', () => {
   assert.deepEqual(splitDurationSeconds(8118), { hours: 2, minutes: 15, seconds: 18 })
-  assert.equal(formatDurationSeconds(8118), '02:15:18 นาที')
-  assert.equal(formatDurationSeconds(0), '00:00:00 นาที')
+  assert.equal(formatDurationSeconds(8118), '02:15:18')
+  assert.equal(formatDurationSeconds(0), '00:00:00')
 })

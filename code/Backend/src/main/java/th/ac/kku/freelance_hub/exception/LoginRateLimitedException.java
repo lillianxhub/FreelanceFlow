@@ -7,7 +7,7 @@ public class LoginRateLimitedException extends ApiException {
     private final long retryAfterSeconds;
     public LoginRateLimitedException(long retryAfterSeconds) {
         super(HttpStatus.TOO_MANY_REQUESTS, "LOGIN_RATE_LIMITED",
-                "ลองเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่", Map.of("retryAfterSeconds", retryAfterSeconds));
+                "Too many sign-in attempts. Try again later.", Map.of("retryAfterSeconds", retryAfterSeconds));
         this.retryAfterSeconds = retryAfterSeconds;
     }
     public long getRetryAfterSeconds() { return retryAfterSeconds; }

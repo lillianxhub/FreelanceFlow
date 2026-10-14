@@ -22,7 +22,7 @@ public class ReportFilterRequest {
     private UUID projectId;
     private ProjectStatus status;
 
-    @AssertTrue(message = "กรุณาระบุวันที่เริ่มและวันที่สิ้นสุดให้ครบ และวันที่เริ่มต้องไม่เกินวันที่สิ้นสุด")
+    @AssertTrue(message = "Enter both dates with start on or before end")
     @JsonIgnore
     public boolean isDateRangeValid() {
         return (from == null && to == null)

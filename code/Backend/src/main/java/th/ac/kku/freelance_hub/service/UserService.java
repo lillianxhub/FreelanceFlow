@@ -49,7 +49,7 @@ public class UserService implements CurrentUserProvider {
         User user = getCurrentUserEntity();
         UserProfile profile = user.getProfile();
         if (profile == null) {
-            throw new InvalidStateException("ไม่พบข้อมูลโปรไฟล์ผู้ใช้");
+            throw new InvalidStateException("User profile not found");
         }
         userMapper.updateProfile(request, profile);
         return userMapper.toResponse(userRepository.save(user));
@@ -60,10 +60,10 @@ public class UserService implements CurrentUserProvider {
     public void changePassword(ChangePasswordRequest request) {
         User user = getCurrentUserEntity();
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
-            throw new InvalidCredentialsException("รหัสผ่านไม่ถูกต้อง");
+            throw new InvalidCredentialsException("Incorrect password");
         }
         if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
-            throw new InvalidArgumentException("รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม");
+            throw new InvalidArgumentException("New password must differ from the current password");
         }
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);

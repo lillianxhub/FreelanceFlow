@@ -18,7 +18,8 @@ import {
   TableCell,
 } from '../../../components/ui/table'
 import { useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { FiArrowLeft, FiCheckSquare, FiClock, FiPlus } from 'react-icons/fi'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
 import {
@@ -40,6 +41,7 @@ import type { Task } from '../../../types/task'
 import type { TaskDraft } from '../../../types/projectDetailPage'
 import TaskForm from '../../components/TaskForm'
 import TaskList from '../../components/TaskList'
+import ProjectBoard from '../../components/ProjectBoard'
 import { formatDate } from '../../../utils/date'
 import { formatDurationSeconds } from '../../../utils/duration'
 import { changeTaskStatus, reorderTask } from '../../../services/task'
@@ -64,7 +66,7 @@ const emptyTask: TaskDraft = {
 const TASK_PAGE_SIZE = 5
 
 function formatEntryStartTime(value: string) {
-  return new Intl.DateTimeFormat('th-TH', {
+  return new Intl.DateTimeFormat('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -72,13 +74,14 @@ function formatEntryStartTime(value: string) {
 }
 
 function ProjectDetailPage() {
-  const { projectId } = useParams()
+  const { projectId } = useParams<{ projectId: string; clientId: string }>()
   const { data, loading, error, refresh, saveTask: persistTask, deleteTask } = useProjects()
   const [modalOpen, setModalOpen] = useState(false)
   const [taskForm, setTaskForm] = useState(emptyTask)
   const [formError, setFormError] = useState('')
   const [savingTask, setSavingTask] = useState(false)
   const [changingTaskId, setChangingTaskId] = useState<string | null>(null)
+  const [taskView, setTaskView] = useState<'BOARD' | 'TABLE'>('BOARD')
   const [taskWithoutTime, setTaskWithoutTime] = useState<Task | null>(null)
   const [taskPage, setTaskPage] = useState(1)
   const [changingProjectStatus, setChangingProjectStatus] = useState(false)
@@ -88,7 +91,7 @@ function ProjectDetailPage() {
   if (error) return <ErrorState message={error} onRetry={refresh} />
 
   const project = data.projects.find((item) => item.id === projectId)
-  if (!project) return <ErrorState message="ไม่พบProjectsที่ต้องการ" />
+  if (!project) return <ErrorState message="Project not found" />
 
   const client = data.clients.find((item) => item.id === project.client_id)
   const tasks = data.tasks
@@ -121,7 +124,7 @@ function ProjectDetailPage() {
     event.preventDefault()
     if (savingTask) return
     if (!taskForm.name.trim()) {
-      setFormError('กรุณากรอกชื่องาน')
+      setFormError('Enter a task name')
       return
     }
     setSavingTask(true)
@@ -135,7 +138,7 @@ function ProjectDetailPage() {
       })
       setModalOpen(false)
     } catch (reason: unknown) {
-      setFormError(getErrorMessage(reason, 'บันทึกงานไม่สำเร็จ'))
+      setFormError(getErrorMessage(reason, 'Could not save task'))
     } finally {
       setSavingTask(false)
     }
@@ -149,7 +152,7 @@ function ProjectDetailPage() {
       await reorderTask(project.id, task.id, nextIndex)
       await refresh()
     } catch (reason: unknown) {
-      toast.error(getErrorMessage(reason, 'เลื่อนลำดับงานไม่สำเร็จ'))
+      toast.error(getErrorMessage(reason, 'Could not reorder task'))
     }
   }
 
@@ -160,7 +163,7 @@ function ProjectDetailPage() {
       await refresh()
       setTaskWithoutTime(null)
     } catch (reason: unknown) {
-      toast.error(getErrorMessage(reason, 'เปลี่ยนสถานะงานไม่สำเร็จ'))
+      toast.error(getErrorMessage(reason, 'Could not change task status'))
     } finally {
       setChangingTaskId(null)
     }
@@ -174,7 +177,7 @@ function ProjectDetailPage() {
         await changeTaskStatus(task.id, 'IN_PROGRESS')
         await refresh()
       } catch (reason: unknown) {
-        toast.error(getErrorMessage(reason, 'เปลี่ยนสถานะงานไม่สำเร็จ'))
+        toast.error(getErrorMessage(reason, 'Could not change task status'))
       } finally {
         setChangingTaskId(null)
       }
@@ -189,7 +192,7 @@ function ProjectDetailPage() {
       }
       await completeTask(task)
     } catch (reason: unknown) {
-      toast.error(getErrorMessage(reason, 'ตรวจสอบเวลาของงานไม่สำเร็จ'))
+      toast.error(getErrorMessage(reason, 'Could not check task time'))
     } finally {
       setChangingTaskId(null)
     }
@@ -201,9 +204,9 @@ function ProjectDetailPage() {
     try {
       await changeProjectStatus(project.id, nextStatus)
       await refresh()
-      toast.success('อัปเดตสถานะโปรเจกต์เรียบร้อยแล้ว')
+      toast.success('Project status updated')
     } catch (reason: unknown) {
-      toast.error(getErrorMessage(reason, 'ไม่สามารถอัปเดตสถานะโปรเจกต์ได้'))
+      toast.error(getErrorMessage(reason, 'Could not update project status'))
     } finally {
       setChangingProjectStatus(false)
     }
@@ -213,14 +216,14 @@ function ProjectDetailPage() {
     <div className="mx-auto w-full min-w-0 max-w-screen-2xl">
       <Link
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary no-underline hover:text-primary-dark"
-        to="/projects"
+        href="/projects"
       >
-        <FiArrowLeft aria-hidden="true" /> กลับไปหน้าโปรเจกต์
+        <FiArrowLeft aria-hidden="true" /> Back to projects
       </Link>
       <PageHeader
         title={project.name}
         truncateTitle
-        description={`${project.client_name || client?.company_name || client?.name || 'ไม่พบลูกค้า'} · ${project.description || 'ไม่มีรายละเอียด'}`}
+        description={`${project.client_name || client?.company_name || client?.name || 'Client not found'} · ${project.description || 'No description'}`}
         actions={
           <>
             <NativeSelect
@@ -228,7 +231,7 @@ function ProjectDetailPage() {
               className={`h-9 w-fit min-w-36 rounded-full border-0 px-3 py-1.5 text-sm font-semibold ${statusSelectClasses[project.status]}`}
               wrapperClassName="w-fit"
               value={project.status}
-              aria-label={`สถานะของโปรเจกต์ ${project.name}`}
+              aria-label={`Status of project ${project.name}`}
               disabled={changingProjectStatus}
               onChange={(event) => {
                 void updateProjectStatus(event.target.value as ProjectStatus)
@@ -243,10 +246,10 @@ function ProjectDetailPage() {
             <Button asChild variant="default" className="h-10">
               <Link
                 className="!text-primary-foreground hover:text-primary-foreground"
-                to="/time-tracker"
+                href="/time-tracker"
               >
                 <FiClock aria-hidden="true" />
-                เริ่มจับเวลา
+                Start timer
               </Link>
             </Button>
           </>
@@ -255,32 +258,32 @@ function ProjectDetailPage() {
 
       <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <SummaryCard
-          label="เวลาที่ใช้"
+          label="Time spent"
           icon={<FiClock aria-hidden="true" />}
           value={formatDurationSeconds(totalTrackedSeconds)}
-          foot={<>จาก {project.budget_hours || '—'} ชั่วโมง</>}
+          foot={<>of {project.budget_hours || '—'} hours</>}
           accent="blue"
           compact
         />
         <SummaryCard
-          label="งาน"
+          label="Tasks"
           icon={<FiCheckSquare aria-hidden="true" />}
           value={completed}
           unit={`/ ${totalTaskCount}`}
-          foot={<>เสร็จแล้ว {taskProgress}%</>}
+          foot={<>Completed {taskProgress}%</>}
           accent="violet"
         />
         <SummaryCard
-          label="การใช้เวลา"
+          label="Time usage"
           icon={<FiClock aria-hidden="true" />}
           value={usagePercent === null ? '—' : Math.round(usagePercent)}
           unit={usagePercent === null ? undefined : '%'}
           foot={
             usagePercent === null
-              ? 'ยังไม่มีข้อมูลงบเวลา'
+              ? 'No time budget data'
               : usagePercent >= 100
-                ? 'เกินงบประมาณ'
-                : 'ของชั่วโมงเป้าหมาย'
+                ? 'Over budget'
+                : 'of target hours'
           }
           accent={usagePercent !== null && usagePercent >= 100 ? 'red' : 'orange'}
         />
@@ -292,40 +295,71 @@ function ProjectDetailPage() {
             <section className="!p-0">
               <CardHeader className="flex flex-col items-start justify-between gap-4 p-6 pb-2 sm:flex-row">
                 <div className="grid gap-1">
-                  <CardTitle>งาน</CardTitle>
-                  <CardDescription>สร้าง ปิดงาน แก้ไข และเรียงลำดับงานในโปรเจกต์</CardDescription>
+                  <CardTitle>Tasks</CardTitle>
+                  <CardDescription>
+                    Create, complete, edit, and reorder project tasks
+                  </CardDescription>
                 </div>
                 <Button variant="default" className="h-10" type="button" onClick={() => openTask()}>
-                  <FiPlus aria-hidden="true" /> เพิ่มงาน
+                  <FiPlus aria-hidden="true" /> Add task
                 </Button>
               </CardHeader>
               <CardContent className="p-6 pt-0">
-                <TaskList
-                  tasks={visibleTasks}
-                  startIndex={taskStartIndex}
-                  totalTasks={tasks.length}
-                  changingTaskId={changingTaskId}
-                  onToggle={(task) => {
-                    void toggleTask(task)
-                  }}
-                  onMove={moveTask}
-                  onEdit={openTask}
-                  onDelete={(task) => deleteTask(project.id, task.id)}
-                />
-                {tasks.length > 0 && (
-                  <div className="mt-4 grid gap-2 border-t border-border pt-4">
-                    <p className="text-center text-xs text-text-secondary">
-                      แสดง {taskStartIndex + 1}–
-                      {Math.min(taskStartIndex + TASK_PAGE_SIZE, tasks.length)} จาก {tasks.length}{' '}
-                      งาน · หน้า {currentTaskPage}/{taskTotalPages}
-                    </p>
-                    <PaginationControls
-                      page={currentTaskPage}
-                      totalPages={taskTotalPages}
-                      onPageChange={setTaskPage}
-                      queryParam="taskPage"
+                <div className="mb-4 flex gap-2" role="group" aria-label="Task view">
+                  <button
+                    type="button"
+                    aria-pressed={taskView === 'BOARD'}
+                    onClick={() => setTaskView('BOARD')}
+                    className={`rounded border px-3 py-1 text-sm ${taskView === 'BOARD' ? 'border-primary text-primary' : 'border-border'}`}
+                  >
+                    Board
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={taskView === 'TABLE'}
+                    onClick={() => setTaskView('TABLE')}
+                    className={`rounded border px-3 py-1 text-sm ${taskView === 'TABLE' ? 'border-primary text-primary' : 'border-border'}`}
+                  >
+                    Table
+                  </button>
+                </div>
+                {taskView === 'BOARD' ? (
+                  <ProjectBoard
+                    projectId={project.id}
+                    tasks={tasks}
+                    onChanged={refresh}
+                    readOnly={project.status !== 'ACTIVE'}
+                  />
+                ) : (
+                  <>
+                    <TaskList
+                      tasks={visibleTasks}
+                      startIndex={taskStartIndex}
+                      totalTasks={tasks.length}
+                      changingTaskId={changingTaskId}
+                      onToggle={(task) => {
+                        void toggleTask(task)
+                      }}
+                      onMove={moveTask}
+                      onEdit={openTask}
+                      onDelete={(task) => deleteTask(project.id, task.id)}
                     />
-                  </div>
+                    {tasks.length > 0 && (
+                      <div className="mt-4 grid gap-2 border-t border-border pt-4">
+                        <p className="text-center text-xs text-text-secondary">
+                          Showing {taskStartIndex + 1}–
+                          {Math.min(taskStartIndex + TASK_PAGE_SIZE, tasks.length)} of{' '}
+                          {tasks.length} Tasks · Page {currentTaskPage}/{taskTotalPages}
+                        </p>
+                        <PaginationControls
+                          page={currentTaskPage}
+                          totalPages={taskTotalPages}
+                          onPageChange={setTaskPage}
+                          queryParam="taskPage"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </section>
@@ -335,8 +369,8 @@ function ProjectDetailPage() {
             <section className="!p-0">
               <CardHeader className="p-6 pb-2">
                 <div className="grid gap-1">
-                  <CardTitle>รายการเวลาล่าสุด</CardTitle>
-                  <CardDescription>เวลาล่าสุดที่บันทึกในโปรเจกต์</CardDescription>
+                  <CardTitle>Recent time entries</CardTitle>
+                  <CardDescription>Recent time entries for this project</CardDescription>
                 </div>
               </CardHeader>
               <CardContent className="p-6 pt-0">
@@ -350,9 +384,9 @@ function ProjectDetailPage() {
                 >
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-56">งาน / รายละเอียด</TableHead>
-                      <TableHead className="w-40">เริ่มจับเวลา</TableHead>
-                      <TableHead className="w-32 text-right">ระยะเวลา</TableHead>
+                      <TableHead className="min-w-56">Tasks / Details</TableHead>
+                      <TableHead className="w-40">Start timer</TableHead>
+                      <TableHead className="w-32 text-right">Duration</TableHead>
                       {/* ส่วนคิดค่าบริการและมูลค่าถูกซ่อนไว้ชั่วคราว */}
                     </TableRow>
                   </TableHeader>
@@ -366,18 +400,18 @@ function ProjectDetailPage() {
                               title={
                                 tasks.find((task) => task.id === entry.task_id)?.name ||
                                 entry.task_name ||
-                                'ไม่ระบุงาน'
+                                'No task selected'
                               }
                             >
                               {tasks.find((task) => task.id === entry.task_id)?.name ||
                                 entry.task_name ||
-                                'ไม่ระบุงาน'}
+                                'No task selected'}
                             </strong>
                             <span
                               className="truncate text-xs text-text-secondary"
-                              title={entry.description?.trim() || 'ไม่มีรายละเอียด'}
+                              title={entry.description?.trim() || 'No description'}
                             >
-                              {entry.description?.trim() || 'ไม่มีรายละเอียด'}
+                              {entry.description?.trim() || 'No description'}
                             </span>
                           </div>
                         </TableCell>
@@ -385,21 +419,21 @@ function ProjectDetailPage() {
                           <div className="grid gap-0.5">
                             <span>{formatDate(entry.started_at)}</span>
                             <span className="text-xs text-muted-foreground">
-                              {formatEntryStartTime(entry.started_at)} น.
+                              {formatEntryStartTime(entry.started_at)} min
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-semibold tabular-nums text-text-primary">
                           {formatDurationSeconds(entry.duration_seconds)}
                         </TableCell>
-                        {/* <td>{entry.billable ? "ใช่" : "ไม่"}</td>
+                        {/* <td>{entry.billable ? "Yes" : "No"}</td>
                       <td>{formatMoney(calculateTimeValue(entry), entry.currency)}</td> */}
                       </TableRow>
                     ))}
                     {visibleTimeEntries.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={3}>
-                          {timeEntries.error || 'ยังไม่มีรายการเวลา'}
+                          {timeEntries.error || 'No time entries yet'}
                         </TableCell>
                       </TableRow>
                     )}
@@ -413,49 +447,55 @@ function ProjectDetailPage() {
         <Card asChild>
           <aside className="!p-0">
             <CardHeader className="p-6 pb-2">
-              <CardTitle>รายละเอียดโปรเจกต์</CardTitle>
-              <CardDescription>ขอบเขตและกำหนดการ</CardDescription>
+              <CardTitle>Project details</CardTitle>
+              <CardDescription>Scope and schedule</CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="grid gap-4">
                 <div className="grid gap-1.5 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary [&>strong]:text-sm [&>strong]:leading-relaxed">
-                  <span>ลูกค้า</span>
+                  <span>Clients</span>
                   <Link
                     className="min-w-0 break-words font-semibold text-primary hover:underline [overflow-wrap:anywhere]"
                     title={
-                      client?.company_name || client?.name || project.client_name || 'ไม่พบลูกค้า'
+                      client?.company_name ||
+                      client?.name ||
+                      project.client_name ||
+                      'Client not found'
                     }
-                    to={`/clients/${client?.id}`}
+                    href={`/clients/${client?.id}`}
                   >
                     <strong className="break-words [overflow-wrap:anywhere]">
-                      {client?.company_name || client?.name || project.client_name || 'ไม่พบลูกค้า'}
+                      {client?.company_name ||
+                        client?.name ||
+                        project.client_name ||
+                        'Client not found'}
                     </strong>
                   </Link>
                 </div>
                 <div className="grid gap-1.5 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary [&>strong]:text-sm [&>strong]:leading-relaxed">
-                  <span>สถานะ</span>
+                  <span>Status</span>
                   <StatusBadge status={project.status} />
                 </div>
                 <div className="grid gap-1.5 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary [&>strong]:text-sm [&>strong]:leading-relaxed">
-                  <span>วันที่เริ่ม</span>
+                  <span>Start date</span>
                   <strong>{formatDate(project.start_date)}</strong>
                 </div>
                 <div className="grid gap-1.5 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary [&>strong]:text-sm [&>strong]:leading-relaxed">
-                  <span>วันที่สิ้นสุด</span>
+                  <span>End date</span>
                   <strong>{formatDate(project.end_date)}</strong>
                 </div>
                 <div className="grid gap-1.5 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary [&>strong]:text-sm [&>strong]:leading-relaxed">
-                  <span>ชั่วโมงเป้าหมาย</span>
+                  <span>Target hours</span>
                   <strong>
-                    {project.budget_hours === null ? '—' : `${project.budget_hours} ชั่วโมง`}
+                    {project.budget_hours === null ? '—' : `${project.budget_hours} hours`}
                   </strong>
                 </div>
                 <div className="grid gap-2 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary">
-                  <span>เวลาที่บันทึก</span>
+                  <span>Tracked time</span>
                   <strong>{formatDurationSeconds(totalTrackedSeconds)}</strong>
                 </div>
                 <div className="grid gap-2 [&>span:first-child]:text-xs [&>span:first-child]:text-text-secondary">
-                  <span>ความคืบหน้างาน</span>
+                  <span>Task progress</span>
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span>
                       {completed}/{totalTaskCount}
@@ -482,7 +522,7 @@ function ProjectDetailPage() {
       >
         <DialogContent className="!max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{taskForm.id ? 'แก้ไขงาน' : 'เพิ่มงาน'}</DialogTitle>
+            <DialogTitle>{taskForm.id ? 'Edit task' : 'Add task'}</DialogTitle>
           </DialogHeader>
           <TaskForm
             value={taskForm}
@@ -505,14 +545,13 @@ function ProjectDetailPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>งานนี้ยังไม่มีเวลาที่บันทึก</AlertDialogTitle>
+            <AlertDialogTitle>This task has no tracked time yet</AlertDialogTitle>
             <AlertDialogDescription>
-              งาน “{taskWithoutTime?.name}” ยังไม่มีเวลาที่บันทึกไว้
-              ต้องการทำเครื่องหมายว่าเสร็จแล้วหรือไม่?
+              “{taskWithoutTime?.name}” has no tracked time yet. Mark this task complete?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={changingTaskId !== null}>ยกเลิก</AlertDialogCancel>
+            <AlertDialogCancel disabled={changingTaskId !== null}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={changingTaskId !== null}
               onClick={(event) => {
@@ -520,7 +559,7 @@ function ProjectDetailPage() {
                 if (taskWithoutTime) void completeTask(taskWithoutTime)
               }}
             >
-              ยืนยันว่าเสร็จแล้ว
+              Confirm completion
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -191,7 +191,7 @@ public class Project {
         ProjectState currentState = ProjectStates.from(status);
         if (!currentState.canTransitionTo(nextStatus)) {
             throw new InvalidStateException(
-                    "ไม่สามารถเปลี่ยนสถานะโปรเจกต์ตามที่ร้องขอได้",
+                    "Cannot change project to the requested status",
                     Map.of("currentStatus", status.name(), "requestedStatus", nextStatus.name())
             );
         }
@@ -200,7 +200,7 @@ public class Project {
                 && nextStatus != ProjectStatus.ARCHIVED
                 && (!Boolean.TRUE.equals(client.getIsActive())
                         || client.getDeletedAt() != null)) {
-            throw new InvalidStateException("ไม่สามารถคืนสถานะโปรเจกต์ได้ เพราะลูกค้าถูกจัดเก็บอยู่");
+            throw new InvalidStateException("Restore the client before restoring this project");
         }
 
         status = nextStatus;
@@ -231,7 +231,7 @@ public class Project {
     public BigDecimal progress(int trackedMinutes) {
         if (trackedMinutes < 0) {
             throw new IllegalArgumentException(
-                    "เวลาที่บันทึกต้องไม่ติดลบ"
+                    "Tracked time cannot be negative"
             );
         }
         if (targetMinutes == null || targetMinutes == 0) {
@@ -261,7 +261,7 @@ public class Project {
     private static String requireName(String name) {
         if (name == null || name.isBlank()) {
             throw new InvalidArgumentException(
-                    "กรุณาระบุชื่อ", Map.of("field", "name")
+                    "Enter a name", Map.of("field", "name")
             );
         }
         return name.trim();
@@ -276,7 +276,7 @@ public class Project {
                 || (clientOwner != null && owner.getId() != null
                 && owner.getId().equals(clientOwner.getId()));
         if (!sameOwner) {
-            throw new InvalidArgumentException("ลูกค้าไม่ถูกต้อง");
+            throw new InvalidArgumentException("Invalid client");
         }
         return requiredClient;
     }
@@ -289,7 +289,7 @@ public class Project {
                 && endDate != null
                 && endDate.isBefore(startDate)) {
             throw new InvalidArgumentException(
-                    "วันที่สิ้นสุดต้องไม่อยู่ก่อนวันที่เริ่มต้น", Map.of("field", "endDate")
+                    "End date must not precede start date", Map.of("field", "endDate")
             );
         }
     }
@@ -299,7 +299,7 @@ public class Project {
         if (color != null
                 && !color.matches("#[0-9A-Fa-f]{6}")) {
             throw new InvalidArgumentException(
-                    "กรุณาระบุสีในรูปแบบ #RRGGBB", Map.of("field", "color")
+                    "Enter a color in #RRGGBB format", Map.of("field", "color")
             );
         }
     }
@@ -309,7 +309,7 @@ public class Project {
     ) {
         if (targetMinutes != null && targetMinutes <= 0) {
             throw new InvalidArgumentException(
-                    "เวลาเป้าหมายต้องมากกว่าศูนย์", Map.of("field", "targetMinutes")
+                    "Target time must be greater than zero", Map.of("field", "targetMinutes")
             );
         }
     }

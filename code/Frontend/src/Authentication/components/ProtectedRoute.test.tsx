@@ -1,20 +1,26 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import { renderComponent } from '../../test-support/react'
 import { AuthContext } from '../useAuthentication'
 import ProtectedRoute from './ProtectedRoute'
 import type { AuthContextValue, AuthUser } from '../../types/auth'
 
-test('protected routes wait for auth, redirect guests and allow authenticated users', async () => {
+test('protected routes wait for auth, redirect guests and show authenticated content', async () => {
   const user: AuthUser = {
     id: 'u1',
     email: 'owner@example.com',
     user_metadata: { full_name: 'Owner' },
   }
+  const paths: string[] = []
+  const router = {
+    replace: (path: string) => {
+      paths.push(path)
+    },
+  }
   for (const state of [
-    { loading: true, user: null, text: 'กำลังตรวจสอบการเข้าสู่ระบบ' },
-    { loading: false, user: null, text: 'Login page' },
+    { loading: true, user: null, text: 'Checking your session' },
+    { loading: false, user: null, text: '' },
     { loading: false, user, text: 'Private page' },
   ]) {
     const context: AuthContextValue = {
@@ -26,21 +32,13 @@ test('protected routes wait for auth, redirect guests and allow authenticated us
       logout: async () => {},
     }
     const view = await renderComponent(
-      <AuthContext.Provider value={context}>
-        <MemoryRouter initialEntries={['/private']}>
-          <Routes>
-            <Route
-              path="/private"
-              element={
-                <ProtectedRoute>
-                  <span>Private page</span>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/login" element={<span>Login page</span>} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>,
+      <AppRouterContext.Provider value={router as never}>
+        <AuthContext.Provider value={context}>
+          <ProtectedRoute>
+            <span>Private page</span>
+          </ProtectedRoute>
+        </AuthContext.Provider>
+      </AppRouterContext.Provider>,
     )
     try {
       assert.ok(view.container.textContent?.includes(state.text))
@@ -48,4 +46,5 @@ test('protected routes wait for auth, redirect guests and allow authenticated us
       await view.unmount()
     }
   }
+  assert.deepEqual(paths, ['/login'])
 })

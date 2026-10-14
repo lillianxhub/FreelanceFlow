@@ -1,17 +1,22 @@
 import type { PropsWithChildren } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { useAuth } from '../useAuthentication'
 import { LoadingState } from '../../components/ViewState'
 
 function ProtectedRoute({ children }: PropsWithChildren) {
   const { user, loading } = useAuth()
+  const router = useRouter()
+  useEffect(() => {
+    if (!loading && !user) router.replace('/login')
+  }, [loading, user, router])
   if (loading)
     return (
       <div className="grid min-h-screen place-items-center">
-        <LoadingState label="กำลังตรวจสอบการเข้าสู่ระบบ..." />
+        <LoadingState label="Checking your session…" />
       </div>
     )
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return null
   return children
 }
 

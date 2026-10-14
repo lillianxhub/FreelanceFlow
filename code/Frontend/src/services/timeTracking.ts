@@ -113,7 +113,7 @@ export async function listTimeEntries(projectId?: string): Promise<TimeEntry[]> 
 }
 
 export async function saveTimeEntry(entry: TimeEntryInput): Promise<TimeEntry> {
-  if (!entry.project_id) throw new Error('รายการเวลาต้องระบุโปรเจกต์')
+  if (!entry.project_id) throw new Error('Time entries require a project')
   if (entry.id) {
     return updateTimeEntry(entry.id, {
       projectId: entry.project_id,

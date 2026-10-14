@@ -7,6 +7,7 @@ export interface Task extends OwnedRecord {
   name: string
   description: string
   status: TaskStatus
+  version?: number
   sort_order: number
   due_date: string
 }

@@ -57,6 +57,7 @@ test('task mapper translates backend status and field names', () => {
     description: '',
     status: 'COMPLETED',
     sort_order: 2,
+    version: 0,
     due_date: '',
     created_at: source.createdAt,
     updated_at: source.updatedAt,

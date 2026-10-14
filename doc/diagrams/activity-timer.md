@@ -1,31 +1,27 @@
-> เอกสารประวัติที่รับต่อจาก Freelance Hub; ชื่อระบบ, URL และผลทดสอบเดิมไม่ใช่ deployment หรือผลตรวจของ FreelanceFlow ดู [README หลัก](../../README.md) สำหรับการตั้งค่าปัจจุบัน
+# แนวทาง Activity: Timer และ Board
 
-# Activity: เริ่มและหยุด Timer
+ใช้เมื่อเปลี่ยน feature ที่กระทบมุมมองนี้ อ่าน [กฎ diagrams](README.md) และ [feature workflow](../feature-workflow.md) ร่วมกัน
 
-ที่มา: Kompat ณ `131305f` นอกจากการตรวจ running timer ใน service ยังมี partial unique index ของ PostgreSQL ป้องกันคำขอ start พร้อมกัน กรณี Task COMPLETED การบันทึกใน transaction จะ rollback
+## กฎ implementation และ review
+
+- AUTO/MANUAL ต้องใช้กฎ owner/availability/timer เดียวกัน ไม่ทำ start/stop จาก UI อย่างอิสระจนเกิด partial writes
+- มี timer อื่นต้องเลือก switch-and-save หรือ cancel ไม่สลับเงียบ ๆ; same-column reorder ไม่เริ่ม timer ใหม่
+- MANUAL ต้องหยุด timer ก่อนย้าย active task ออกจากกำลังทำ; เปลี่ยน mode ไม่แตะ timer ที่วิ่ง
+- API failure ต้อง rollback writes และ UI โหลดข้อมูลจริง รวมกรณี stop สำเร็จแต่ response หาย
+- เพิ่ม/แก้/ลบ timer action ต้องทดสอบ one-running-timer invariant, elapsed duration, conflict และ transaction failure
+
+## ตัวอย่างเพื่อสื่อสารแนวทาง
 
 ```mermaid
 flowchart TD
-    A[User requests timer start] --> B[Controller reads authenticated owner]
-    B --> C[Service loads owned Project and optional Task]
-    C --> G[Call TimeEntry.startTimer with server Clock]
-    G --> D{Project can track time and Client is active?}
-    D -- No --> E[Return 409]
-    D -- Yes --> F{A running timer already exists?}
-    F -- Yes --> E
-    F -- No --> H[Insert timer; unique index prevents concurrent timers]
-    H --> T{Task supplied?}
-    T -- No --> I[Commit and return 201 StartedTimerResponse]
-    T -- Yes --> U[Call Task.start]
-    U -- COMPLETED --> E2[Return 409 and roll back transaction]
-    U -- OPEN --> V[Save Task as IN_PROGRESS]
-    U -- IN_PROGRESS --> I
-    V --> I
-    I --> J[User requests timer stop]
-    J --> K[Load running timer with pessimistic write lock]
-    K --> L{Timer found?}
-    L -- No --> M[Return 404]
-    L -- Yes --> N[Set endedAt and calculate durationSeconds]
-    N --> O[Publish TimerStoppedEvent]
-    O --> P[Commit and return 200 stopped entry]
+  Move[Move task into doing] --> Mode{AUTO mode?}
+  Mode -->|No| Manual[Change status only]
+  Mode -->|Yes| Running{Another task timer running?}
+  Running -->|No| Command[Atomic status and timer command]
+  Running -->|Yes| Choice{Confirm switch and save?}
+  Choice -->|No| Cancel[Keep previous state]
+  Choice -->|Yes| Command
+  Command --> Canonical[Reload task and current timer]
 ```
+
+ก่อนนำไปใช้เป็น diagram ปัจจุบัน ให้ระบุ source/commit ที่ตรวจและปรับ edges/guards ให้ตรง tests ตัวอย่างไม่แทน schema หรือสัญญา API

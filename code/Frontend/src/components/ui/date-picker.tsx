@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { CalendarDays } from 'lucide-react'
-import { th } from 'react-day-picker/locale'
+import { enUS } from 'react-day-picker/locale'
 import { Button } from './button'
 import { Calendar } from './calendar'
 import { Popover, PopoverContent, PopoverTrigger } from './popover'
@@ -37,7 +37,7 @@ function toDateValue(date: Date): string {
 function formatDateValue(value: string): string {
   const date = parseDate(value)
   if (!date) return ''
-  return new Intl.DateTimeFormat('th-TH', {
+  return new Intl.DateTimeFormat('en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -48,7 +48,7 @@ function DatePicker({
   id,
   value,
   onChange,
-  placeholder = 'วว/ดด/ปปปป',
+  placeholder = 'mm/dd/yyyy',
   disabled = false,
   required = false,
   onBlur,
@@ -86,7 +86,7 @@ function DatePicker({
       <PopoverContent align="start" className="w-auto p-0">
         <Calendar
           mode="single"
-          locale={th}
+          locale={enUS}
           selected={selectedDate}
           defaultMonth={selectedDate}
           onSelect={(date) => {

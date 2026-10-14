@@ -34,7 +34,7 @@ public class DashboardController {
         DashboardResponse data = dashboardService.getDashboard(ownerId);
 
         return ResponseEntity.ok(
-                ApiResult.success("ดึงข้อมูล Dashboard สำเร็จ", data)
+                ApiResult.success("Dashboard retrieved", data)
         );
     }
 
@@ -46,6 +46,6 @@ public class DashboardController {
     ) {
         UUID ownerId = userService.currentUserId();
         DashboardActivityResponse data = dashboardService.getActivity(ownerId, period);
-        return ResponseEntity.ok(ApiResult.success("ดึงข้อมูลกราฟ Dashboard สำเร็จ", data));
+        return ResponseEntity.ok(ApiResult.success("Dashboard chart retrieved", data));
     }
 }
