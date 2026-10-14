@@ -1,6 +1,9 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { workspaceLinks } from '../constants/navigation'
+import { adminLink, workspaceLinks } from '../constants/navigation'
+import { useAuth } from '../Authentication/useAuthentication'
+import { useFeatures } from '../Features/FeaturesContext'
 import type { SidebarLinkProps, SidebarProps } from '../types/ui'
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet'
 
@@ -30,15 +33,18 @@ function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
 }
 
 function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
+  const { user } = useAuth()
+  const { features } = useFeatures()
   return (
     <div className="flex h-full flex-col">
       <div className="mb-[22px] flex items-center gap-[11px] px-[5px]">
-        <span
-          aria-hidden="true"
-          className="grid size-[34px] shrink-0 place-items-center rounded-lg bg-[#1f2430] text-xs font-bold text-white"
-        >
-          FF
-        </span>
+        <Image
+          src="/logo-light.svg"
+          alt=""
+          width={34}
+          height={34}
+          className="size-[34px] shrink-0"
+        />
         <div className="min-w-0">
           <div className="text-base font-bold tracking-[-0.02em]">FreelanceFlow</div>
           <div className="mt-px text-[10px] font-semibold tracking-[0.16em] text-text-secondary uppercase">
@@ -52,8 +58,17 @@ function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
       </div>
       <nav className="flex flex-col gap-[3px]" onClick={onClose}>
         {workspaceLinks.map((link) => (
-          <SidebarLink key={link.to} {...link} />
+          <SidebarLink
+            key={link.to}
+            {...link}
+            badge={
+              link.to === '/finance' && features?.premiumEnforced && !features.finance
+                ? 'Premium'
+                : undefined
+            }
+          />
         ))}
+        {user?.role === 'ADMIN' && <SidebarLink {...adminLink} />}
       </nav>
     </div>
   )

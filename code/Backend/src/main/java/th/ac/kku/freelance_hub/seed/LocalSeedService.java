@@ -111,6 +111,7 @@ public class LocalSeedService {
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
     private final Clock clock;
+    private final LocalFinanceSeedService financeSeedService;
 
     @Transactional
     public SeedResult seed(String rawEmail, String password, boolean runningTimerRequested) {
@@ -161,6 +162,11 @@ public class LocalSeedService {
                 runningTimerRequested, counts);
 
         entityManager.flush();
+        LocalDate today = LocalDate.now(clock.withZone(BANGKOK));
+        LocalFinanceSeedService.Result finance = financeSeedService.seed(user.getId(), ids(clients), ids(projects),
+                today);
+        finance.created().forEach((kind, amount) -> counts.created.merge(kind, amount, Integer::sum));
+        finance.existing().forEach((kind, amount) -> counts.existing.merge(kind, amount, Integer::sum));
         printSummary(email, counts, timerRunningOrCreated);
         return new SeedResult(user.getId(), Map.copyOf(counts.created), Map.copyOf(counts.existing),
                 timerRunningOrCreated);
@@ -433,9 +439,17 @@ public class LocalSeedService {
         return value == null || value.isBlank() ? null : value;
     }
 
+    private static <T> Map<String, UUID> ids(Map<String, T> entities) {
+        Map<String, UUID> ids = new LinkedHashMap<>();
+        entities.forEach((key, entity) -> ids.put(key, entityId(entity)));
+        return ids;
+    }
+
     private static void printSummary(String email, Counts counts, boolean timer) {
         System.out.println("Local seed ready for " + email + " (password not displayed)");
-        for (String kind : List.of("user", "profile", "client", "project", "task", "entry", "running timer")) {
+        for (String kind : List.of("user", "profile", "client", "project", "task", "entry", "running timer",
+                "finance setting", "finance category", "finance preset", "quotation", "invoice", "payment",
+                "transaction", "finance document")) {
             System.out.printf("  %-13s created=%d existing=%d%n", kind,
                     counts.created.getOrDefault(kind, 0), counts.existing.getOrDefault(kind, 0));
         }

@@ -49,6 +49,8 @@ test('auth broadcasts ignore this tab and synchronize login and logout from anot
       user: {
         id: 'other-user',
         email: 'other@example.com',
+        role: 'USER',
+        plan: 'FREE',
         user_metadata: { full_name: 'other@example.com' },
       },
     })

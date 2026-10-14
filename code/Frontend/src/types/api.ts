@@ -30,6 +30,7 @@ export interface ApiUser {
   id: string
   email: string
   role?: 'USER' | 'ADMIN'
+  plan?: 'FREE' | 'PREMIUM'
   isActive?: boolean
   createdAt?: string
   displayName?: string | null

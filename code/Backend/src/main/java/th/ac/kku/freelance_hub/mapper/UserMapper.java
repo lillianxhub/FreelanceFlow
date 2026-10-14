@@ -21,6 +21,7 @@ public class UserMapper {
                 .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole())
+                .plan(user.getPlan())
                 .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt());
 

@@ -95,3 +95,40 @@ test('failed logout still clears the local session without BroadcastChannel', as
     })
   }
 })
+
+test('initial refresh failure during sign-in cannot discard the successful login', async () => {
+  const originalFetch = globalThis.fetch
+  const originalChannel = globalThis.BroadcastChannel
+  Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: undefined })
+  const initial = deferred<Response>()
+  const login = deferred<Response>()
+  globalThis.fetch = async (url) =>
+    String(url).endsWith('/auth/refresh') ? initial.promise : login.promise
+  const hook = await renderHook(useAuth, AuthProvider)
+  try {
+    let pending!: Promise<void>
+    await act(async () => {
+      pending = hook.current.login('new@example.com', 'password')
+    })
+    await act(async () => {
+      initial.resolve(new Response(null, { status: 401 }))
+      await initial.promise
+    })
+    await act(async () => {
+      login.resolve(
+        success({ token: 'new-access', user: { id: 'new-user', email: 'new@example.com' } }),
+      )
+      await pending
+    })
+    assert.equal(hook.current.user?.id, 'new-user')
+    assert.equal(getApiToken(), 'new-access')
+  } finally {
+    await hook.unmount()
+    globalThis.fetch = originalFetch
+    setApiToken(null)
+    Object.defineProperty(globalThis, 'BroadcastChannel', {
+      configurable: true,
+      value: originalChannel,
+    })
+  }
+})

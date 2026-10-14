@@ -16,7 +16,7 @@ export interface SidebarLinkProps {
   to: string
   label: string
   icon: IconType
-  badge?: number
+  badge?: number | string
 }
 
 export interface SidebarProps {
