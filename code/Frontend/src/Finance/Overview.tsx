@@ -1,103 +1,97 @@
 'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useFinance } from './FinanceContext'
-import { financeTotals, invoiceBalance, invoiceStatus, money } from './finance'
-import { FinanceShell, panel } from './FinanceShell'
+import { FinanceShell, panel, secondary } from './FinanceShell'
+import { decimalCents, financeApi, formatBaht, type FinanceSummary } from '../services/finance'
 
 export default function Overview() {
-  const { state } = useFinance()
-  const totals = financeTotals(state)
-  const cards = [
-    ['Income', totals.income],
-    ['Expenses', totals.expenses],
-    ['Net', totals.net],
-    ['Outstanding', totals.outstanding],
-  ] as const
-  const months = Array.from(new Set(state.transactions.map((item) => item.date.slice(0, 7)))).sort()
-  const max = Math.max(
-    1,
-    ...months.map((month) =>
-      state.transactions
-        .filter((item) => item.kind === 'income' && item.date.startsWith(month))
-        .reduce((sum, item) => sum + item.amountCents, 0),
-    ),
-  )
+  const [summary, setSummary] = useState<FinanceSummary | null>(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      setSummary(await financeApi.summary())
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not load Finance')
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
+    queueMicrotask(() => void load())
+  }, [])
+  const cards = summary
+    ? [
+        ['Cash received', summary.income],
+        ['Cash spent', summary.expenses],
+        ['Net cash', summary.net],
+        ['Outstanding invoices', summary.outstanding],
+        ['Invoice VAT', summary.vat],
+        ['Withheld tax', summary.withheld],
+      ]
+    : []
   return (
     <FinanceShell
       title="Financial overview"
-      description="A snapshot of your sample income, expenses, and invoices."
+      description="Your recorded cash flow and outstanding invoices in Thai baht."
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {cards.map(([label, value], index) => (
-          <div
-            key={label}
-            className={`${panel} border-t-[3px] ${['border-t-primary', 'border-t-orange', 'border-t-green', 'border-t-violet'][index]}`}
-          >
-            <p className="text-sm text-text-secondary">{label}</p>
-            <strong className="mt-4 block text-2xl tabular-nums">{money(value)}</strong>
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <section className={panel}>
-          <h2 className="font-semibold">Income by month</h2>
-          <p className="text-sm text-text-secondary">Based on sample transactions</p>
-          {months.length ? (
-            <div className="mt-7 space-y-4">
-              {months.map((month) => {
-                const amount = state.transactions
-                  .filter((item) => item.kind === 'income' && item.date.startsWith(month))
-                  .reduce((sum, item) => sum + item.amountCents, 0)
-                return (
-                  <div
-                    key={month}
-                    className="grid grid-cols-[6rem_1fr_7rem] items-center gap-3 text-sm"
-                  >
-                    <span>{month}</span>
-                    <div className="h-6 rounded bg-primary-soft">
-                      <div
-                        className="h-full rounded bg-primary"
-                        style={{ width: `${(amount / max) * 100}%` }}
-                      />
-                    </div>
-                    <strong className="text-right">{money(amount)}</strong>
-                  </div>
-                )
-              })}
+      {loading && <p role="status">Loading Finance summary…</p>}
+      {error && (
+        <div role="alert" className={panel}>
+          {error}
+          <button className={`${secondary} ml-3`} onClick={() => void load()}>
+            Retry
+          </button>
+        </div>
+      )}
+      {summary && (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {cards.map(([label, value]) => (
+            <div className={panel} key={label}>
+              <p className="text-sm text-text-secondary">{label}</p>
+              <strong className="mt-3 block text-2xl tabular-nums">{formatBaht(value)}</strong>
             </div>
-          ) : (
-            <p className="py-10 text-center text-text-secondary">No income to chart yet.</p>
-          )}
-        </section>
+          ))}
+        </div>
+      )}
+      {summary && (
         <section className={panel}>
-          <h2 className="font-semibold">Invoices to collect</h2>
+          <h2 className="font-semibold">Cash received by month</h2>
           <div className="mt-4 space-y-3">
-            {state.invoices
-              .filter(
-                (item) =>
-                  invoiceBalance(item, state.payments) > 0 &&
-                  invoiceStatus(item, state.payments) !== 'DRAFT',
-              )
-              .map((item) => (
+            {summary.cashByMonth.map((month) => {
+              const amount = decimalCents(month.income) ?? 0n
+              const max = summary.cashByMonth.reduce((largest, item) => {
+                const value = decimalCents(item.income) ?? 0n
+                return value > largest ? value : largest
+              }, 1n)
+              return (
                 <div
-                  key={item.id}
-                  className="flex justify-between gap-3 border-b border-border pb-3 text-sm"
+                  key={month.month}
+                  className="grid grid-cols-[5rem_1fr_8rem] items-center gap-3 text-sm"
                 >
-                  <span>
-                    {item.number}
-                    <small className="block text-text-secondary">{item.client}</small>
-                  </span>
-                  <strong>{money(invoiceBalance(item, state.payments))}</strong>
+                  <span>{month.month}</span>
+                  <div className="h-5 rounded bg-primary-soft">
+                    <div
+                      className="h-full rounded bg-primary"
+                      style={{ width: `${Number((amount * 100n) / max)}%` }}
+                    />
+                  </div>
+                  <strong className="text-right tabular-nums">{formatBaht(month.income)}</strong>
                 </div>
-              ))}
+              )
+            })}
           </div>
-          <Link
-            href="/finance/payments"
-            className="mt-5 inline-block text-sm font-semibold text-primary"
-          >
-            View payments →
-          </Link>
         </section>
+      )}
+      <div className="flex flex-wrap gap-3">
+        <Link className="text-primary underline" href="/finance/invoices">
+          Manage invoices
+        </Link>
+        <Link className="text-primary underline" href="/finance/settings">
+          Business settings and templates
+        </Link>
       </div>
     </FinanceShell>
   )

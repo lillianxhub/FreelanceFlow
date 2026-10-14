@@ -169,84 +169,159 @@ test('unfinished tasks from the previous day need an explicit carry-over', async
   await expect(page.getByTestId('today-drop').getByText('Carry Task')).toBeVisible()
 })
 
-test('finance prototype connects invoice payments to income and outstanding totals', async ({
+test('persisted finance supports invoice preview, partial payments, reload and Premium revocation', async ({
   page,
   request,
 }) => {
+  test.skip(
+    !process.env.E2E_ADMIN_EMAIL || !process.env.E2E_ADMIN_PASSWORD,
+    'Admin test account is required to grant Premium',
+  )
   const email = `finance-${crypto.randomUUID()}@example.com`
-  await api(request, '/auth/register', 'post', { email, password, displayName: 'Finance User' })
+  const registration = await api(request, '/auth/register', 'post', {
+    email,
+    password,
+    displayName: 'Finance User',
+  })
+  const admin = await api(request, '/auth/login', 'post', {
+    email: process.env.E2E_ADMIN_EMAIL,
+    password: process.env.E2E_ADMIN_PASSWORD,
+  })
+  const adminUsers = await api(
+    request,
+    `/admin/users?search=${encodeURIComponent(email)}`,
+    'get',
+    undefined,
+    admin.token,
+  )
+  await api(
+    request,
+    `/admin/users/${registration.user.id}/plan`,
+    'patch',
+    { plan: 'PREMIUM', version: adminUsers[0].version },
+    admin.token,
+  )
   await page.goto('/login')
   await page.getByLabel('Email').fill(email)
   await page.locator('input[name=password]').fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
+  const client = await api(
+    request,
+    '/clients',
+    'post',
+    { name: 'Finance Client' },
+    registration.token,
+  )
   await page.goto('/finance/invoices')
-  await expect(
-    page.getByText('Prototype — sample data only. Changes reset on reload.'),
-  ).toBeVisible()
   await page.getByRole('button', { name: 'New invoice' }).click()
-  await page.getByLabel('Client', { exact: true }).fill('Sample Client')
-  await page.getByLabel('Project', { exact: true }).fill('Sample Project')
+  await page.getByLabel('Client', { exact: true }).selectOption(client.id)
   await page.getByLabel('Issue date').fill('2026-10-01')
   await page.getByLabel('Due date').fill('2026-10-31')
-  await page.getByLabel('Description', { exact: true }).fill('Sample work')
-  await page.getByLabel('Qty').fill('2')
-  await page.getByLabel('Unit price (THB)').fill('1250.50')
-  await page.getByRole('button', { name: 'Save demo draft' }).click()
-  const row = page.getByRole('row').filter({ hasText: 'Sample Client' })
+  await page.getByLabel('Description', { exact: true }).fill('Design work')
+  await page.getByLabel('Quantity').fill('2')
+  await page.getByLabel('Price', { exact: true }).fill('1250.50')
+  await page.getByRole('button', { name: 'Save draft' }).click()
+  const row = page.getByRole('row').filter({ hasText: 'Finance Client' })
   await expect(row).toContainText('DRAFT')
   await row.getByRole('button', { name: 'Preview' }).click()
-  await expect(page.getByText('SAMPLE', { exact: true })).toBeVisible()
+  await expect(page.getByRole('dialog')).toContainText('2,501.00')
   await page.getByRole('dialog').press('Escape')
-  await row.getByRole('button', { name: 'Issue demo' }).click()
+  page.once('dialog', (dialog) => dialog.accept())
+  await row.getByRole('button', { name: 'Issue', exact: true }).click()
   await expect(row).toContainText('ISSUED')
+  const invoices = await api(request, '/finance/invoices', 'get', undefined, registration.token)
+  const invoice = invoices[0]
+  await page.goto('/finance/payments')
+  await page.getByRole('button', { name: 'Record payment', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Invoice', exact: true }).selectOption(invoice.id)
+  await page.getByLabel('Cash received (THB)').fill('1000')
+  await page.getByLabel('Withheld tax (THB)').fill('50')
   await page
-    .getByRole('navigation', { name: 'Finance pages' })
-    .getByRole('link', { name: 'Payments' })
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Record payment', exact: true })
     .click()
-  await page.getByRole('button', { name: 'Record payment' }).click()
-  await page
-    .getByRole('combobox', { name: 'Invoice' })
-    .selectOption({ label: 'SAMPLE-003 · Sample Client' })
-  await page.getByLabel('Amount (THB)').fill('1000')
-  await page.getByLabel('Payment date').fill('2026-10-02')
-  await page.getByRole('button', { name: 'Record sample payment' }).click()
-  await page
-    .getByRole('navigation', { name: 'Finance pages' })
-    .getByRole('link', { name: 'Invoices' })
-    .click()
-  await expect(page.getByRole('row').filter({ hasText: 'Sample Client' })).toContainText(
-    'PARTIALLY PAID',
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.goto('/finance/invoices')
+  await expect(page.getByRole('row').filter({ hasText: 'Finance Client' })).toContainText(
+    'PARTIALLY_PAID',
   )
-  await page
-    .getByRole('navigation', { name: 'Finance pages' })
-    .getByRole('link', { name: 'Overview' })
-    .click()
-  await expect(page.getByText(/26,501\.00/)).toBeVisible()
-  await page
-    .getByRole('navigation', { name: 'Finance pages' })
-    .getByRole('link', { name: 'Income' })
-    .click()
-  await expect(page.getByText('Payment for SAMPLE-003')).toBeVisible()
-  await page
-    .getByRole('navigation', { name: 'Finance pages' })
-    .getByRole('link', { name: 'Payments' })
-    .click()
-  await page.getByRole('button', { name: 'Record payment' }).click()
-  await page
-    .getByRole('combobox', { name: 'Invoice' })
-    .selectOption({ label: 'SAMPLE-003 · Sample Client' })
-  await page.getByLabel('Amount (THB)').fill('2000')
-  await page.getByLabel('Payment date').fill('2026-10-03')
-  await page.getByRole('button', { name: 'Record sample payment' }).click()
-  await expect(page.getByRole('alert')).toContainText('within its outstanding balance')
-  await page.getByLabel('Amount (THB)').fill('1501')
-  await page.getByRole('button', { name: 'Record sample payment' }).click()
-  await page
-    .getByRole('navigation', { name: 'Finance pages' })
-    .getByRole('link', { name: 'Invoices' })
-    .click()
-  await expect(page.getByRole('row').filter({ hasText: 'Sample Client' })).toContainText('PAID')
   await page.reload()
-  await expect(page.getByRole('row').filter({ hasText: 'Sample Client' })).toHaveCount(0)
+  await expect(page.getByRole('row').filter({ hasText: 'Finance Client' })).toContainText(
+    'PARTIALLY_PAID',
+  )
+  const summary = await api(request, '/finance/summary', 'get', undefined, registration.token)
+  expect(summary.income).toBe('1000.00')
+  expect(summary.outstanding).toBe('1451.00')
+  await page.goto('/finance/income')
+  await expect(page.getByText(`Payment for ${invoice.number}`)).toBeVisible()
+  const featureSettings = await api(request, '/admin/features', 'get', undefined, admin.token)
+  await api(
+    request,
+    '/admin/features',
+    'patch',
+    { premiumEnforced: true, version: featureSettings.version },
+    admin.token,
+  )
+  try {
+    const current = await api(
+      request,
+      `/admin/users?search=${encodeURIComponent(email)}`,
+      'get',
+      undefined,
+      admin.token,
+    )
+    await api(
+      request,
+      `/admin/users/${registration.user.id}/plan`,
+      'patch',
+      { plan: 'FREE', version: current[0].version },
+      admin.token,
+    )
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+    await expect(page.getByRole('heading', { name: 'Finance requires Premium' })).toBeVisible()
+    const denied = await request.get('/api/finance/summary', {
+      headers: { Authorization: `Bearer ${registration.token}` },
+    })
+    expect(denied.status()).toBe(403)
+  } finally {
+    const latest = await api(request, '/admin/features', 'get', undefined, admin.token)
+    await api(
+      request,
+      '/admin/features',
+      'patch',
+      { premiumEnforced: featureSettings.premiumEnforced, version: latest.version },
+      admin.token,
+    )
+  }
+})
+
+test('Free accounts can use every Finance route while Premium enforcement is off', async ({
+  page,
+  request,
+}) => {
+  const email = `free-${crypto.randomUUID()}@example.com`
+  await api(request, '/auth/register', 'post', { email, password, displayName: 'Free User' })
+  await page.goto('/login')
+  await page.getByLabel('Email').fill(email)
+  await page.locator('input[name=password]').fill(password)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).toHaveURL(/\/dashboard$/)
+  for (const route of [
+    '/finance',
+    '/finance/income',
+    '/finance/expenses',
+    '/finance/invoices',
+    '/finance/quotations',
+    '/finance/payments',
+    '/finance/settings',
+    '/finance/tax-invoices',
+  ]) {
+    await page.goto(route)
+    await expect(page.getByRole('navigation', { name: 'Finance pages' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Finance requires Premium' })).toHaveCount(0)
+    await expect(
+      page.getByText('Prototype — sample data only. Changes reset on reload.'),
+    ).toHaveCount(0)
+  }
 })

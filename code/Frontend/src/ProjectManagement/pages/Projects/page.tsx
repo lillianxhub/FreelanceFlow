@@ -343,8 +343,8 @@ function ProjectsPage() {
           if (!open) setModalOpen(false)
         }}
       >
-        <SheetContent className="!w-full !max-w-full overflow-y-auto sm:!w-[640px] sm:!max-w-[640px]">
-          <SheetHeader>
+        <SheetContent className="!w-full !max-w-full overflow-y-auto p-4 sm:!w-[640px] sm:!max-w-[640px] sm:p-6">
+          <SheetHeader className="p-0 pr-10">
             <SheetTitle>{form.id ? 'Edit project' : 'Add project'}</SheetTitle>
           </SheetHeader>
           <ProjectForm

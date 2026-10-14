@@ -7,8 +7,11 @@ const links = [
   ['/finance', 'Overview'],
   ['/finance/income', 'Income'],
   ['/finance/expenses', 'Expenses'],
+  ['/finance/quotations', 'Quotations'],
   ['/finance/invoices', 'Invoices'],
   ['/finance/payments', 'Payments'],
+  ['/finance/tax-invoices', 'Tax invoices'],
+  ['/finance/settings', 'Settings & templates'],
 ]
 export function FinanceShell({
   title,
@@ -39,12 +42,6 @@ export function FinanceShell({
           </Link>
         ))}
       </nav>
-      <div
-        role="note"
-        className="rounded-lg border border-[#d9e1ff] bg-primary-soft px-4 py-3 text-sm text-primary-dark"
-      >
-        Prototype — sample data only. Changes reset on reload.
-      </div>
       {children}
     </div>
   )

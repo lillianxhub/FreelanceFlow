@@ -22,6 +22,7 @@ const labels: Record<string, string> = {
   reports: 'Reports',
   finance: 'Finance',
   profile: 'Profile',
+  admin: 'Admin',
 }
 
 function Topbar({ onMenu }: TopbarProps) {

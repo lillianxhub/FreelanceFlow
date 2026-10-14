@@ -3,6 +3,7 @@ import {
   getApiToken,
   refreshApiToken,
   setApiToken,
+  supersedePendingRefresh,
   subscribeToSessionInvalidation,
 } from '../api/apiClient'
 import { ApiError } from '../api/apiError'
@@ -14,6 +15,8 @@ function toAuthUser(user: BackendUser): AuthUser {
   return {
     id: user.id,
     email: user.email,
+    role: user.role || 'USER',
+    plan: user.plan || 'FREE',
     user_metadata: { full_name: user.displayName || user.email },
   }
 }
@@ -35,6 +38,7 @@ export async function getCurrentSession(): Promise<AuthSession | null> {
 }
 
 export async function signIn(email: string, password: string): Promise<AuthSession> {
+  supersedePendingRefresh()
   const response = await api.post<AuthResponse>('/auth/login', { email: email.trim(), password })
   setApiToken(response.data.token)
   if (typeof BroadcastChannel !== 'undefined') {

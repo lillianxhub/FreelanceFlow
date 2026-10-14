@@ -16,6 +16,8 @@ export interface BackendUser {
   id: string
   email: string
   displayName?: string
+  role?: 'USER' | 'ADMIN'
+  plan?: 'FREE' | 'PREMIUM'
 }
 
 export interface AuthResponse {
@@ -41,6 +43,8 @@ export type RegisterFieldErrors = Partial<Record<keyof RegisterFormValues, strin
 export interface AuthUser {
   id: string
   email: string
+  role?: 'USER' | 'ADMIN'
+  plan?: 'FREE' | 'PREMIUM'
   user_metadata: { full_name: string }
 }
 
