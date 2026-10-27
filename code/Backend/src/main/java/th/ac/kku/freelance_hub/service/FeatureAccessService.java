@@ -1,6 +1,8 @@
 package th.ac.kku.freelance_hub.service;
 
 import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +20,8 @@ import th.ac.kku.freelance_hub.repository.FeatureSettingsRepository;
 public class FeatureAccessService {
     private final FeatureSettingsRepository repository;
     private final CurrentUserProvider currentUser;
-    public record Features(UserPlan plan, boolean finance, boolean premiumEnforced) {}
+    public record Features(UserPlan plan, boolean finance, boolean premiumEnforced, boolean trialActive,
+                           Instant trialEndsAt, boolean trialAvailable) {}
 
     @Transactional(readOnly = true)
     public Features features() { return features(currentUser.currentUserId()); }
@@ -29,15 +32,34 @@ public class FeatureAccessService {
         if (account == null || !account.active())
             throw new FinanceException(HttpStatus.FORBIDDEN, "FINANCE_ACCOUNT_INACTIVE", "An active account is required");
         var settings = repository.settings();
-        boolean finance = !settings.premiumEnforced() || "ADMIN".equals(account.role()) || "PREMIUM".equals(account.plan());
-        return new Features(UserPlan.valueOf(account.plan()), finance, settings.premiumEnforced());
+        boolean trialActive = account.trialEndsAt() != null && Instant.now().isBefore(account.trialEndsAt());
+        boolean trialAvailable = "FREE".equals(account.plan()) && "USER".equals(account.role())
+                && account.trialEndsAt() == null;
+        boolean finance = !settings.premiumEnforced() || "ADMIN".equals(account.role()) || "PREMIUM".equals(account.plan()) || trialActive;
+        return new Features(UserPlan.valueOf(account.plan()), finance, settings.premiumEnforced(), trialActive, account.trialEndsAt(), trialAvailable);
+    }
+
+    @Transactional
+    public Features startTrial() {
+        UUID id = currentUser.currentUserId();
+        features(id); // Validate the authenticated account before writing.
+        if (!repository.startTrial(id, Instant.now().plus(7, ChronoUnit.DAYS)))
+            throw new InvalidStateException("A Premium trial is available once per Free account");
+        return features(id);
     }
 
     @Transactional(readOnly = true)
     public UUID requireFinance() {
         UUID id = currentUser.currentUserId();
+        features(id);
+        return id;
+    }
+
+    @Transactional(readOnly = true)
+    public UUID requireFinanceCreation() {
+        UUID id = currentUser.currentUserId();
         if (!features(id).finance())
-            throw new FinanceException(HttpStatus.FORBIDDEN, "FINANCE_PREMIUM_REQUIRED", "Finance requires Premium or Admin access");
+            throw new FinanceException(HttpStatus.FORBIDDEN, "FINANCE_PREMIUM_REQUIRED", "Creating Finance records requires Premium or Admin access");
         return id;
     }
 

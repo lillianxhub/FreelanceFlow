@@ -1,3 +1,4 @@
+import { DEFAULT_RECORD_COLOR } from '../constants/colors'
 import { api } from '../api/apiClient'
 import type { ApiMeta, ApiProject } from '../types/api'
 import type { Project, ProjectInput, ProjectStatus } from '../types/project'
@@ -14,7 +15,7 @@ export function toProject(source: ApiProject): Project {
     client_name: source.client?.name,
     name: source.name,
     description: emptyString(source.description),
-    color: source.color || '#4F6BFF',
+    color: source.color || DEFAULT_RECORD_COLOR,
     status: source.status,
     billing_type: 'HOURLY',
     hourly_rate: null,

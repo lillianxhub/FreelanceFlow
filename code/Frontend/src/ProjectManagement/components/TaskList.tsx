@@ -37,7 +37,7 @@ export default function TaskList({
           <Button
             variant="ghost"
             size="icon-sm"
-            className={`rounded-md border ${task.status === 'COMPLETED' ? 'border-green bg-green text-white hover:bg-green hover:text-white' : 'border-border bg-background text-text-secondary'}`}
+            className={`rounded-md border ${task.status === 'COMPLETED' ? 'border-green bg-green text-primary-foreground hover:bg-green hover:text-primary-foreground' : 'border-border bg-background text-text-secondary'}`}
             type="button"
             aria-label={task.status === 'COMPLETED' ? 'Resume work' : 'Mark complete'}
             aria-pressed={task.status === 'COMPLETED'}

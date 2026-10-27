@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import AuthInput from './AuthInput'
 import { useAuth } from '../useAuthentication'
 import { getErrorMessage } from '../../api/apiError'
+import { BrandLogo } from '../../components/BrandLogo'
 
 function LoginForm() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -37,11 +38,10 @@ function LoginForm() {
     <AuthenticationLayout>
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="auth-brand">
-          <img src="/logo-light.svg" alt="" />
+          <BrandLogo />
           <strong>FreelanceFlow</strong>
         </div>
         <h1>Sign in</h1>
-        {/* <p className="auth-description">Manage clients, projects, and time in one place</p> */}
         {error && <p className="auth-error">{error}</p>}
 
         <AuthInput

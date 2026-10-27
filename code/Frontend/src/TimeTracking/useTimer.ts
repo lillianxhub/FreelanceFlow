@@ -1,3 +1,4 @@
+import { DEFAULT_RECORD_COLOR } from '../constants/colors'
 import { useEffect, useMemo, useState } from 'react'
 import {
   cancelTimer as cancelTimerRequest,
@@ -60,7 +61,11 @@ export function useTimer(
     runningEntry &&
     (data.projects.find((project) => project.id === runningEntry.project_id) ||
       (currentEntry
-        ? { id: currentEntry.project.id, name: currentEntry.project.name, color: '#4F6BFF' }
+        ? {
+            id: currentEntry.project.id,
+            name: currentEntry.project.name,
+            color: DEFAULT_RECORD_COLOR,
+          }
         : null))
   const runningTask =
     runningEntry &&

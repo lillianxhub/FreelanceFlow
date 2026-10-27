@@ -1,3 +1,4 @@
+import { DEFAULT_RECORD_COLOR } from '../../constants/colors'
 import { Check } from 'lucide-react'
 import { Slider } from 'radix-ui'
 import { useRef, useState, type PointerEvent } from 'react'
@@ -8,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './popover'
 type Hsv = { hue: number; saturation: number; brightness: number }
 
 const presets = [
-  '#4F6BFF',
+  DEFAULT_RECORD_COLOR,
   '#7C3AED',
   '#0EA5E9',
   '#10B981',
@@ -80,7 +81,7 @@ export function ColorPicker({
   disabled,
   'aria-label': ariaLabel,
 }: ColorPickerProps) {
-  const selectedColor = isHex(value) ? value.toUpperCase() : '#4F6BFF'
+  const selectedColor = isHex(value) ? value.toUpperCase() : DEFAULT_RECORD_COLOR
   const [hueForGray, setHueForGray] = useState<number | null>(null)
   const [draftHex, setDraftHex] = useState<string | null>(null)
   const areaRef = useRef<HTMLDivElement>(null)

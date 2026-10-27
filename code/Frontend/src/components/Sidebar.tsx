@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { adminLink, workspaceLinks } from '../constants/navigation'
 import { useAuth } from '../Authentication/useAuthentication'
 import { useFeatures } from '../Features/FeaturesContext'
 import type { SidebarLinkProps, SidebarProps } from '../types/ui'
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet'
+import { BrandLogo } from './BrandLogo'
 
 function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
   const Icon = icon
@@ -24,7 +24,7 @@ function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
       </span>
       <span>{label}</span>
       {badge !== undefined && (
-        <span className="min-w-[21px] rounded-full bg-[#eef1f7] px-1.5 py-0.5 text-center text-xs text-[#5c6780]">
+        <span className="min-w-[21px] rounded-full bg-surface-soft px-1.5 py-0.5 text-center text-xs text-text-secondary">
           {badge}
         </span>
       )}
@@ -38,13 +38,7 @@ function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
   return (
     <div className="flex h-full flex-col">
       <div className="mb-[22px] flex items-center gap-[11px] px-[5px]">
-        <Image
-          src="/logo-light.svg"
-          alt=""
-          width={34}
-          height={34}
-          className="size-[34px] shrink-0"
-        />
+        <BrandLogo size={34} />
         <div className="min-w-0">
           <div className="text-base font-bold tracking-[-0.02em]">FreelanceFlow</div>
           <div className="mt-px text-[10px] font-semibold tracking-[0.16em] text-text-secondary uppercase">

@@ -30,6 +30,13 @@ public class UserController {
         return ResponseEntity.ok(ApiResult.success("Features", featureAccess.features()));
     }
 
+    @PostMapping("/me/premium-trial")
+    @Tag(name = "Premium")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResult<th.ac.kku.freelance_hub.service.FeatureAccessService.Features>> startTrial() {
+        return ResponseEntity.ok(ApiResult.success("7-day Premium trial started", featureAccess.startTrial()));
+    }
+
     /**
      * Get current authenticated user profile
      * GET /api/users/me

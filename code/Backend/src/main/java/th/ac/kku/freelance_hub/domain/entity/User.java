@@ -45,6 +45,9 @@ public class User {
     @Builder.Default
     private UserPlan plan = UserPlan.FREE;
 
+    @Column(name = "premium_trial_ends_at")
+    private Instant premiumTrialEndsAt;
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;

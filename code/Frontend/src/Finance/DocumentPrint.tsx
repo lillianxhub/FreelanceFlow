@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type CSSProperties } from 'react'
 import {
   decimalCents,
   formatBaht,
@@ -82,12 +82,10 @@ export function DocumentPrint({
           </div>
           <article
             id="finance-print"
-            className="mx-auto min-h-[297mm] max-w-[210mm] bg-white p-4 sm:p-[16mm] text-sm shadow-xl"
+            className="mx-auto min-h-[297mm] max-w-[210mm] p-4 sm:p-[16mm] text-sm shadow-xl"
+            style={{ '--document-brand': brand.color || undefined } as CSSProperties}
           >
-            <header
-              className="flex flex-wrap justify-between gap-4 border-b-2 pb-5"
-              style={{ borderColor: brand.color || '#315bd7' }}
-            >
+            <header className="document-brand-border flex flex-wrap justify-between gap-4 border-b-2 pb-5">
               <div>
                 {seller.logo_asset_id && (
                   <LogoImage
@@ -109,15 +107,12 @@ export function DocumentPrint({
               </div>
             </header>
             {(preview?.example || status === 'DRAFT' || status === 'CANCELLED') && (
-              <div className="my-4 rounded border-2 border-red-500 p-2 text-center text-xl font-bold text-red-600">
+              <div className="document-status-banner my-4 rounded border-2 p-2 text-center text-xl font-bold">
                 {preview?.example ? 'EXAMPLE / DRAFT' : status}
               </div>
             )}
             {preview && preview.errors.length > 0 && (
-              <div
-                role="alert"
-                className="my-4 rounded border border-amber-300 bg-amber-50 p-3 text-amber-900"
-              >
+              <div role="alert" className="document-preview-warning my-4 rounded border p-3">
                 <p className="font-semibold">Some amounts cannot be calculated:</p>
                 <ul className="list-disc pl-5">
                   {preview.errors.map((error) => (

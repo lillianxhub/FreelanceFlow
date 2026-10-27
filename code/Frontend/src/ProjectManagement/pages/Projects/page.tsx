@@ -1,3 +1,4 @@
+import { DEFAULT_RECORD_COLOR } from '../../../constants/colors'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { NativeSelect } from '../../../components/ui/native-select'
@@ -25,7 +26,7 @@ const emptyForm: ProjectDraft = {
   name: '',
   client_id: '',
   description: '',
-  color: '#4F6BFF',
+  color: DEFAULT_RECORD_COLOR,
   status: 'PLANNED',
   billing_type: 'HOURLY',
   hourly_rate: 850,

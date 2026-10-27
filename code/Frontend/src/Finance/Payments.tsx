@@ -237,7 +237,7 @@ export default function Payments() {
                     </button>
                     {!item.cancelled && (
                       <button
-                        className="text-red-600"
+                        className="text-destructive"
                         disabled={busy}
                         onClick={() => void cancel(item)}
                       >
@@ -346,7 +346,7 @@ export default function Payments() {
               />
             </label>
             {error && (
-              <p role="alert" className="text-red-600">
+              <p role="alert" className="text-destructive">
                 {error}
               </p>
             )}

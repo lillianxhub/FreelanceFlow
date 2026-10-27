@@ -68,7 +68,7 @@ function NativeSelect({
         id={id}
         size={size}
         className={cn(
-          'rounded-lg border-input bg-white text-[var(--text)] text-[length:var(--font-size-base)]',
+          'rounded-lg border-input bg-surface text-[var(--text)] text-[length:var(--font-size-base)]',
           wrapperClassName,
           className,
         )}

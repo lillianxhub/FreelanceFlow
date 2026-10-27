@@ -45,7 +45,7 @@ export default function ClientCard({
 
   return (
     <Card asChild>
-      <article className="relative p-5 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(30,48,83,0.1)]">
+      <article className="relative p-5 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-soft">
         <Link
           className="absolute inset-0 z-0 rounded-[inherit]"
           href={`/clients/${client.id}`}
@@ -55,7 +55,7 @@ export default function ClientCard({
         <div className="pointer-events-none relative z-10 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
-              className={`grid size-[42px] shrink-0 place-items-center rounded-xl text-base font-bold text-white ${avatarColor}`}
+              className={`grid size-[42px] shrink-0 place-items-center rounded-xl text-base font-bold text-primary-foreground ${avatarColor}`}
             >
               {initials(displayName)}
             </span>
