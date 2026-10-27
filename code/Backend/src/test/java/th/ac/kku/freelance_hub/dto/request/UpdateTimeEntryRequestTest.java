@@ -74,7 +74,7 @@ class UpdateTimeEntryRequestTest {
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
-                .contains("กรุณาระบุเวลาสิ้นสุดหรือระยะเวลาอย่างใดอย่างหนึ่ง");
+                .contains("Enter an end time or duration");
     }
 
     @Test
@@ -88,9 +88,9 @@ class UpdateTimeEntryRequestTest {
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
                 .containsExactlyInAnyOrder(
-                        "กรุณาระบุโปรเจกต์",
-                        "กรุณาระบุเวลาเริ่มต้น",
-                        "กรุณาระบุเวลาสิ้นสุดหรือระยะเวลาอย่างใดอย่างหนึ่ง"
+                        "Select a project",
+                        "Enter a start time",
+                        "Enter an end time or duration"
                 );
     }
 }

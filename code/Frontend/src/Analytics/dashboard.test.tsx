@@ -81,8 +81,8 @@ test('Timer card shows an empty state when there is no running timer or recent e
       onStop: async () => {},
     }),
   )
-  assert.match(html, /ไม่ได้จับเวลา/)
-  assert.match(html, /ยังไม่มีรายการเวลา/)
+  assert.match(html, /Timer stopped/)
+  assert.match(html, /No time entries yet/)
 })
 
 test('Timer card shows the latest entry and accepts a running timer without a task', () => {
@@ -104,7 +104,7 @@ test('Timer card shows the latest entry and accepts a running timer without a ta
     }),
   )
   assert.match(stoppedHtml, /โปรเจกต์ล่าสุด/)
-  assert.match(stoppedHtml, /ไม่ระบุงาน/)
+  assert.match(stoppedHtml, /No task selected/)
 
   const runningHtml = renderToStaticMarkup(
     createElement(DashboardTimerCard, {
@@ -122,7 +122,7 @@ test('Timer card shows the latest entry and accepts a running timer without a ta
       onStop: async () => {},
     }),
   )
-  assert.match(runningHtml, /กำลังทำงาน/)
+  assert.match(runningHtml, /Working/)
   assert.match(runningHtml, /โปรเจกต์ปัจจุบัน/)
-  assert.match(runningHtml, /หยุดจับเวลา/)
+  assert.match(runningHtml, /Stop timer/)
 })

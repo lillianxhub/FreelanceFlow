@@ -21,8 +21,8 @@ export default function PasswordInput(props: PasswordInputProps) {
         size="icon"
         className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-muted hover:text-foreground"
         type="button"
-        aria-label={visible ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
-        title={visible ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+        aria-label={visible ? 'Hide password' : 'Show password'}
+        title={visible ? 'Hide password' : 'Show password'}
         onClick={() => setVisible((current) => !current)}
         disabled={props.disabled}
       >

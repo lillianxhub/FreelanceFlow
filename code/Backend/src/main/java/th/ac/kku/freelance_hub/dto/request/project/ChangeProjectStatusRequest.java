@@ -13,6 +13,6 @@ import th.ac.kku.freelance_hub.domain.enums.ProjectStatus;
 @AllArgsConstructor
 public class ChangeProjectStatusRequest {
 
-    @NotNull(message = "กรุณาระบุสถานะโปรเจกต์")
+    @NotNull(message = "Select a project status")
     private ProjectStatus status;
 }

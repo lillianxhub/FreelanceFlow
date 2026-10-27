@@ -1,45 +1,23 @@
-> เอกสารประวัติที่รับต่อจาก Freelance Hub; ชื่อระบบ, URL และผลทดสอบเดิมไม่ใช่ deployment หรือผลตรวจของ FreelanceFlow ดู [README หลัก](../README.md) สำหรับการตั้งค่าปัจจุบัน
+# ดัชนีกฎและแนวทาง implementation
 
-# เอกสารส่งมอบ - Freelance Hub
+ใช้เอกสารนี้นำทางสำหรับทุกการเปลี่ยนแปลงใน FreelanceFlow คำว่า **ต้อง/ห้าม** เป็นกฎ review; **ควร** เป็นแนวทางที่เลือกต่างได้โดยบอกเหตุผลใน PR หลักการเหล่านี้เป็นมาตรฐานเป้าหมาย ไม่ใช่คำรับรองว่าโค้ดเดิมปฏิบัติครบแล้ว
 
-เอกสารฉบับรวมสำหรับรายวิชา CP353002 ตรวจจาก implementation ณ commit `dbcc4b9` วันที่ 10 ตุลาคม 2026 เนื้อหารวมจากสมาชิกทั้ง 5 คน
+| เอกสาร | ใช้เมื่อ |
+| --- | --- |
+| [Feature workflow](feature-workflow.md) | เพิ่ม แก้ไข refactor หรือลบ feature |
+| [Requirements](../REQUIREMENTS.md) | เขียน acceptance criteria และขอบเขต |
+| [Backend](../code/Backend/README.md) | เปลี่ยน Spring Boot, transaction หรือ persistence |
+| [Frontend](../code/Frontend/README.md) | เปลี่ยน Next.js, UI หรือ browser state |
+| [API integration](../code/Frontend/docs/BACKEND_INTEGRATION.md) | เปลี่ยน request/response หรือ authentication |
+| [SOLID](solid-analysis.md) / [Patterns](design-patterns.md) | แยก responsibilities และเลือก abstraction |
+| [Error contract](error-contract.md) / [Reports](reports-summary-api.md) | เปลี่ยนสัญญา API |
+| [Data dictionary](data-dictionary.md) | เพิ่ม/เปลี่ยน/เลิกใช้ schema |
+| [Use cases](use-case-description.md) | ออกแบบ flow และ failure paths |
+| [Diagrams](diagrams/README.md) | สื่อสารผลกระทบด้าน architecture/state/data |
+| [Tests](../test/README.md) / [CI](ci-cd.md) | พิสูจน์พฤติกรรมและเตรียม PR |
+| [Setup verification](../SETUP_VERIFICATION.md) | ตรวจ environment ใหม่ |
+| [Development sequence](../SCHEDULE.md) | แบ่งงานและลำดับส่งมอบ |
+| [References](references.md) | ตรวจเอกสารทางการและเวอร์ชัน |
+| [PR template](../.github/pull_request_template.md) / [Feature removal](../.github/PULL_REQUEST_TEMPLATE/feature-removal-template.md) | บันทึก design, compatibility และผลตรวจสำหรับ review |
 
-## เอกสารหลัก
-
-| เอกสาร | เนื้อหา |
-|---|---|
-| [SOLID Analysis](solid-analysis.md) | หลักฐานทั้ง 5 principles พร้อมไฟล์/บรรทัดและข้อจำกัด |
-| [Design Patterns](design-patterns.md) | Architectural patterns และ Behavioral GoF patterns ที่มีจริง พร้อมตำแหน่งใน diagram |
-| [Use Case Description](use-case-description.md) | Actors, endpoint contracts, flows, alternative flows และ requirement boundaries ของทุก feature |
-| [Data Dictionary](data-dictionary.md) | Schema หลัง Flyway V1-V20, constraints, indexes, ความสัมพันธ์และ archive/soft-delete semantics |
-| [Diagram Index](diagrams/README.md) | Use Case, Domain, Class, ER, Sequence 6 scenarios, Activity, Component, Deployment และ State |
-| [Error Contract](error-contract.md) | HTTP status, details schemas และ flow ของ Chain/Factory พร้อม source references |
-| [Reports API](reports-summary-api.md) | Contract ของข้อมูลหน้า Reports ที่มีอยู่เดิม |
-| [CI/CD](ci-cd.md) | Pipeline, Docker/Flyway checks, quality gates และเงื่อนไข deploy จากเอกสาร Petpinyo |
-| [Test Plan / Report / Coverage](../test/README.md) | ผลรันทดสอบจริงและขอบเขตหลักฐานที่ยังไม่ได้เก็บ |
-
-วิธีติดตั้ง/รันระบบ, Swagger, test commands, สมาชิกและ Deployment URL ดู [README ของ repository](../README.md) และข้อกำหนดผลิตภัณฑ์ดู [REQUIREMENTS](../REQUIREMENTS.md)
-
-ไฟล์หลักใน doc/ และ diagrams/ เป็นฉบับอ้างอิงปัจจุบัน ให้ใช้ร่วมกับ Swagger และ source code เมื่อตรวจ API contract
-
-## ผู้รับผิดชอบเอกสาร
-
-| สมาชิก / Branch | ขอบเขต | เอกสารที่รับผิดชอบ |
-|---|---|---|
-| Petpinyo / `petpinyo_673380073-7_02` | Authentication, Profile, Security, CI/CD | SOLID, Design, Use Cases, CI/CD |
-| Thirawat / `thirawat_673380039-7_02` | Client Management | SOLID, Design, Use Cases |
-| Kantavit / `kantavit_673380027-4_01` | Project, Task และ Progress Events | SOLID, Design, Use Cases |
-| Kompat / `kompat_673380262-4_02` | Time Tracking | SOLID, Design, Use Cases |
-| Nattadol / `nattadol_673380511-9_02` | Dashboard, Reports และ Frontend | SOLID, Design, Use Cases |
-
-## Diagram และผลทดสอบที่เพิ่มหลังฉบับรวม
-
-ตรวจ source ณ `ca77d74` แล้วเพิ่ม [Use Case Diagram](diagrams/use-case-diagram.md), [Conceptual Domain Model](diagrams/domain-model.md), [Deployment Diagram](diagrams/deployment-diagram.md) และ [State Diagrams](diagrams/state-diagram.md) โดยไม่เพิ่ม feature หรือ production code ปัจจุบันรวม Sequence ทั้ง 6 scenarios ใน [ไฟล์เดียว](diagrams/sequence-diagram.md) และข้อความภายใน Mermaid diagrams ของฉบับส่งมอบใช้ภาษาอังกฤษ โดยคงคำอธิบายภาษาไทยไว้
-
-## ขอบเขตการส่งมอบที่ยังต้องตรวจจากทีม
-
-- สไลด์นำเสนอใน slide/ ยังมีเพียง README ไม่สร้างสไลด์ตามขอบเขตที่ผู้ใช้กำหนด
-- ผล local ล่าสุด: Backend 471 และ Frontend 33 tests ผ่าน รวมถึง lint, typecheck และ build; ดู [Test Report](../test/test-report.md)
-- Coverage มีเฉพาะ 11 Frontend TypeScript files ที่ชุดทดสอบโหลด; Backend/React UI coverage ยังไม่ได้เก็บ และยังไม่ได้แนบผล CI/PostgreSQL/cloud verification ใหม่
-- Deployment Diagram อธิบาย configuration ไม่ใช่หลักฐานว่า public URL ใช้งานได้จริง; ทีมต้องตรวจ environment/settings/health ของ release ก่อนส่ง
-- ข้อจำกัดของ feature เช่นเวลาราย Project ใน Client detail, การตีความ FR-CLI-05, UI บาง metric และ notification แยกไว้ใน Use Case/Design ไม่ถูกประกาศว่าเสร็จจากการรวมเอกสาร
+เมื่อ contract เปลี่ยน ต้องอัปเดตเฉพาะเอกสารที่เกี่ยวข้องพร้อม PR ห้ามเพิ่มจำนวน test หรือ claim coverage โดยไม่มีผลรันที่ผูกกับ commit/environment รายงานเก่าใน Git history และ JSON ใน `test/evidence/` เป็นหลักฐานประวัติ ไม่ใช่ผลปัจจุบัน

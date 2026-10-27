@@ -1,78 +1,58 @@
-# FreelanceFlow
+# FreelanceFlow — คู่มือพัฒนา
 
-FreelanceFlow เริ่มพัฒนาต่อจาก [Freelance Hub](https://github.com/lillianxhub/freelance-hub) โดยเป็นโปรเจกต์และ repository แยกกัน ยังไม่มี GitHub repository หรือ deployment ของ FreelanceFlow และรอบนี้ไม่ได้เพิ่ม feature ใหม่
+FreelanceFlow พัฒนาต่อจาก [Freelance Hub](https://github.com/lillianxhub/freelance-hub) โดยแยก repository ระบบปัจจุบันใช้ Spring Boot 4.0 / Java 17, PostgreSQL 16, Flyway และ Next.js 16.4 App Router / React / TypeScript / Tailwind เวอร์ชันจริงให้ตรวจ `pom.xml` และ `package-lock.json`
 
-## ขอบเขตปัจจุบัน
+เอกสารชุดนี้เป็นกฎและแนวทางสำหรับเพิ่ม แก้ไข refactor และลบ feature ไม่ใช่รายงานว่าทุกส่วนของโค้ดผ่านมาตรฐานแล้ว หาก implementation ต่างจากกฎ ให้ระบุช่องว่างและปรับเฉพาะขอบเขตงาน ไม่ประกาศ compliance จากเอกสารอย่างเดียว
 
-Authentication และโปรไฟล์ผู้ใช้, ลูกค้า, โปรเจกต์, งานย่อย, จับเวลาและบันทึกเวลาย้อนหลัง, Dashboard และ Reports ยังไม่รวม Invoice, Payment หรือระบบบัญชี ใช้ React/TypeScript/Vite, Java 17/Spring Boot, PostgreSQL 16 และ Flyway โดยคง Java package `th.ac.kku.freelance_hub` และ migration V1–V20 เดิม
+## เริ่มอ่าน
 
-## ติดตั้งและรัน
+- [กฎร่วมและวงจรเปลี่ยน feature](doc/feature-workflow.md): ขอบเขต acceptance criteria compatibility และ Definition of Done
+- [Spring Boot](code/Backend/README.md): ชั้นโค้ด transaction ownership และฐานข้อมูล
+- [Next.js](code/Frontend/README.md): routing, server/client boundary, state และ UX
+- [SOLID](doc/solid-analysis.md) และ [Design patterns](doc/design-patterns.md): เกณฑ์เลือก abstraction และตัวอย่างการ review
+- [Tests](test/README.md): ระดับการทดสอบ วิธีรัน และหลักฐาน
+- [ดัชนีเอกสาร](doc/README.md): API, schema, diagrams, CI และแหล่งอ้างอิง
 
-ต้องมี Docker Compose, Node.js 22 (22.12 ขึ้นไป) และ JDK 17 หากรัน Backend บนเครื่อง ใช้ Maven Wrapper ที่ให้มา
+## ติดตั้งและรัน local
+
+ต้องมี Docker Compose, JDK 17+ และ Node.js 22 สร้าง configuration ของ FreelanceFlow เอง:
 
 ```bash
-cd /home/shachi/dev/University/2569/1st/project_management/projects/repos/FreelanceFlow
 cp code/Backend/.env.example code/Backend/.env
 cp code/Frontend/.env.example code/Frontend/.env
+openssl rand -base64 48
 ```
 
-ตั้ง `POSTGRES_PASSWORD` ใหม่ใน Backend `.env` และใช้ค่าเดียวกันใน `SPRING_DATASOURCE_PASSWORD` สร้าง JWT secret ใหม่ด้วย `openssl rand -base64 48` แล้วนำค่าใส่ `JWT_SECRET` ห้ามใช้ credentials หรือ secret ของ Freelance Hub และห้าม commit `.env`
+ใส่ password ใหม่และ JWT secret ที่สร้างใน Backend `.env` ให้ datasource password ตรงกับ PostgreSQL ห้ามนำ credentials ของระบบเดิมมาใช้
 
 ```bash
+# terminal 1 จากราก repository
 cd code/Backend
 docker compose up -d --build
-# อีก terminal จากรากโปรเจกต์
+# terminal 2 จากราก repository
 cd code/Frontend
 npm ci
 npm run dev
 ```
 
-เปิด http://localhost:5174; Backend http://localhost:8081; PostgreSQL localhost:5433 Frontend proxy ส่ง `/api` ไป `http://localhost:8081` Compose project คือ `freelanceflow`, container คือ `freelanceflow_db` และ `freelanceflow_app`, volume คือ `freelanceflow_postgres_data` เปิดพร้อม Freelance Hub ได้โดย port ไม่ชนกัน
+Frontend http://localhost:5174, Backend ผ่าน Compose ใช้ http://localhost:8080 ตามค่า default ใน working tree นี้ (ปรับด้วย `APP_PORT`), PostgreSQL localhost:5433 ใช้ `/api` ผ่าน Next.js rewrite โดย `BACKEND_ORIGIN` เป็น configuration ฝั่ง server เปลี่ยน origin แล้วต้อง build ใหม่ก่อนใช้ `npm run start` Compose project คือ `freelanceflow` ตรวจ host/container ports จาก Compose อย่าสมมติว่าเหมือนกัน การรัน Spring โดยตรงมี default port 8081 จึงต้องตั้ง `BACKEND_ORIGIN` ให้ตรงวิธีรันจริง
 
-หากรัน Backend บนเครื่อง: เริ่มเฉพาะ DB ด้วย `docker compose up -d postgres` แล้ว `./mvnw spring-boot:run` จาก `code/Backend` (อ่าน `.env` ให้อัตโนมัติ) หยุด Docker ด้วย `docker compose down` โดยเก็บ volume ไว้
+สร้างข้อมูลตัวอย่างสำหรับทดสอบหน้าจอด้วย `cd code/Backend && ./seed-local.sh` หลังตั้ง datasource ให้ชี้ PostgreSQL ในเครื่อง คำสั่งสร้างบัญชี ลูกค้า โปรเจกต์ งาน เวลา และข้อมูล Finance ได้แก่ Settings, หมวดหมู่, service presets, Quotation ทุกสถานะ, Invoice แบบร่าง/ค้างชำระ/ชำระแล้ว/ยกเลิก, Payments, Income/Expenses, Receipt และ Tax invoice สามารถรันซ้ำได้โดยไม่สร้างรายการซ้ำหรือเขียนทับข้อมูลตัวอย่างที่แก้ไว้ ตั้งบัญชีด้วย `LOCAL_SEED_EMAIL` และ `LOCAL_SEED_PASSWORD` ได้ตามเดิม
 
-หากเครื่อง Linux/WSL ยังไม่มี Node.js ใช้ Docker จาก `code/Frontend` แทนได้ (host network ทำให้ proxy เข้าถึง Backend บน localhost):
+## ขอบเขตผลิตภัณฑ์
 
-```bash
-docker run --rm -it --network host --user "$(id -u):$(id -g)" \
-  -e npm_config_cache=/tmp/npm-cache -v "$PWD:/workspace" -w /workspace \
-  node:22-bookworm sh -c 'npm ci && npm run dev -- --host 0.0.0.0'
-```
+มีระบบบัญชีผู้ใช้ ลูกค้า โปรเจกต์ งาน จับเวลา Task Board ที่แยกจาก Dashboard พร้อมแท็บ Today/Kanban และรายงาน UI ใช้ธีมอ้างอิง Demo และข้อความระบบภาษาอังกฤษ
 
-## ทดสอบ
+กลุ่ม Finance มี Financial Overview, Income, Expenses, Quotations, Invoices, Payments, Tax invoices และ Settings & templates ข้อมูลบันทึกใน PostgreSQL ผ่าน `/api/finance` แยกตามบัญชีผู้ใช้ ใช้เงินบาทและให้ Backend คำนวณยอด Invoice จากรายการ ส่วนลด และ VAT ค่าเริ่มต้นเปิดให้ทุกบัญชีที่ยังใช้งานอยู่ โดย Admin เห็นเฉพาะข้อมูลการเงินของตนเอง ดู [สัญญา Finance API](doc/finance-api.md) สำหรับ lifecycle, decimal string และข้อจำกัดการออกเอกสาร
 
-```bash
-cd code/Backend
-./mvnw --batch-mode --no-transfer-progress verify
-# อีก terminal จากรากโปรเจกต์
-cd code/Frontend
-npm run lint
-npm run typecheck
-npm test
-npm run build
-```
+เปิด `http://localhost:5174/task-board` เพื่อจัดงานและจับเวลาในหน้าเดียวกัน; เลือก Kanban และโปรเจกต์จากหน้าเดียวกัน Finance ที่ `/finance` เปิดให้ทุกบัญชีที่ล็อกอินและยังใช้งานอยู่เมื่อปิดการบังคับ Premium และข้อมูลคงอยู่หลังรีโหลดหรือออกจากระบบ
 
-CI เก็บ Maven verify, Frontend lint/typecheck/tests/build, Flyway migrate/validate บน PostgreSQL ว่าง และ Docker runtime smoke test ปิด deploy jobs และยังไม่เชื่อม Render/Vercel ต้องกำหนดปลายทางของ FreelanceFlow ก่อนเปิด deploy อีกครั้ง
+Admin dashboard อยู่ที่ `/admin` แสดงจำนวนบัญชี การสมัครย้อนหลัง 6 เดือน และรายชื่อบัญชี โดยไม่แสดงข้อมูลลูกค้า โปรเจกต์ งาน หรือเวลาทำงาน Admin เปลี่ยนแพ็กเกจ Free/Premium ได้จากตาราง แพ็กเกจไม่มีวันหมดอายุและยังไม่มีระบบรับชำระค่าสมาชิก สวิตช์ **Require Premium for Finance** ควบคุมการล็อก Finance ทั้งระบบ ค่าเริ่มต้น Off; เมื่อเปิดจะเหลือสิทธิ์เฉพาะ Premium/Admin โดยข้อมูลเอกสารและแพ็กเกจเดิมยังอยู่ ค่าตั้งคงอยู่หลังรีสตาร์ต
 
-## การแยกโปรเจกต์
+ตั้ง Admin คนแรกโดยสมัครบัญชีปกติก่อน แล้วรันคำสั่งครั้งเดียวจาก `code/Backend` โดยใช้ datasource configuration เดียวกับ Backend: `./mvnw spring-boot:run -Dspring-boot.run.main-class=th.ac.kku.freelance_hub.seed.AdminPromotionCommand -Dspring-boot.run.arguments=--email=admin@example.com` คำสั่งจะล้มเหลวถ้าบัญชีไม่มีอยู่ ปิดใช้งาน หรือถูกลบ และไม่ทำงานเองเมื่อเริ่มเซิร์ฟเวอร์
 
-ชื่อ BroadcastChannel, browser lock, local storage สำหรับรูปโปรไฟล์ และ refresh cookie แยกจากระบบเดิม Access JWT อยู่ในหน่วยความจำ Java package และ Flyway history คงเดิม เอกสาร `doc/`, `test/`, `REQUIREMENTS.md` และ `SCHEDULE.md` ที่รับต่อเป็นข้อมูลประวัติของ Freelance Hub ไม่ใช่หลักฐานว่าระบบใหม่ผ่านการทดสอบหรือ deploy แล้ว ดูผลตรวจรอบนี้ใน `SETUP_VERIFICATION.md`
-
-## เชื่อม GitHub ภายหลัง
-
-สร้าง repository ใหม่ที่ว่างและใช้ URL ที่ได้รับจริง ตรวจ `git remote -v` ก่อนเพิ่ม `origin` จากนั้นตรวจ diff/credentials, commit งานบน `main` และ `git push -u origin main` ห้ามใช้ remote ของ Freelance Hub ยังไม่มีการ push หรือ deploy ในรอบตั้งค่านี้
-
-## ที่มาและเครดิต
+## เครดิต
 
 คงเครดิตสมาชิกผู้พัฒนา Freelance Hub ด้านล่าง ส่วนไฟล์ที่มีเครดิตหรือใบอนุญาตเดิมให้คงไว้
 
-## สมาชิกกลุ่ม
-
-| ลำดับ | ชื่อ-นามสกุล | รหัสนักศึกษา | Section | Branch | หน้าที่รับผิดชอบ |
-| ---: | --- | --- | --- | --- | --- |
-| 1 | เพชรภิญโญ ธนศิรินรากร | 673380073-7 | 2 | `petpinyo_673380073-7_02` | Authentication, User, Security และ CI/CD |
-| 2 | ถิรวัฒน์ อุจินา | 673380039-7 | 2 | `thirawat_673380039-7_02` | Client Management |
-| 3 | กันตวิชญ์ นาคนวล | 673380027-4 | 1 | `kantavit_673380027-4_01` | Project และ Task Management |
-| 4 | กรมภัฏ พิริยะ | 673380262-4 | 2 | `kompat_673380262-4_02` | Time Tracking |
-| 5 | ณัฏฐดนย์ สาริกา | 673380511-9 | 2 | `nattadol_673380511-9_02` | Dashboard, Analytics และ Frontend |
-
+Quotation อยู่ที่ `/finance/quotations`: บันทึกร่าง ออกเลข QT ยกเลิก และสร้าง Invoice ต่อได้หนึ่งฉบับต่อใบเสนอราคา ฟอร์ม Quotation/Invoice มีปุ่ม **Preview** แสดงข้อมูลที่ยังไม่บันทึก พร้อม **Print / Save PDF** รูปแบบ A4; ตัวอย่างไม่จองเลขหรือสร้างเอกสารจริง

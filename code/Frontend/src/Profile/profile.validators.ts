@@ -18,12 +18,12 @@ export function validateProfileField(
   profile: Pick<Profile, ProfileFieldName>,
 ): string | undefined {
   const value = profile[field].trim()
-  if (field !== 'tax_id' && !value) return 'กรุณากรอกข้อมูลในช่องนี้'
-  if (field === 'phone' && !isValidPhone(profile.phone)) return 'กรุณากรอกเบอร์โทรศัพท์ 10 หลัก'
+  if (field !== 'tax_id' && !value) return 'Complete this field'
+  if (field === 'phone' && !isValidPhone(profile.phone)) return 'Enter a phone number 10 Main'
   if (field === 'postal_code' && !/^\d{5}$/.test(profile.postal_code))
-    return 'กรุณาเลือกรหัสไปรษณีย์ 5 หลัก'
+    return 'Select a postal code 5 Main'
   if (field === 'tax_id' && value && !/^\d{13}$/.test(profile.tax_id))
-    return 'กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลัก'
+    return 'Enter a tax ID 13 Main'
   return undefined
 }
 

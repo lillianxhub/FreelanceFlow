@@ -1,11 +1,11 @@
 import type { ProjectStatus } from '../../types/project'
 
 export const projectStatusLabels: Record<ProjectStatus, string> = {
-  PLANNED: 'วางแผน',
-  ACTIVE: 'กำลังดำเนินการ',
-  ON_HOLD: 'พักงาน',
-  COMPLETED: 'เสร็จสิ้น',
-  ARCHIVED: 'เก็บถาวร',
+  PLANNED: 'Planned',
+  ACTIVE: 'In progress',
+  ON_HOLD: 'On hold',
+  COMPLETED: 'Completed',
+  ARCHIVED: 'Archived',
 }
 
 export const allowedStatusTransitions: Record<ProjectStatus, readonly ProjectStatus[]> = {

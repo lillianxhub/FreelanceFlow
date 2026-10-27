@@ -21,6 +21,14 @@ import th.ac.kku.freelance_hub.dto.response.user.UserResponse;
 public class UserController {
 
     private final UserService userService;
+    private final th.ac.kku.freelance_hub.service.FeatureAccessService featureAccess;
+
+    @GetMapping("/me/features")
+    @Tag(name = "Premium", description = "Current plan and Finance entitlement")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResult<th.ac.kku.freelance_hub.service.FeatureAccessService.Features>> features() {
+        return ResponseEntity.ok(ApiResult.success("Features", featureAccess.features()));
+    }
 
     /**
      * Get current authenticated user profile
@@ -33,7 +41,7 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResult<UserResponse>> getCurrentUser() {
         UserResponse response = userService.getCurrentUser();
-        return ResponseEntity.ok(ApiResult.success("ดึงข้อมูลผู้ใช้สำเร็จ", response));
+        return ResponseEntity.ok(ApiResult.success("User retrieved", response));
     }
 
     /**
@@ -48,7 +56,7 @@ public class UserController {
     public ResponseEntity<ApiResult<UserResponse>> updateCurrentUser(
             @Valid @RequestBody UpdateUserProfileRequest request) {
         return ResponseEntity.ok(ApiResult.success(
-                "อัปเดตข้อมูลผู้ใช้สำเร็จ", userService.updateCurrentUser(request)));
+                "User updated", userService.updateCurrentUser(request)));
     }
 
     /**
@@ -63,7 +71,7 @@ public class UserController {
     public ResponseEntity<ApiResult<Void>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(request);
-        return ResponseEntity.ok(ApiResult.success("เปลี่ยนรหัสผ่านสำเร็จ", null));
+        return ResponseEntity.ok(ApiResult.success("Password changed", null));
     }
 
 }

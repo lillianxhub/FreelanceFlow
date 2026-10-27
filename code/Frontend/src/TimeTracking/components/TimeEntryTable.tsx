@@ -36,7 +36,7 @@ function durationSeconds(entry: TimeEntryTableProps['entries'][number]): number 
 }
 
 function durationLabel(seconds: number): string {
-  return formatDurationSeconds(seconds).replace(/\sนาที$/, '')
+  return formatDurationSeconds(seconds).replace(/\sminutes$/, '')
 }
 
 interface EntryGroup {
@@ -82,7 +82,7 @@ export default function TimeEntryTable({
           <section key={group.key} className={groupIndex > 0 ? 'pt-5' : ''}>
             <div className="flex items-center justify-between border-b border-border pb-2.5">
               <h3 className="text-base font-semibold text-text-primary">
-                {group.key === todayKey ? 'วันนี้ ' : ''}
+                {group.key === todayKey ? 'Today ' : ''}
                 {formatDate(groupDate)}
               </h3>
               <span className="text-base font-medium text-text-secondary">
@@ -96,7 +96,7 @@ export default function TimeEntryTable({
                 const task =
                   tasks.find((item) => item.id === entry.task_id)?.name ||
                   entry.task_name ||
-                  'ไม่ระบุงาน'
+                  'No task selected'
                 const description = entry.description.trim()
                 const secondaryText = description ? `${task} — ${description}` : task
 
@@ -112,7 +112,7 @@ export default function TimeEntryTable({
                     />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-text-primary">
-                        {project?.name || 'ไม่ระบุโปรเจกต์'}
+                        {project?.name || 'No project selected'}
                       </p>
                       <p className="truncate text-xs text-text-secondary">{secondaryText}</p>
                     </div>
@@ -126,11 +126,11 @@ export default function TimeEntryTable({
                         className="text-muted-foreground hover:bg-muted hover:text-text-primary"
                         type="button"
                         onClick={() => onEdit(entry)}
-                        aria-label="แก้ไขรายการเวลา"
-                        title="แก้ไข"
+                        aria-label="Edit time entry"
+                        title="Edit"
                       >
                         <FiEdit3 aria-hidden="true" />
-                        <span className="hidden sm:inline">แก้ไข</span>
+                        <span className="hidden sm:inline">Edit</span>
                       </Button>
                       {/* <Button
                         variant="ghost"
@@ -138,11 +138,11 @@ export default function TimeEntryTable({
                         className="text-muted-foreground hover:bg-muted hover:text-text-primary"
                         type="button"
                         onClick={() => onDuplicate(entry)}
-                        aria-label="คัดลอกรายการเวลา"
-                        title="คัดลอก"
+                        aria-label="Copy time entry"
+                        title="Copy"
                       >
                         <FiCopy aria-hidden="true" />
-                        <span className="hidden sm:inline">คัดลอก</span>
+                        <span className="hidden sm:inline">Copy</span>
                       </Button> */}
                       <Button
                         variant="ghost"
@@ -150,11 +150,11 @@ export default function TimeEntryTable({
                         className="text-muted-foreground hover:bg-red-soft hover:text-destructive"
                         type="button"
                         onClick={() => setDeleteEntry(entry)}
-                        aria-label="ลบรายการเวลา"
-                        title="ลบ"
+                        aria-label="Delete time entry"
+                        title="Delete"
                       >
                         <FiTrash2 aria-hidden="true" />
-                        <span className="hidden sm:inline">ลบ</span>
+                        <span className="hidden sm:inline">Delete</span>
                       </Button>
                     </div>
                   </div>
@@ -174,20 +174,20 @@ export default function TimeEntryTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>ลบรายการเวลานี้หรือไม่</AlertDialogTitle>
+            <AlertDialogTitle>Delete this time entry?</AlertDialogTitle>
             <AlertDialogDescription>
-              รายการเวลานี้จะถูกลบออกจากรายงานและสรุปเวลา
+              This entry will be removed from reports and time summaries.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deleteEntry) onDelete(deleteEntry)
                 setDeleteEntry(null)
               }}
             >
-              ลบรายการ
+              Delete entry
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

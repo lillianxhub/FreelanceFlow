@@ -47,7 +47,7 @@ class PasswordValidationTest {
                     .oldPassword("old-password").newPassword("ก".repeat(25)).build();
             assertThat(factory.getValidator().validate(request))
                     .extracting(violation -> violation.getMessage())
-                    .containsExactly("รหัสผ่านใหม่ต้องไม่เกิน 72 ไบต์ UTF-8");
+                    .containsExactly("New password must be at most 72 UTF-8 bytes");
         }
     }
 }

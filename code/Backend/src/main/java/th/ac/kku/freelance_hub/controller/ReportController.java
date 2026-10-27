@@ -45,7 +45,7 @@ public class ReportController {
             @ParameterObject @Valid @ModelAttribute ReportFilterRequest filter
     ) {
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงข้อมูลสรุปรายงานสำเร็จ",
+                "Report summary retrieved",
                 reportService.getSummary(ownerId(), filter)
         ));
     }
@@ -59,7 +59,7 @@ public class ReportController {
             @RequestParam(defaultValue = "DAY") ReportGranularity granularity
     ) {
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงแนวโน้มเวลาทำงานสำเร็จ",
+                "Time trend retrieved",
                 reportService.getWorkTrend(ownerId(), filter, granularity)
         ));
     }
@@ -73,7 +73,7 @@ public class ReportController {
             @RequestParam(defaultValue = "CLIENT") ReportGroupBy groupBy
     ) {
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงสัดส่วนเวลาทำงานสำเร็จ",
+                "Time distribution retrieved",
                 reportService.getDistribution(ownerId(), filter, groupBy)
         ));
     }
@@ -86,7 +86,7 @@ public class ReportController {
             @ParameterObject @Valid @ModelAttribute ReportFilterRequest filter
     ) {
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงรูปแบบการทำงานสำเร็จ",
+                "Work pattern retrieved",
                 reportService.getWorkPattern(ownerId(), filter)
         ));
     }
@@ -108,7 +108,7 @@ public class ReportController {
         );
 
         return ResponseEntity.ok(ApiResult.success(
-                "ดึงรายงานโปรเจกต์สำเร็จ",
+                "Project report retrieved",
                 result.getContent(),
                 meta
         ));

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'ไม่สามารถโหลดข้อมูลได้'
+  return error instanceof Error ? error.message : 'Could not load data'
 }
 
 export function useAsyncData<T>(load: () => Promise<T>, initialData: T, key?: unknown) {

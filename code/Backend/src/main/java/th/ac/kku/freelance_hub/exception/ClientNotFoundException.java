@@ -6,6 +6,6 @@ import org.springframework.http.HttpStatus;
 
 public class ClientNotFoundException extends ApiException {
     public ClientNotFoundException(UUID id) {
-        super(HttpStatus.NOT_FOUND, "CLIENT_NOT_FOUND", "ไม่พบลูกค้า", Map.of("id", id));
+        super(HttpStatus.NOT_FOUND, "CLIENT_NOT_FOUND", "Client not found", Map.of("id", id));
     }
 }

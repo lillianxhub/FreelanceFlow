@@ -16,14 +16,14 @@ public class ReportProjectsRequest {
 
     @Pattern(
             regexp = "projectName|clientName|trackedSeconds|usagePercent",
-            message = "sortBy ไม่ถูกต้อง"
+            message = "Invalid sortBy"
     )
     private String sortBy = "projectName";
 
     @Pattern(
             regexp = "asc|desc",
             flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "direction ต้องเป็น asc หรือ desc"
+            message = "direction must be asc or desc"
     )
     private String direction = "asc";
 }

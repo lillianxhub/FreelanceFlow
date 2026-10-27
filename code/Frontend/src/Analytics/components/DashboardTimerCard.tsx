@@ -50,8 +50,8 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
   return (
     <Card>
       <CardHeader>
-        <CardTitle>ตัวจับเวลา</CardTitle>
-        <CardDescription>ดูสถานะและรายการเวลาล่าสุด</CardDescription>
+        <CardTitle>Timer</CardTitle>
+        <CardDescription>See the timer and recent entries.</CardDescription>
         <CardAction>
           <Badge
             variant="secondary"
@@ -64,7 +64,7 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
                 runningEntry ? 'size-2 rounded-full bg-green' : 'size-2 rounded-full bg-subtle'
               }
             />
-            {runningEntry ? 'กำลังทำงาน' : 'ไม่ได้จับเวลา'}
+            {runningEntry ? 'Working' : 'Timer stopped'}
           </Badge>
         </CardAction>
       </CardHeader>
@@ -84,7 +84,7 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
               {formatTimer(elapsedSeconds)}
             </p>
             <p className="mt-1 text-center text-xs text-muted-foreground">
-              เริ่มเมื่อ{' '}
+              Started at{' '}
               {formatDate(runningEntry.startedAt, { hour: '2-digit', minute: '2-digit' })}
             </p>
             <Button
@@ -93,13 +93,15 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
               disabled={stopping}
               onClick={() => void handleStop()}
             >
-              <FiSquare aria-hidden="true" /> {stopping ? 'กำลังหยุด...' : 'หยุดจับเวลา'}
+              <FiSquare aria-hidden="true" /> {stopping ? 'Stopping…' : 'Stop timer'}
             </Button>
           </div>
         ) : latestEntry ? (
           <div className="rounded-xl bg-primary-soft p-4">
             <p className="font-semibold text-text-primary">{latestEntry.projectName}</p>
-            <p className="mt-1 text-sm text-primary">{latestEntry.taskName || 'ไม่ระบุงาน'}</p>
+            <p className="mt-1 text-sm text-primary">
+              {latestEntry.taskName || 'No task selected'}
+            </p>
             {latestEntry.description && (
               <p className="mt-1 truncate text-xs text-muted-foreground">
                 {latestEntry.description}
@@ -109,20 +111,20 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
               {formatTimer(latestEntry.durationSeconds)}
             </p>
             <p className="mt-1 text-center text-xs text-muted-foreground">
-              รายการล่าสุด ·{' '}
+              Recent entries ·{' '}
               {formatDate(latestEntry.startedAt, { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
         ) : (
           <div className="rounded-xl bg-primary-soft p-6 text-center">
-            <p className="font-medium text-text-primary">ยังไม่มีรายการเวลา</p>
+            <p className="font-medium text-text-primary">No time entries yet</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              เมื่อบันทึกเวลาแล้ว รายการล่าสุดจะแสดงที่นี่
+              Recent entries appear here after you track time.
             </p>
           </div>
         )}
         <div>
-          <p className="mb-2 text-sm font-semibold text-text-primary">รายการเวลาล่าสุด</p>
+          <p className="mb-2 text-sm font-semibold text-text-primary">Recent time entries</p>
           <div className="divide-y divide-border">
             {safeRecentEntries.length ? (
               safeRecentEntries.map((entry) => (
@@ -132,7 +134,7 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
                       {entry.projectName}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {entry.taskName || 'ไม่ระบุงาน'} · {formatDate(entry.startedAt)}
+                      {entry.taskName || 'No task selected'} · {formatDate(entry.startedAt)}
                     </p>
                   </div>
                   <strong className="shrink-0 text-sm tabular-nums text-text-primary">
@@ -141,7 +143,7 @@ export default function DashboardTimerCard({ currentTimer, recentEntries, onStop
                 </div>
               ))
             ) : (
-              <p className="py-4 text-center text-sm text-muted-foreground">ยังไม่มีรายการเวลา</p>
+              <p className="py-4 text-center text-sm text-muted-foreground">No time entries yet</p>
             )}
           </div>
         </div>

@@ -13,6 +13,6 @@ public class UnknownErrorHandler implements ErrorHandler {
     public boolean isFallback() { return true; }
     public Optional<ErrorDescriptor> handle(Exception exception, ErrorContext context) {
         log.error("Unhandled error at {} {}", context.source(), context.path(), exception);
-        return Optional.of(ErrorDescriptor.of(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "เกิดข้อผิดพลาดภายในระบบ"));
+        return Optional.of(ErrorDescriptor.of(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "Internal server error"));
     }
 }

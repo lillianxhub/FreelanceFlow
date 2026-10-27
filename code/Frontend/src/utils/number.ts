@@ -2,7 +2,7 @@ export function formatMoney(
   amount: number | string | null | undefined = 0,
   currency = 'THB',
 ): string {
-  return new Intl.NumberFormat('th-TH', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
     maximumFractionDigits: 2,

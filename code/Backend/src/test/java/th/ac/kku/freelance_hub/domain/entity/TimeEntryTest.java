@@ -100,7 +100,7 @@ class TimeEntryTest {
                 STARTED_AT
         ))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
     }
 
     @Test
@@ -116,7 +116,7 @@ class TimeEntryTest {
                 STARTED_AT
         ))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("กรุณาคืนสถานะลูกค้าก่อนบันทึกเวลา");
+                .hasMessage("Restore the client before tracking time");
     }
 
     @Test
@@ -136,7 +136,7 @@ class TimeEntryTest {
                 STARTED_AT
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("โปรเจกต์ไม่ถูกต้อง");
+                .hasMessage("Invalid project");
     }
 
     @Test
@@ -153,7 +153,7 @@ class TimeEntryTest {
                 STARTED_AT
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("งานไม่อยู่ในโปรเจกต์ที่เลือก");
+                .hasMessage("Task does not belong to the selected project");
     }
 
     @Test
@@ -189,7 +189,7 @@ class TimeEntryTest {
 
         assertThatThrownBy(() -> entry.stop(STARTED_AT.plusSeconds(120)))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("ตัวจับเวลาไม่ได้กำลังทำงาน");
+                .hasMessage("Timer is not running");
     }
 
     @ParameterizedTest
@@ -213,7 +213,7 @@ class TimeEntryTest {
                 STARTED_AT,
                 endedAt
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
         assertThatThrownBy(() -> TimeEntry.createManualWithDurationSeconds(
                 owner,
                 nonActiveProject,
@@ -222,7 +222,7 @@ class TimeEntryTest {
                 STARTED_AT,
                 1800
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
     }
 
     @Test
@@ -256,7 +256,7 @@ class TimeEntryTest {
                 0
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("ระยะเวลาต้องมากกว่าศูนย์");
+                .hasMessage("Duration must be greater than zero");
     }
 
     @Test
@@ -271,7 +271,7 @@ class TimeEntryTest {
                 -1
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("ระยะเวลาต้องมากกว่าศูนย์");
+                .hasMessage("Duration must be greater than zero");
     }
 
     @Test
@@ -301,7 +301,7 @@ class TimeEntryTest {
                 STARTED_AT
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่มต้น");
+                .hasMessage("End time must be after start time");
     }
 
     @Test
@@ -316,7 +316,7 @@ class TimeEntryTest {
                 STARTED_AT.minusSeconds(60)
         ))
                 .isInstanceOf(InvalidArgumentException.class)
-                .hasMessage("เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่มต้น");
+                .hasMessage("End time must be after start time");
     }
 
     @Test
@@ -353,7 +353,7 @@ class TimeEntryTest {
         assertThatThrownBy(() -> entry.updateDetails(
                 plannedProject, null, "Changed work"
         )).isInstanceOf(InvalidStateException.class)
-                .hasMessage("โปรเจกต์ต้องอยู่ในสถานะกำลังทำก่อนบันทึกเวลา");
+                .hasMessage("Project must be active to track time");
         assertThat(entry.getProject()).isSameAs(activeProject);
         assertThat(entry.getDescription()).isEqualTo("Original work");
     }
@@ -378,13 +378,13 @@ class TimeEntryTest {
                 "Changed description"
         ))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("รายการเวลาถูกล็อกแล้ว ไม่สามารถแก้ไขได้");
+                .hasMessage("Locked time entries cannot be edited");
         assertThatThrownBy(() -> entry.updateTimeRange(
                 STARTED_AT,
                 STARTED_AT.plusSeconds(120)
         ))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("รายการเวลาถูกล็อกแล้ว ไม่สามารถแก้ไขได้");
+                .hasMessage("Locked time entries cannot be edited");
     }
 
     @Test
@@ -400,6 +400,6 @@ class TimeEntryTest {
 
         assertThatThrownBy(() -> entry.lock(STARTED_AT.plusSeconds(60)))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessage("กรุณาหยุดตัวจับเวลาก่อนล็อกรายการเวลา");
+                .hasMessage("Stop the timer before locking a time entry");
     }
 }

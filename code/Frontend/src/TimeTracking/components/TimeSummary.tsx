@@ -20,8 +20,8 @@ export default function TimeSummary({
     <Card asChild>
       <section className="!p-0">
         <CardHeader className="p-6 pb-4">
-          <CardTitle>สรุปตามตัวกรอง</CardTitle>
-          <CardDescription>สรุปจากตัวกรองรายการด้านล่าง</CardDescription>
+          <CardTitle>Filtered summary</CardTitle>
+          <CardDescription>Based on the entry filters below.</CardDescription>
           <CardAction>
             <strong className="text-3xl font-bold leading-tight tabular-nums text-primary">
               {formatDuration(totalMinutes)}
@@ -31,23 +31,23 @@ export default function TimeSummary({
         <CardContent className="p-6 pt-0">
           <div className="grid">
             <div className="flex items-center justify-between border-b border-border py-3 text-sm last:border-b-0">
-              <span className="text-text-secondary">เวลาที่คิดค่าบริการ</span>
+              <span className="text-text-secondary">Billable time</span>
               <strong className="text-base text-text-primary">
                 {formatDuration(billableMinutes)}
               </strong>
             </div>
             <div className="flex items-center justify-between border-b border-border py-3 text-sm last:border-b-0">
-              <span className="text-text-secondary">สัดส่วนเวลาที่คิดเงินได้</span>
+              <span className="text-text-secondary">Billable share</span>
               <strong className="text-base text-text-primary">
                 {totalMinutes ? Math.round((billableMinutes / totalMinutes) * 100) : 0}%
               </strong>
             </div>
             <div className="flex items-center justify-between border-b border-border py-3 text-sm last:border-b-0">
-              <span className="text-text-secondary">มูลค่าเกิดขึ้น</span>
+              <span className="text-text-secondary">Generated value</span>
               <strong className="text-base text-text-primary">{formatMoney(totalValue)}</strong>
             </div>
             <div className="flex items-center justify-between border-b border-border py-3 text-sm last:border-b-0">
-              <span className="text-text-secondary">จำนวนรายการ</span>
+              <span className="text-text-secondary">Entry count</span>
               <strong className="text-base text-text-primary">{count}</strong>
             </div>
           </div>

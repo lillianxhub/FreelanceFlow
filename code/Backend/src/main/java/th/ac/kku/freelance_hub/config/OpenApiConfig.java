@@ -30,7 +30,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("FreelanceFlow API")
                         .version("0.0.1")
-                        .description("RESTful API for managing freelance projects, clients, tasks, and time tracking")
+                        .description("REST API for freelance workspaces, owner-scoped THB finance, Premium and administration. Finance money values are decimal strings; mutations use optimistic version or idempotency keys where documented.")
                         .contact(new Contact()
                                 .name("FreelanceFlow Team"))
                         .license(new License()
@@ -51,9 +51,17 @@ public class OpenApiConfig {
         return openApi -> {
             openApi.getPaths().forEach((path, item) -> {
                 if (path.startsWith("/api/")) {
-                    item.readOperations().forEach(operation -> operation.getResponses()
-                            .computeIfAbsent("500", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse()
-                                    .description("Unexpected server error")));
+                    item.readOperations().forEach(operation -> {
+                        operation.getResponses().computeIfAbsent("500", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse()
+                                .description("Unexpected server error"));
+                        if (path.startsWith("/api/finance/")) {
+                            operation.getResponses().computeIfAbsent("401", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse().description("Authentication required"));
+                            operation.getResponses().computeIfAbsent("403", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse().description("Inactive account, or Premium/Admin required while enforcement is enabled"));
+                            operation.getResponses().computeIfAbsent("404", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse().description("Resource not found for this owner"));
+                            operation.getResponses().computeIfAbsent("409", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse().description("Version conflict, duplicate category or idempotency key mismatch"));
+                            operation.getResponses().computeIfAbsent("400", ignored -> new io.swagger.v3.oas.models.responses.ApiResponse().description("Validation failure"));
+                        }
+                    });
                 }
             });
 

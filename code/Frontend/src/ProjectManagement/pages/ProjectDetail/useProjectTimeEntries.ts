@@ -31,7 +31,7 @@ export function useProjectTimeEntries(projectId: string) {
         setEntries([])
         setTotal(0)
         setTrackedSeconds(null)
-        setError(getErrorMessage(reason, 'โหลดรายการเวลาไม่สำเร็จ'))
+        setError(getErrorMessage(reason, 'Could not load time entries'))
       })
     return () => {
       active = false

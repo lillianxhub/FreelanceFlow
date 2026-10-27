@@ -3,7 +3,7 @@ export function formatDate(
   options: Intl.DateTimeFormatOptions = {},
 ): string {
   if (!date) return '—'
-  return new Intl.DateTimeFormat('th-TH', {
+  return new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

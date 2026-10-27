@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { FiArrowRight } from 'react-icons/fi'
 import StatusBadge from '../../components/StatusBadge'
 import { Button } from '../../components/ui/button'
@@ -29,12 +29,12 @@ export default function DashboardProjectsTable({ projects }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>โปรเจกต์ที่กำลังดำเนินการ</CardTitle>
-        <CardDescription>ติดตามความคืบหน้าของงานในแต่ละโปรเจกต์</CardDescription>
+        <CardTitle>Active projects</CardTitle>
+        <CardDescription>Track task progress across projects.</CardDescription>
         <CardAction>
           <Button asChild variant="ghost" size="sm">
-            <Link to="/projects">
-              ดูทั้งหมด <FiArrowRight aria-hidden="true" />
+            <Link href="/projects">
+              View all <FiArrowRight aria-hidden="true" />
             </Link>
           </Button>
         </CardAction>
@@ -44,10 +44,10 @@ export default function DashboardProjectsTable({ projects }: Props) {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="!bg-transparent">โปรเจกต์</TableHead>
-                <TableHead className="w-36 !bg-transparent">ความคืบหน้า</TableHead>
-                <TableHead className="w-32 !bg-transparent">งานที่เสร็จแล้ว</TableHead>
-                <TableHead className="w-36 !bg-transparent">สถานะ</TableHead>
+                <TableHead className="!bg-transparent">Projects</TableHead>
+                <TableHead className="w-36 !bg-transparent">Progress</TableHead>
+                <TableHead className="w-32 !bg-transparent">Completed tasks</TableHead>
+                <TableHead className="w-36 !bg-transparent">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -56,7 +56,7 @@ export default function DashboardProjectsTable({ projects }: Props) {
                   <TableCell>
                     <Link
                       className="flex min-w-0 max-w-full items-center gap-3 overflow-hidden font-semibold text-text-primary hover:text-primary"
-                      to={`/projects/${project.id}`}
+                      href={`/projects/${project.id}`}
                       title={project.name}
                     >
                       <span
@@ -66,7 +66,7 @@ export default function DashboardProjectsTable({ projects }: Props) {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate">{project.name}</span>
                         <span className="block truncate text-xs font-normal text-muted-foreground">
-                          {project.clientName || 'ไม่ระบุลูกค้า'}
+                          {project.clientName || 'No client specified'}
                         </span>
                       </span>
                     </Link>
@@ -93,9 +93,7 @@ export default function DashboardProjectsTable({ projects }: Props) {
             </TableBody>
           </Table>
         ) : (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            ยังไม่มีโปรเจกต์ที่กำลังดำเนินการ
-          </p>
+          <p className="py-10 text-center text-sm text-muted-foreground">No active projects yet</p>
         )}
       </CardContent>
     </Card>

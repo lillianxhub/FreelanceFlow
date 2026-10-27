@@ -6,6 +6,6 @@ import org.springframework.http.HttpStatus;
 
 public class TaskNotFoundException extends ApiException {
     public TaskNotFoundException(UUID id) {
-        super(HttpStatus.NOT_FOUND, "TASK_NOT_FOUND", "ไม่พบงาน", Map.of("id", id));
+        super(HttpStatus.NOT_FOUND, "TASK_NOT_FOUND", "Task not found", Map.of("id", id));
     }
 }

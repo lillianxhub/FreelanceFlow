@@ -3,7 +3,7 @@ import { Button } from '../../../components/ui/button'
 import { NativeSelect } from '../../../components/ui/native-select'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { FiBriefcase, FiPlus } from 'react-icons/fi'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../../components/ui/sheet'
 import PageHeader from '../../../components/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '../../../components/ViewState'
 import { useProjects } from '../../useProjects'
@@ -110,7 +110,7 @@ function ProjectsPage() {
             key: pageQueryKey,
             projects: [],
             meta: { page, limit: projectPageLimit, total: 0, totalPages: 1 },
-            error: getErrorMessage(loadError, 'ไม่สามารถโหลดโปรเจกต์ได้'),
+            error: getErrorMessage(loadError, 'Could not load project'),
           })
       })
     return () => {
@@ -159,22 +159,22 @@ function ProjectsPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     // if (form.billing_type === "HOURLY" && Number(form.hourly_rate) <= 0) {
-    //   setFormError("โปรเจกต์รายชั่วโมงต้องมีอัตราต่อชั่วโมงมากกว่า 0");
+    //   setFormError("Hourly projects need a rate above 0");
     //   return;
     // }
     // if (form.billing_type === "FIXED_PRICE" && Number(form.fixed_price) <= 0) {
-    //   setFormError("โปรเจกต์เหมาจ่ายต้องมีมูลค่างานมากกว่า 0");
+    //   setFormError("Fixed-price projects need a value above 0");
     //   return;
     // }
     const nextDateErrors: Partial<Record<'start_date' | 'end_date', string>> = {}
-    if (!form.start_date) nextDateErrors.start_date = 'กรุณาเลือกวันที่เริ่ม'
-    if (!form.end_date) nextDateErrors.end_date = 'กรุณาเลือกวันที่สิ้นสุด'
+    if (!form.start_date) nextDateErrors.start_date = 'Select a start date'
+    if (!form.end_date) nextDateErrors.end_date = 'Select an end date'
     if (form.start_date && form.end_date && form.end_date < form.start_date) {
-      nextDateErrors.end_date = 'วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่ม'
+      nextDateErrors.end_date = 'End date must be on or after start date'
     }
     setDateErrors(nextDateErrors)
     const missingProjectInfo = !form.name.trim() || !form.client_id
-    setFormError(missingProjectInfo ? 'กรุณาระบุชื่อโปรเจกต์และลูกค้า' : '')
+    setFormError(missingProjectInfo ? 'Enter a project and client name' : '')
     if (missingProjectInfo || Object.keys(nextDateErrors).length > 0) {
       return
     }
@@ -194,7 +194,7 @@ function ProjectsPage() {
       if (page === 1) setPageRequestKey((current) => current + 1)
       else setPage(1)
     } catch (err) {
-      setFormError(getErrorMessage(err, 'บันทึกโปรเจกต์ไม่สำเร็จ'))
+      setFormError(getErrorMessage(err, 'Could not save project'))
     } finally {
       setSaving(false)
     }
@@ -206,18 +206,18 @@ function ProjectsPage() {
     try {
       await changeProjectStatus(project.id, nextStatus)
       setPageRequestKey((current) => current + 1)
-      showToast({ success: true, message: 'อัปเดตสถานะโปรเจกต์เรียบร้อยแล้ว' })
+      showToast({ success: true, message: 'Project status updated' })
     } catch (statusError) {
       showToast({
         success: false,
-        message: getErrorMessage(statusError, 'ไม่สามารถอัปเดตสถานะโปรเจกต์ได้'),
+        message: getErrorMessage(statusError, 'Could not update project status'),
       })
     } finally {
       setChangingProjectId(null)
     }
   }
 
-  if (loading || pageLoading) return <LoadingState label="กำลังโหลดโปรเจกต์..." />
+  if (loading || pageLoading) return <LoadingState label="Loading projects…" />
   if (error || pageError) {
     return (
       <ErrorState
@@ -233,10 +233,10 @@ function ProjectsPage() {
   return (
     <div className="mx-auto w-full max-w-screen-2xl">
       <PageHeader
-        title="โปรเจกต์ของคุณ"
+        title="Your projects"
         actions={
           <Button variant="default" className="h-10" type="button" onClick={openCreate}>
-            <FiPlus aria-hidden="true" /> เพิ่มโปรเจกต์
+            <FiPlus aria-hidden="true" /> Add project
           </Button>
         }
       />
@@ -248,8 +248,8 @@ function ProjectsPage() {
           setQuery(searchInput.trim())
           setPage(1)
         }}
-        placeholder="ค้นหาโปรเจกต์หรือลูกค้า"
-        searchAriaLabel="ค้นหาโปรเจกต์หรือลูกค้า"
+        placeholder="Search projects or clients"
+        searchAriaLabel="Search projects or clients"
       >
         <NativeSelect
           value={clientId}
@@ -257,9 +257,9 @@ function ProjectsPage() {
             setClientId(event.target.value)
             setPage(1)
           }}
-          aria-label="กรองตามลูกค้า"
+          aria-label="Filter by client"
         >
-          <option value="ALL">ทุกลูกค้า</option>
+          <option value="ALL">All clients</option>
           {data.clients.map((client) => (
             <option key={client.id} value={client.id}>
               {client.name}
@@ -273,12 +273,12 @@ function ProjectsPage() {
             setPage(1)
           }}
         >
-          <option value="ALL">ทุกสถานะ</option>
-          <option value="PLANNED">วางแผน</option>
-          <option value="ACTIVE">กำลังทำ</option>
-          <option value="ON_HOLD">พักงาน</option>
-          <option value="COMPLETED">เสร็จสิ้น</option>
-          <option value="ARCHIVED">เก็บถาวร</option>
+          <option value="ALL">All statuses</option>
+          <option value="PLANNED">Planned</option>
+          <option value="ACTIVE">In progress</option>
+          <option value="ON_HOLD">On hold</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="ARCHIVED">Archived</option>
         </NativeSelect>
         <NativeSelect
           value={sortBy}
@@ -287,9 +287,9 @@ function ProjectsPage() {
             setPage(1)
           }}
         >
-          <option value="UPDATED_DESC">อัปเดตล่าสุด</option>
-          <option value="NAME_ASC">ชื่อ A–Z</option>
-          <option value="END_ASC">กำหนดส่งใกล้สุด</option>
+          <option value="UPDATED_DESC">Recently updated</option>
+          <option value="NAME_ASC">Name A–Z</option>
+          <option value="END_ASC">Due soonest</option>
         </NativeSelect>
       </FilterBar>
 
@@ -298,11 +298,11 @@ function ProjectsPage() {
           <section className="rounded-xl border border-border bg-surface p-5 shadow-soft ring-0">
             <EmptyState
               icon={<FiBriefcase aria-hidden="true" />}
-              title="ยังไม่พบโปรเจกต์"
-              description="สร้างโปรเจกต์แรกหรือปรับตัวกรอง"
+              title="No projects found"
+              description="Create your first project or change the filters."
               action={
                 <Button variant="default" className="h-10" type="button" onClick={openCreate}>
-                  เพิ่มโปรเจกต์
+                  Add project
                 </Button>
               }
             />
@@ -313,7 +313,7 @@ function ProjectsPage() {
           {projects.map((project) => {
             const client = data.clients.find((item) => item.id === project.client_id)
             const clientName =
-              project.client_name || client?.company_name || client?.name || 'ไม่พบลูกค้า'
+              project.client_name || client?.company_name || client?.name || 'Client not found'
             return (
               <ProjectCard
                 key={project.id}
@@ -337,16 +337,16 @@ function ProjectsPage() {
         className="mt-6"
       />
 
-      <Dialog
+      <Sheet
         open={modalOpen}
         onOpenChange={(open) => {
           if (!open) setModalOpen(false)
         }}
       >
-        <DialogContent className="!max-w-3xl max-h-[calc(100dvh-2rem)] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{form.id ? 'แก้ไขโปรเจกต์' : 'เพิ่มโปรเจกต์'}</DialogTitle>
-          </DialogHeader>
+        <SheetContent className="!w-full !max-w-full overflow-y-auto p-4 sm:!w-[640px] sm:!max-w-[640px] sm:p-6">
+          <SheetHeader className="p-0 pr-10">
+            <SheetTitle>{form.id ? 'Edit project' : 'Add project'}</SheetTitle>
+          </SheetHeader>
           <ProjectForm
             value={form}
             clients={data.clients}
@@ -357,8 +357,8 @@ function ProjectsPage() {
             onSubmit={handleSubmit}
             onCancel={() => setModalOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

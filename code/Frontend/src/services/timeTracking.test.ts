@@ -50,7 +50,7 @@ test('duration-only entry converts minutes to seconds without an end time', asyn
   try {
     const entry = await saveTimeEntry({ ...input, duration_minutes: 1.5 })
     assert.equal(entry.duration_minutes, 1.5)
-    await assert.rejects(saveTimeEntry({ ...input, project_id: '' }), /โปรเจกต์/)
+    await assert.rejects(saveTimeEntry({ ...input, project_id: '' }), /project/)
   } finally {
     globalThis.fetch = originalFetch
   }

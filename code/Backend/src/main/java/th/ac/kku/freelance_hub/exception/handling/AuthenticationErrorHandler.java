@@ -14,12 +14,12 @@ public class AuthenticationErrorHandler implements ErrorHandler {
         if (context.source() == ErrorContext.Source.FILTER_DEPENDENCY
                 || exception instanceof AuthenticationServiceException) return Optional.empty();
         if (exception instanceof AccessDeniedException)
-            return Optional.of(ErrorDescriptor.of(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "คุณไม่มีสิทธิ์ดำเนินการนี้"));
+            return Optional.of(ErrorDescriptor.of(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "You cannot perform this action"));
         if (exception instanceof AuthenticationException) {
             boolean entry = context.source() == ErrorContext.Source.AUTHENTICATION;
             return Optional.of(ErrorDescriptor.of(HttpStatus.UNAUTHORIZED,
                     entry ? "AUTHENTICATION_REQUIRED" : "INVALID_CREDENTIALS",
-                    entry ? "กรุณาเข้าสู่ระบบก่อนดำเนินการ" : "อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
+                    entry ? "Sign in to continue" : "Invalid email or password"));
         }
         return Optional.empty();
     }

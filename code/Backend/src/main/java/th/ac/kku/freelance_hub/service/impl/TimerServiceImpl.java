@@ -76,6 +76,11 @@ public class TimerServiceImpl implements TimerService {
         Project project = findOwnedProject(ownerId, request.getProjectId());
         Task task = findTask(request.getTaskId(), project.getId(), ownerId);
 
+        if (Boolean.TRUE.equals(request.getStopCurrentTimer()) && timeEntryRepository
+                .existsByOwnerIdAndEntryTypeAndEndedAtIsNullAndIsActiveTrue(ownerId, EntryType.TIMER)) {
+            stopTimer(ownerId);
+        }
+
         TimeEntry entry = TimeEntry.startTimer(
                 owner,
                 project,

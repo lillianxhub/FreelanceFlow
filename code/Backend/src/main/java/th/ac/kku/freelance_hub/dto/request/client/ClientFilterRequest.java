@@ -27,31 +27,31 @@ public class ClientFilterRequest {
      * Optional prefix search over name, company, email, phone, and address; blank
      * means no search.
      */
-    @Size(max = 150, message = "คำค้นหาต้องไม่เกิน 150 ตัวอักษร")
+    @Size(max = 150, message = "Search must be at most 150 characters")
     private String search;
 
     /** One-based page number exposed by the API. */
     @Builder.Default
-    @Min(value = 1, message = "หมายเลขหน้าต้องไม่น้อยกว่า 1")
+    @Min(value = 1, message = "Page number must be at least 1")
     private int page = 1;
 
     @Builder.Default
-    @Min(value = 1, message = "จำนวนรายการต่อหน้าต้องไม่น้อยกว่า 1")
-    @Max(value = 100, message = "จำนวนรายการต่อหน้าต้องไม่เกิน 100")
+    @Min(value = 1, message = "Page size must be at least 1")
+    @Max(value = 100, message = "Page size must be at most 100")
     private int size = 20;
 
     /** Preferred page-size parameter; takes precedence over the legacy size parameter. */
-    @Min(value = 1, message = "จำนวนรายการต่อหน้าต้องไม่น้อยกว่า 1")
-    @Max(value = 100, message = "จำนวนรายการต่อหน้าต้องไม่เกิน 100")
+    @Min(value = 1, message = "Page size must be at least 1")
+    @Max(value = 100, message = "Page size must be at most 100")
     private Integer limit;
 
     /** Allow only known Client properties as sort keys. */
     @Builder.Default
-    @NotBlank(message = "กรุณาระบุฟิลด์ที่ใช้เรียงลำดับ")
-    @Pattern(regexp = "name|companyName|email|createdAt|updatedAt", message = "ฟิลด์ที่ใช้เรียงลำดับไม่ถูกต้อง")
+    @NotBlank(message = "Select a sort field")
+    @Pattern(regexp = "name|companyName|email|createdAt|updatedAt", message = "Invalid sort field")
     private String sortBy = "name";
 
     @Builder.Default
-    @NotNull(message = "กรุณาระบุทิศทางการเรียงลำดับ")
+    @NotNull(message = "Select a sort direction")
     private Sort.Direction direction = Sort.Direction.ASC;
 }

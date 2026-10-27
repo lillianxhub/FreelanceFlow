@@ -14,7 +14,7 @@ export function useThaiAddress() {
         if (active) setProvinces(items)
       })
       .catch((reason: unknown) => {
-        if (active) setError(getErrorMessage(reason, 'ไม่สามารถโหลดข้อมูลจังหวัดได้'))
+        if (active) setError(getErrorMessage(reason, 'Could not load provinces'))
       })
       .finally(() => {
         if (active) setLoading(false)

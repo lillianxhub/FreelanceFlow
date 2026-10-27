@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'next/navigation'
 import { FiLoader, FiPlay, FiSquare, FiTrash2 } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../api/apiError'
@@ -26,7 +26,7 @@ export default function TimerPanel({
   onProjectOptionsOpen,
   onTimerChanged,
 }: TimerPanelProps) {
-  const [searchParams] = useSearchParams()
+  const searchParams = useSearchParams()
   const timer = useTimer(workspace, {
     loadTaskOptions: true,
     initialProjectId: searchParams.get('projectId') ?? '',
@@ -42,7 +42,7 @@ export default function TimerPanel({
       await action()
       await onTimerChanged?.()
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'ไม่สามารถดำเนินการกับตัวจับเวลาได้'))
+      toast.error(getErrorMessage(error, 'Could not update the timer'))
     } finally {
       setPendingAction(null)
     }
@@ -50,11 +50,11 @@ export default function TimerPanel({
 
   const pendingActionLabel =
     pendingAction === 'starting'
-      ? 'กำลังเริ่มจับเวลา...'
+      ? 'Starting timer…'
       : pendingAction === 'stopping'
-        ? 'กำลังหยุดเวลา...'
+        ? 'Stopping timer…'
         : pendingAction === 'cancelling'
-          ? 'กำลังยกเลิก...'
+          ? 'Canceling…'
           : ''
 
   return (
@@ -71,7 +71,7 @@ export default function TimerPanel({
             <span
               className={`size-2 rounded-full ${timer.runningEntry ? 'bg-green shadow-[0_0_0_3px_rgba(27,156,104,0.12)]' : 'bg-subtle'}`}
             />
-            {timer.runningEntry ? 'กำลังจับเวลา' : 'พร้อมเริ่มทำงาน'}
+            {timer.runningEntry ? 'Timer running' : 'Ready to work'}
           </Badge>
         </div>
 
@@ -89,26 +89,26 @@ export default function TimerPanel({
         {timer.runningEntry ? (
           <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 @min-[520px]:grid-cols-2 @min-[900px]:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(240px,1.6fr)_auto]">
             <div className="grid min-w-0 gap-2">
-              <p className="text-xs text-text-secondary">โปรเจกต์</p>
+              <p className="text-xs text-text-secondary">Projects</p>
               <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-white px-[11px] py-[9px]">
                 <p className="truncate text-sm font-semibold text-text-primary">
-                  {timer.runningProject?.name || 'ไม่ระบุโปรเจกต์'}
+                  {timer.runningProject?.name || 'No project selected'}
                 </p>
               </div>
             </div>
             <div className="grid min-w-0 gap-2">
-              <p className="text-xs text-text-secondary">งาน</p>
+              <p className="text-xs text-text-secondary">Tasks</p>
               <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-white px-[11px] py-[9px]">
                 <p className="truncate text-sm font-semibold text-text-primary">
-                  {timer.runningTask?.name || 'ไม่ระบุงาน'}
+                  {timer.runningTask?.name || 'No task selected'}
                 </p>
               </div>
             </div>
             <div className="grid min-w-0 gap-2 md:col-span-2 xl:col-span-1">
-              <p className="text-xs text-text-secondary">คำอธิบาย</p>
+              <p className="text-xs text-text-secondary">Description</p>
               <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-white px-[11px] py-[9px]">
                 <p className="truncate text-sm font-semibold text-text-primary">
-                  {timer.runningEntry.description || 'ไม่มีรายละเอียด'}
+                  {timer.runningEntry.description || 'No description'}
                 </p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function TimerPanel({
                 disabled={pendingAction !== null}
                 onClick={() => void runTimerAction(timer.stopTimer, 'stopping')}
               >
-                <FiSquare aria-hidden="true" /> หยุดและบันทึก
+                <FiSquare aria-hidden="true" /> Stop and save
               </Button>
               <Button
                 variant="ghost"
@@ -129,8 +129,8 @@ export default function TimerPanel({
                 type="button"
                 disabled={pendingAction !== null}
                 onClick={() => void runTimerAction(timer.cancelTimer, 'cancelling')}
-                aria-label="ยกเลิกและลบการจับเวลา"
-                title="ยกเลิกและลบการจับเวลา"
+                aria-label="Cancel and discard timer"
+                title="Cancel and discard timer"
               >
                 <FiTrash2 aria-hidden="true" />
               </Button>
@@ -140,7 +140,7 @@ export default function TimerPanel({
           <div className="w-full space-y-4">
             <div className="grid min-w-0 grid-cols-1 items-end gap-3 @min-[520px]:grid-cols-2 @min-[900px]:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(240px,1.6fr)_auto]">
               <div className="grid min-w-0 gap-2">
-                <Label htmlFor="timer-project">โปรเจกต์</Label>
+                <Label htmlFor="timer-project">Projects</Label>
                 <NativeSelect
                   id="timer-project"
                   className="min-w-0"
@@ -161,14 +161,14 @@ export default function TimerPanel({
                 </NativeSelect>
               </div>
               <div className="grid min-w-0 gap-2">
-                <Label htmlFor="timer-task">งาน</Label>
+                <Label htmlFor="timer-task">Tasks</Label>
                 <NativeSelect
                   id="timer-task"
                   className="min-w-0"
                   value={timer.selectedTask}
                   onChange={(event) => timer.setSelectedTask(event.target.value)}
                 >
-                  <option value="">ไม่ระบุงาน</option>
+                  <option value="">No task selected</option>
                   {timer.selectedTasks.map((task) => (
                     <option key={task.id} value={task.id}>
                       {task.name}
@@ -177,12 +177,12 @@ export default function TimerPanel({
                 </NativeSelect>
               </div>
               <div className="grid min-w-0 gap-2">
-                <Label htmlFor="timer-description">คำอธิบาย</Label>
+                <Label htmlFor="timer-description">Description</Label>
                 <Input
                   id="timer-description"
                   value={timer.description}
                   onChange={(event) => timer.setDescription(event.target.value)}
-                  placeholder="กำลังทำอะไรอยู่?"
+                  placeholder="What are you working on?"
                 />
               </div>
               <Button
@@ -194,7 +194,7 @@ export default function TimerPanel({
                 }
                 onClick={() => void runTimerAction(timer.startTimer, 'starting')}
               >
-                <FiPlay aria-hidden="true" /> เริ่มจับเวลา
+                <FiPlay aria-hidden="true" /> Start timer
               </Button>
             </div>
             {timer.optionsError && <p className="text-sm text-destructive">{timer.optionsError}</p>}

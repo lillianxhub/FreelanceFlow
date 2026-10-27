@@ -1,7 +1,8 @@
 import { Button } from '../../components/ui/button'
 import AuthenticationLayout from './AuthenticationLayout'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import AuthInput from './AuthInput'
 import { useAuth } from '../useAuthentication'
 import { getErrorMessage } from '../../api/apiError'
@@ -10,7 +11,7 @@ function LoginForm() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { login } = useAuth()
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -24,9 +25,9 @@ function LoginForm() {
 
     try {
       await login(form.email, form.password)
-      navigate('/dashboard', { replace: true })
+      router.replace('/dashboard')
     } catch (err) {
-      setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'))
+      setError(getErrorMessage(err, 'Could not sign in'))
     } finally {
       setLoading(false)
     }
@@ -39,19 +40,19 @@ function LoginForm() {
           <img src="/logo-light.svg" alt="" />
           <strong>FreelanceFlow</strong>
         </div>
-        <h1>เข้าสู่ระบบ</h1>
-        {/* <p className="auth-description">จัดการลูกค้า โปรเจกต์ และเวลาทำงานในที่เดียว</p> */}
+        <h1>Sign in</h1>
+        {/* <p className="auth-description">Manage clients, projects, and time in one place</p> */}
         {error && <p className="auth-error">{error}</p>}
 
         <AuthInput
-          label="อีเมล"
+          label="Email"
           type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
         />
         <AuthInput
-          label="รหัสผ่าน"
+          label="Password"
           type="password"
           name="password"
           value={form.password}
@@ -59,11 +60,11 @@ function LoginForm() {
         />
 
         <Button variant="default" className="h-10 w-full" type="submit" disabled={loading}>
-          {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+          {loading ? 'Signing in…' : 'Sign in'}
         </Button>
 
         <p className="auth-footer">
-          ยังไม่มีบัญชี? <Link to="/register">สมัครสมาชิก</Link>
+          No account yet? <Link href="/register">Register</Link>
         </p>
       </form>
     </AuthenticationLayout>

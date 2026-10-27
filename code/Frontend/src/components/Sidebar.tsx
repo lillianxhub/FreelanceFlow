@@ -1,16 +1,20 @@
-import { NavLink } from 'react-router-dom'
-import { workspaceLinks } from '../constants/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { adminLink, workspaceLinks } from '../constants/navigation'
+import { useAuth } from '../Authentication/useAuthentication'
+import { useFeatures } from '../Features/FeaturesContext'
 import type { SidebarLinkProps, SidebarProps } from '../types/ui'
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet'
 
 function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
   const Icon = icon
+  const pathname = usePathname()
+  const isActive = pathname === to || (to === '/finance' && pathname.startsWith('/finance/'))
   return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `group/nav grid min-h-10 grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[9px] px-[11px] py-2 text-sm no-underline transition-colors ${isActive ? 'active bg-primary-soft font-semibold text-primary-dark' : 'text-text-secondary hover:bg-surface-soft hover:text-text-primary'}`
-      }
+    <Link
+      href={to}
+      className={`group/nav grid min-h-10 grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[9px] px-[11px] py-2 text-sm no-underline transition-colors ${isActive ? 'active bg-primary-soft font-semibold text-primary-dark' : 'text-text-secondary hover:bg-surface-soft hover:text-text-primary'}`}
     >
       <span
         className="grid size-[18px] place-items-center text-base text-subtle group-[.active]/nav:text-primary"
@@ -24,52 +28,48 @@ function SidebarLink({ to, label, icon, badge }: SidebarLinkProps) {
           {badge}
         </span>
       )}
-    </NavLink>
+    </Link>
   )
 }
 
 function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
+  const { user } = useAuth()
+  const { features } = useFeatures()
   return (
     <div className="flex h-full flex-col">
       <div className="mb-[22px] flex items-center gap-[11px] px-[5px]">
-        <img src="/logo-light.svg" alt="" className="size-[39px] shrink-0 object-contain" />
+        <Image
+          src="/logo-light.svg"
+          alt=""
+          width={34}
+          height={34}
+          className="size-[34px] shrink-0"
+        />
         <div className="min-w-0">
           <div className="text-base font-bold tracking-[-0.02em]">FreelanceFlow</div>
-          <div className="mt-px text-sm text-text-secondary uppercase">พื้นที่ทำงาน</div>
+          <div className="mt-px text-[10px] font-semibold tracking-[0.16em] text-text-secondary uppercase">
+            Workspace
+          </div>
         </div>
       </div>
 
-      {/* <div className="workspace-switcher">
-          <span className="avatar avatar-small">{initials(name)}</span>
-          <span><strong>พื้นที่ทำงานส่วนตัว</strong><small>ฟรีแลนซ์</small></span>
-          <span className="workspace-chevron">⌄</span>
-        </div> */}
-
       <div className="mt-4 mb-[7px] px-[11px] text-xs font-bold tracking-[0.12em] text-subtle uppercase">
-        งานของคุณ
+        Workspace
       </div>
       <nav className="flex flex-col gap-[3px]" onClick={onClose}>
         {workspaceLinks.map((link) => (
-          <SidebarLink key={link.to} {...link} />
+          <SidebarLink
+            key={link.to}
+            {...link}
+            badge={
+              link.to === '/finance' && features?.premiumEnforced && !features.finance
+                ? 'Premium'
+                : undefined
+            }
+          />
         ))}
+        {user?.role === 'ADMIN' && <SidebarLink {...adminLink} />}
       </nav>
-
-      {/* <div className="mt-4 mb-[7px] px-[11px] text-xs font-bold tracking-[0.12em] text-subtle uppercase">จัดการ</div>
-        <nav className="flex flex-col gap-[3px]" onClick={onClose}>
-          {manageLinks.map((link) => <SidebarLink key={link.to} {...link} />)}
-        </nav> */}
-
-      {/* <div className="sidebar-bottom">
-          <NavLink className="help-card" to="/reports" onClick={onClose}>
-            <span className="help-icon">?</span>
-            <span><strong>ต้องการความช่วยเหลือ?</strong><small>ดูรายงานและคู่มือ</small></span>
-            <span>↗</span>
-          </NavLink>
-          <div className="profile-row">
-            <span className="avatar">{initials(name)}</span>
-            <span className="profile-copy"><strong>{name}</strong><small>{profile?.email || user?.email}</small></span>
-          </div>
-        </div> */}
     </div>
   )
 }
@@ -77,7 +77,7 @@ function SidebarContent({ onClose }: Pick<SidebarProps, 'onClose'>) {
 function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <>
-      <aside className="hidden h-screen w-[258px] shrink-0 flex-col border-r border-border bg-sidebar px-[18px] pt-6 pb-[18px] lg:sticky lg:top-0 lg:z-40 lg:flex print:hidden">
+      <aside className="hidden h-screen w-[244px] shrink-0 flex-col border-r border-border bg-sidebar px-[14px] pt-6 pb-[18px] lg:sticky lg:top-0 lg:z-40 lg:flex print:hidden">
         <SidebarContent onClose={onClose} />
       </aside>
       <Sheet
@@ -88,9 +88,9 @@ function Sidebar({ open, onClose }: SidebarProps) {
       >
         <SheetContent
           side="left"
-          className="w-[258px] gap-0 overflow-y-auto px-[18px] py-6 sm:max-w-[258px] lg:hidden"
+          className="w-[244px] gap-0 overflow-y-auto px-[14px] py-6 sm:max-w-[244px] lg:hidden"
         >
-          <SheetTitle className="sr-only">เมนูหลัก</SheetTitle>
+          <SheetTitle className="sr-only">Main menu</SheetTitle>
           <SidebarContent onClose={onClose} />
         </SheetContent>
       </Sheet>

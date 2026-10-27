@@ -95,7 +95,7 @@ public class TaskController {
                 ))
                 .body(
                         ApiResult.success(
-                                "สร้างงานย่อยสำเร็จ",
+                                "Task created",
                                 response
                         )
                 );
@@ -138,7 +138,7 @@ public class TaskController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ดึงรายการงานย่อยสำเร็จ",
+                        "Tasks retrieved",
                         tasks.getContent(),
                         meta
                 )
@@ -303,7 +303,7 @@ public class TaskController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "เรียงลำดับงานย่อยสำเร็จ", response
+                        "Tasks reordered", response
                 )
         );
     }

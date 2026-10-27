@@ -33,10 +33,11 @@ test('manual form submits without a task and blocks invalid time ranges', async 
         element.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }))
       })
       assert.equal(submissions, valid ? 1 : 0)
-      if (!valid) assert.match(view.container.textContent ?? '', /เวลาสิ้นสุดต้องหลังเวลาเริ่ม/)
+      if (!valid)
+        assert.match(view.container.textContent ?? '', /End time must be after start time/)
       assert.equal(
         view.container.querySelector('select[name="task_id"] option')?.textContent,
-        'ไม่ระบุงาน',
+        'No task selected',
       )
     } finally {
       await view.unmount()

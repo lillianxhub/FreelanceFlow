@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import th.ac.kku.freelance_hub.domain.enums.UserRole;
+import th.ac.kku.freelance_hub.domain.enums.UserPlan;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class UserResponse {
     private UUID id;
     private String email;
     private UserRole role;
+    private UserPlan plan;
     private Boolean isActive;
     private Instant createdAt;
 

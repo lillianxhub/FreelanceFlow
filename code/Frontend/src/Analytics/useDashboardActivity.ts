@@ -24,7 +24,7 @@ export function useDashboardActivity(
     try {
       return await loadActivity(period)
     } catch (reason: unknown) {
-      throw new Error(getErrorMessage(reason, 'ไม่สามารถโหลดกราฟได้'), { cause: reason })
+      throw new Error(getErrorMessage(reason, 'Could not load chart'), { cause: reason })
     }
   }, [period, loadActivity])
   const state = useAsyncData<DashboardActivity | null>(load, null, key)

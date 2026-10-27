@@ -121,7 +121,7 @@ class ClientMapperTest {
         assertThatThrownBy(() -> mapper.updateEntity(
             UpdateClientRequest.builder().name("   ").build(), client
         )).isInstanceOf(InvalidArgumentException.class)
-          .hasMessageContaining("กรุณาระบุชื่อ");
+          .hasMessageContaining("Enter a name");
     }
 
     @Test

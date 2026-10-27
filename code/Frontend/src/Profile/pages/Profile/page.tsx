@@ -87,7 +87,7 @@ function ProfilePage() {
   })
   const [passwordSaving, setPasswordSaving] = useState(false)
 
-  if (loading) return <LoadingState label="กำลังโหลดโปรไฟล์..." />
+  if (loading) return <LoadingState label="Loading profile…" />
   if (error) return <ErrorState message={error} onRetry={refresh} />
 
   const profile = draft || data || emptyProfile
@@ -181,12 +181,12 @@ function ProfilePage() {
       setDraft(null)
       showToast({
         success: response.success,
-        message: response.message || 'บันทึกโปรไฟล์เรียบร้อยแล้ว',
+        message: response.message || 'Profile saved',
       })
     } catch (err) {
       showToast({
         success: false,
-        message: getErrorMessage(err, 'ไม่สามารถบันทึกโปรไฟล์ได้'),
+        message: getErrorMessage(err, 'Could not save profile'),
       })
     } finally {
       setSaving(false)
@@ -203,18 +203,18 @@ function ProfilePage() {
     if (!hasRequiredPassword(passwordForm.new_password)) {
       showToast({
         success: false,
-        message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษรและไม่เกิน 72 ไบต์ UTF-8',
+        message: 'New password must have at least 8 characters and no more than 72 bytes UTF-8',
       })
       return
     }
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      showToast({ success: false, message: 'ยืนยันรหัสผ่านใหม่ไม่ตรงกัน' })
+      showToast({ success: false, message: 'The new passwords do not match' })
       return
     }
     if (passwordForm.current_password === passwordForm.new_password) {
       showToast({
         success: false,
-        message: 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม',
+        message: 'The new password must differ from the current password',
       })
       return
     }
@@ -231,12 +231,12 @@ function ProfilePage() {
       })
       showToast({
         success: response.success,
-        message: response.message || 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว',
+        message: response.message || 'Password changed',
       })
     } catch (passwordError) {
       showToast({
         success: false,
-        message: getErrorMessage(passwordError, 'ไม่สามารถเปลี่ยนรหัสผ่านได้'),
+        message: getErrorMessage(passwordError, 'Could not change password'),
       })
     } finally {
       setPasswordSaving(false)
@@ -245,7 +245,7 @@ function ProfilePage() {
 
   return (
     <div className="mx-auto w-full max-w-screen-2xl">
-      <PageHeader title="ข้อมูลส่วนตัว" />
+      <PageHeader title="Personal information" />
 
       <form className="grid gap-4" onSubmit={submit} noValidate>
         <Card asChild>
@@ -253,7 +253,7 @@ function ProfilePage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="col-span-full flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-display-name" required>
-                  ชื่อที่แสดง
+                  Display name
                 </FormLabel>
                 <Input
                   id="profile-display-name"
@@ -268,12 +268,12 @@ function ProfilePage() {
                 />
                 <FieldError id="profile-display-name-error" message={profileErrors.display_name} />
                 <small className="text-xs text-muted-foreground">
-                  ชื่อนี้จะแสดงบนหน้าเว็บและเมนูบัญชี
+                  This name appears across your workspace and account menu.
                 </small>
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-first-name" required>
-                  ชื่อ
+                  Name
                 </FormLabel>
                 <Input
                   id="profile-first-name"
@@ -290,7 +290,7 @@ function ProfilePage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-last-name" required>
-                  นามสกุล
+                  Last name
                 </FormLabel>
                 <Input
                   id="profile-last-name"
@@ -304,7 +304,7 @@ function ProfilePage() {
                 <FieldError id="profile-last-name-error" message={profileErrors.last_name} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-email">อีเมลบัญชี</FormLabel>
+                <FormLabel htmlFor="profile-email">Account email</FormLabel>
                 <Input
                   id="profile-email"
                   name="email"
@@ -313,13 +313,11 @@ function ProfilePage() {
                   disabled
                   aria-disabled="true"
                 />
-                <small className="text-xs text-muted-foreground">
-                  อีเมลนี้ใช้สำหรับเข้าสู่ระบบ
-                </small>
+                <small className="text-xs text-muted-foreground">Use this email to sign in.</small>
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-phone" required>
-                  เบอร์โทรศัพท์
+                  Phone number
                 </FormLabel>
                 <Input
                   id="profile-phone"
@@ -333,12 +331,10 @@ function ProfilePage() {
                   aria-describedby={profileErrors.phone ? 'profile-phone-error' : undefined}
                 />
                 <FieldError id="profile-phone-error" message={profileErrors.phone} />
-                <small className="text-xs text-muted-foreground">
-                  กรอกตัวเลขได้ไม่เกิน 10 หลัก
-                </small>
+                <small className="text-xs text-muted-foreground">Enter no more than 10 Main</small>
               </div>
               <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-tax">เลขประจำตัวผู้เสียภาษี</FormLabel>
+                <FormLabel htmlFor="profile-tax">Tax ID</FormLabel>
                 <Input
                   id="profile-tax"
                   name="tax_id"
@@ -351,25 +347,23 @@ function ProfilePage() {
                   aria-describedby={profileErrors.tax_id ? 'profile-tax-error' : undefined}
                 />
                 <FieldError id="profile-tax-error" message={profileErrors.tax_id} />
-                <small className="text-xs text-muted-foreground">
-                  กรอกตัวเลขได้ไม่เกิน 13 หลัก
-                </small>
+                <small className="text-xs text-muted-foreground">Enter no more than 13 Main</small>
               </div>
               {/* <div className="col-span-full flex flex-col gap-1.5">
-              <label htmlFor="profile-bio">แนะนำตัว</label>
+              <label htmlFor="profile-bio">About you</label>
               <Textarea
                 id="profile-bio"
                 name="bio"
                 value={profile.bio || ""}
                 onChange={update}
                 maxLength={1000}
-                placeholder="เขียนแนะนำตัวหรือรายละเอียดการทำงานโดยย่อ"
+                placeholder="Write a short introduction about your work."
               />
             </div> */}
             </div>
 
             <div className="my-6 border-t border-border" />
-            <p className="mb-3 text-sm font-semibold tracking-wide text-text-secondary">ที่อยู่</p>
+            <p className="mb-3 text-sm font-semibold tracking-wide text-text-secondary">Address</p>
             {addressError && (
               <p className="rounded-lg bg-red-soft px-3 py-2 text-sm text-destructive">
                 {addressError}
@@ -379,7 +373,7 @@ function ProfilePage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="col-span-full flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-address" required>
-                  ที่อยู่
+                  Address
                 </FormLabel>
                 <Input
                   id="profile-address"
@@ -393,7 +387,7 @@ function ProfilePage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-province" required>
-                  จังหวัด
+                  Province
                 </FormLabel>
                 <NativeSelect
                   id="profile-province"
@@ -404,7 +398,7 @@ function ProfilePage() {
                   aria-describedby={profileErrors.province ? 'profile-province-error' : undefined}
                 >
                   <option value="">
-                    {addressLoading ? 'กำลังโหลดจังหวัด...' : 'เลือกจังหวัด'}
+                    {addressLoading ? 'Loading provinces…' : 'Select province'}
                   </option>
                   {provinces.map((province) => (
                     <option key={province.id} value={province.name_th}>
@@ -416,7 +410,7 @@ function ProfilePage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-district" required>
-                  อำเภอ / เขต
+                  District
                 </FormLabel>
                 <NativeSelect
                   id="profile-district"
@@ -426,7 +420,7 @@ function ProfilePage() {
                   aria-invalid={Boolean(profileErrors.district)}
                   aria-describedby={profileErrors.district ? 'profile-district-error' : undefined}
                 >
-                  <option value="">เลือกอำเภอ / เขต</option>
+                  <option value="">Select district</option>
                   {districts.map((district) => (
                     <option key={district.id} value={district.name_th}>
                       {district.name_th}
@@ -437,7 +431,7 @@ function ProfilePage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-sub-district" required>
-                  ตำบล / แขวง
+                  Subdistrict
                 </FormLabel>
                 <NativeSelect
                   id="profile-sub-district"
@@ -449,7 +443,7 @@ function ProfilePage() {
                     profileErrors.sub_district ? 'profile-sub-district-error' : undefined
                   }
                 >
-                  <option value="">เลือกตำบล / แขวง</option>
+                  <option value="">Select subdistrict</option>
                   {subDistricts.map((subDistrict) => (
                     <option key={subDistrict.id} value={subDistrict.name_th}>
                       {subDistrict.name_th}
@@ -460,7 +454,7 @@ function ProfilePage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <FormLabel htmlFor="profile-postal-code" required>
-                  รหัสไปรษณีย์
+                  Postal code
                 </FormLabel>
                 <NativeSelect
                   id="profile-postal-code"
@@ -473,7 +467,7 @@ function ProfilePage() {
                     profileErrors.postal_code ? 'profile-postal-code-error' : undefined
                   }
                 >
-                  <option value="">เลือกตำบลก่อน</option>
+                  <option value="">Select a subdistrict first</option>
                   {selectedSubDistrict && (
                     <option value={String(selectedSubDistrict.zip_code)}>
                       {selectedSubDistrict.zip_code}
@@ -491,14 +485,14 @@ function ProfilePage() {
                 type="button"
                 onClick={() => setDraft(null)}
               >
-                ยกเลิก
+                Cancel
               </Button>
               <Button
                 className="min-h-10 w-full sm:w-auto"
                 type="submit"
                 disabled={saving || !hasProfileChanges}
               >
-                {saving ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                {saving ? 'Saving…' : 'Save changes'}
               </Button>
             </div>
           </section>
@@ -508,15 +502,15 @@ function ProfilePage() {
       <Card asChild>
         <form className="mt-4 p-6" onSubmit={submitPassword}>
           <CardHeader className="mb-6 p-0">
-            <CardTitle>เปลี่ยนรหัสผ่าน</CardTitle>
+            <CardTitle>Change password</CardTitle>
             <CardDescription>
-              ใช้รหัสผ่านเดิมเพื่อกำหนดรหัสผ่านใหม่สำหรับเข้าสู่ระบบ
+              Enter your current password to set a new sign-in password.
             </CardDescription>
           </CardHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <FormLabel htmlFor="current-password" required>
-                รหัสผ่านเดิม
+                Current password
               </FormLabel>
               <PasswordInput
                 id="current-password"
@@ -529,7 +523,7 @@ function ProfilePage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <FormLabel htmlFor="new-password" required>
-                รหัสผ่านใหม่
+                New password
               </FormLabel>
               <PasswordInput
                 id="new-password"
@@ -543,20 +537,22 @@ function ProfilePage() {
               />
               {passwordInvalidLength ? (
                 <small className="mt-1 text-xs font-semibold text-destructive">
-                  รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษรและไม่เกิน 72 ไบต์ UTF-8
+                  New password must have at least 8 characters and no more than 72 bytes UTF-8
                 </small>
               ) : (
-                <small className="text-xs text-muted-foreground">ต้องมีอย่างน้อย 8 ตัวอักษร</small>
+                <small className="text-xs text-muted-foreground">
+                  must have at least 8 characters
+                </small>
               )}
               {passwordUnchanged && (
                 <small className="mt-1 text-xs font-semibold text-destructive">
-                  รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม
+                  The new password must differ from the current password
                 </small>
               )}
             </div>
             <div className="flex flex-col gap-1.5">
               <FormLabel htmlFor="confirm-password" required>
-                ยืนยันรหัสผ่านใหม่
+                Confirm new password
               </FormLabel>
               <PasswordInput
                 id="confirm-password"
@@ -570,7 +566,7 @@ function ProfilePage() {
               />
               {passwordMismatch && (
                 <small className="mt-1 text-xs font-semibold text-destructive">
-                  ยืนยันรหัสผ่านใหม่ไม่ตรงกัน
+                  The new passwords do not match
                 </small>
               )}
             </div>
@@ -581,7 +577,7 @@ function ProfilePage() {
               type="submit"
               disabled={passwordSaving || passwordFormInvalid}
             >
-              {passwordSaving ? 'กำลังเปลี่ยนรหัสผ่าน...' : 'เปลี่ยนรหัสผ่าน'}
+              {passwordSaving ? 'Changing password…' : 'Change password'}
             </Button>
           </div>
         </form>

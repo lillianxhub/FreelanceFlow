@@ -24,7 +24,7 @@ class ErrorHandlerChainTest {
         ErrorHandler later = mock(ErrorHandler.class);
         when(first.getOrder()).thenReturn(1);
         when(later.getOrder()).thenReturn(2);
-        var expected = ErrorDescriptor.of(HttpStatus.BAD_REQUEST, "TEST_ERROR", "ข้อมูลไม่ถูกต้อง");
+        var expected = ErrorDescriptor.of(HttpStatus.BAD_REQUEST, "TEST_ERROR", "Invalid data");
         var exception = new Exception();
         when(first.handle(exception, mvc)).thenReturn(Optional.of(expected));
         var chain = new ErrorHandlerChain(List.of(new UnknownErrorHandler(), later, first));
@@ -73,7 +73,7 @@ class ErrorHandlerChainTest {
             var result = chain.resolve(ex, mvc);
             assertThat(result.status()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
             assertThat(result.details()).isNull();
-            assertThat(result.message()).isEqualTo("เกิดข้อผิดพลาดภายในระบบ");
+            assertThat(result.message()).isEqualTo("Internal server error");
         }
         assertThat(chain.resolve(new BadCredentialsException("dependency"),
                 new ErrorContext(ErrorContext.Source.FILTER_DEPENDENCY, "/api/users/me")).status())
@@ -85,7 +85,7 @@ class ErrorHandlerChainTest {
     void exceptionContractValidatesMetadataAndDefensivelyCopiesDetails() {
         var details = new java.util.HashMap<String, Object>();
         details.put("field", "name");
-        ApiException ex = new TestException(HttpStatus.BAD_REQUEST, "TEST_ERROR", "ข้อมูลไม่ถูกต้อง", details);
+        ApiException ex = new TestException(HttpStatus.BAD_REQUEST, "TEST_ERROR", "Invalid data", details);
         details.put("field", "password");
         assertThat(ex.getDetails()).containsExactlyEntriesOf(Map.of("field", "name"));
         assertThatThrownBy(() -> ex.getDetails().put("field", "email")).isInstanceOf(UnsupportedOperationException.class);

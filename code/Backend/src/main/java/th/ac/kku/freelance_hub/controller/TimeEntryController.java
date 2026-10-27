@@ -77,7 +77,7 @@ public class TimeEntryController {
         return ResponseEntity
                 .created(URI.create("/api/time-entries/" + response.getId()))
                 .body(ApiResult.success(
-                        "เพิ่มรายการเวลาเรียบร้อยแล้ว",
+                        "Time entry added",
                         TimeEntryDetailResponse.from(response)
                 ));
     }
@@ -114,7 +114,7 @@ public class TimeEntryController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ดึงข้อมูลรายการเวลาเรียบร้อยแล้ว",
+                        "Time entries retrieved",
                         data,
                         meta
                 )
@@ -140,7 +140,7 @@ public class TimeEntryController {
 
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ดึงข้อมูลรายการเวลาเรียบร้อยแล้ว",
+                        "Time entries retrieved",
                         TimeEntryDetailResponse.from(response)
                 )
         );
@@ -156,7 +156,7 @@ public class TimeEntryController {
     ) {
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "สรุปรายการเวลาเรียบร้อยแล้ว",
+                        "Time entries summarized",
                         timeEntryService.summarize(currentOwnerId(), filter)
                 )
         );
@@ -186,7 +186,7 @@ public class TimeEntryController {
         );
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "แก้ไขรายการเวลาเรียบร้อยแล้ว",
+                        "Time entry updated",
                         TimeEntryDetailResponse.from(response)
                 )
         );
@@ -211,7 +211,7 @@ public class TimeEntryController {
         timeEntryService.delete(currentOwnerId(), id);
         return ResponseEntity.ok(
                 ApiResult.success(
-                        "ลบรายการเวลาเรียบร้อยแล้ว",
+                        "Time entry deleted",
                         null
                 )
         );

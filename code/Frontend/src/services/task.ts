@@ -15,6 +15,7 @@ export function toTask(source: ApiTask): Task {
     description: emptyString(source.description),
     status: source.status,
     sort_order: source.sortOrder,
+    version: source.version ?? 0,
     due_date: '',
     created_at: source.createdAt,
     updated_at: source.updatedAt,
@@ -33,7 +34,7 @@ export async function listTasks(projectId: string): Promise<Task[]> {
 }
 
 export async function saveTask(input: TaskInput): Promise<Task> {
-  if (!input.project_id) throw new Error('Task ต้องระบุ project_id')
+  if (!input.project_id) throw new Error('Task is required project_id')
   if (!input.id)
     return toTask(
       (

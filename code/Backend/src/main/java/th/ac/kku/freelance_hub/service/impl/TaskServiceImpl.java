@@ -302,7 +302,7 @@ public class TaskServiceImpl implements TaskService {
 
     private static void requireStartedBeforeCompletion(Task task, TaskStatus nextStatus) {
         if (nextStatus == TaskStatus.COMPLETED && task.getStatus() == TaskStatus.OPEN) {
-            throw new InvalidStateException("กรุณาเริ่มงานก่อนเปลี่ยนเป็นเสร็จสิ้น");
+            throw new InvalidStateException("Start the task before completing it");
         }
     }
 
@@ -317,7 +317,7 @@ public class TaskServiceImpl implements TaskService {
 
         if(!project.canEditTasks()) {
             throw new InvalidStateException(
-                    "ไม่สามารถแก้ไขงานของโปรเจกต์ที่เสร็จสิ้นหรือจัดเก็บแล้ว"
+                    "Tasks in completed or archived projects cannot be edited"
             );
         }
         
@@ -365,7 +365,7 @@ public class TaskServiceImpl implements TaskService {
 
         if (position == null || position < 0 || position > maximum) {
             throw new InvalidArgumentException(
-                    "ลำดับงานอยู่นอกช่วงที่อนุญาต", Map.of("field", "sortOrder", "min", 0, "max", maximum)
+                    "Task order is out of range", Map.of("field", "sortOrder", "min", 0, "max", maximum)
             );
         }
 
@@ -377,14 +377,14 @@ public class TaskServiceImpl implements TaskService {
 
         if (pageable.isUnpaged() || pageable.getPageSize() > 100) {
             throw new InvalidArgumentException(
-                    "จำนวนงานต่อหน้าต้องอยู่ระหว่าง 1 ถึง 100"
+                    "Task page size must be between 1 and 100"
             );
         }
 
         for (Sort.Order order : pageable.getSort()) {
             if (!SORT_FIELDS.contains(order.getProperty())) {
                 throw new InvalidArgumentException(
-                        "ฟิลด์ที่ใช้เรียงลำดับไม่ถูกต้อง", Map.of("field", "sortBy")
+                        "Invalid sort field", Map.of("field", "sortBy")
                 );
             }
         }
@@ -433,7 +433,7 @@ public class TaskServiceImpl implements TaskService {
             long temporaryStart = Math.max(maxOrder, tasks.size() - 1L) + 1;
             if (temporaryStart + tasks.size() - 1 > Integer.MAX_VALUE) {
                 throw new InvalidStateException(
-                        "ไม่สามารถเรียงงานใหม่ได้ เนื่องจากลำดับงานถึงขีดจำกัด"
+                        "Cannot reorder tasks because the order limit was reached"
                 );
             }
 

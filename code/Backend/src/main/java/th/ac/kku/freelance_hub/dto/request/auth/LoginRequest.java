@@ -17,10 +17,10 @@ import th.ac.kku.freelance_hub.security.EmailNormalizer;
 @Builder
 public class LoginRequest {
 
-    @NotBlank(message = "กรุณาระบุอีเมล")
+    @NotBlank(message = "Enter an email address")
     private String email;
 
-    @Email(message = "รูปแบบอีเมลไม่ถูกต้อง")
+    @Email(message = "Invalid email format")
     public String getEmail() {
         return email == null ? null : EmailNormalizer.normalize(email);
     }
@@ -29,6 +29,6 @@ public class LoginRequest {
         this.email = email == null ? null : EmailNormalizer.normalize(email);
     }
 
-    @NotBlank(message = "กรุณาระบุรหัสผ่าน")
+    @NotBlank(message = "Enter a password")
     private String password;
 }

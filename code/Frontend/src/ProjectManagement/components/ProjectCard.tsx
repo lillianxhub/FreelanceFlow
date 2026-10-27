@@ -2,7 +2,7 @@ import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { NativeSelect } from '../../components/ui/native-select'
 import { Progress } from '../../components/ui/progress'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { FiEdit2 } from 'react-icons/fi'
 import type { Project, ProjectStatus } from '../../types/project'
 import { formatDate } from '../../utils/date'
@@ -29,7 +29,7 @@ function getBudgetColor(percent: number) {
 
 function formatHours(hours: number | null) {
   if (hours === null || hours === undefined) return '—'
-  return `${Number(hours).toLocaleString('th-TH', { maximumFractionDigits: 2 })} ชม.`
+  return `${Number(hours).toLocaleString('en-US', { maximumFractionDigits: 2 })} h`
 }
 
 function isPastEndDate(endDate: string) {
@@ -63,20 +63,20 @@ export default function ProjectCard({
       >
         <Link
           className="absolute inset-0 z-0 rounded-xl"
-          to={`/projects/${project.id}`}
-          aria-label={`เปิด ${project.name}`}
+          href={`/projects/${project.id}`}
+          aria-label={`Open ${project.name}`}
         />
 
         <div className="pointer-events-none relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="truncate text-lg font-semibold text-text-primary">{project.name}</h2>
             <p className="mt-0.5 truncate text-sm text-text-secondary">
-              {clientName} · {totalTasks} งาน
+              {clientName} · {totalTasks} Tasks
             </p>
             <p
               className={`mt-0.5 text-sm ${isOverdue ? 'font-semibold text-destructive' : 'text-text-secondary'}`}
             >
-              {project.end_date ? `สิ้นสุด ${formatDate(project.end_date)}` : 'ไม่กำหนดวันสิ้นสุด'}
+              {project.end_date ? `End ${formatDate(project.end_date)}` : 'No due date'}
             </p>
           </div>
           <Button
@@ -87,7 +87,7 @@ export default function ProjectCard({
             onClick={() => onEdit(project)}
           >
             <FiEdit2 aria-hidden="true" />
-            แก้ไข
+            Edit
           </Button>
         </div>
 
@@ -96,13 +96,13 @@ export default function ProjectCard({
             <strong className="text-xl font-semibold leading-tight text-text-primary tabular-nums">
               {trackedSeconds === null ? '—' : formatTimer(trackedSeconds)}
             </strong>
-            <span className="text-sm text-text-secondary">เวลาที่บันทึก</span>
+            <span className="text-sm text-text-secondary">Tracked time</span>
           </div>
           <div className="grid gap-0.5">
             <strong className="text-xl font-semibold leading-tight text-text-primary tabular-nums">
               {formatHours(project.budget_hours)}
             </strong>
-            <span className="text-sm text-text-secondary">จำนวนชั่วโมง</span>
+            <span className="text-sm text-text-secondary">Hours</span>
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default function ProjectCard({
             className={`flex items-center justify-between gap-3 text-sm ${isOverdue ? 'font-semibold text-destructive' : 'text-text-secondary'}`}
           >
             <span>
-              ความคืบหน้างาน ({completedTasks}/{totalTasks})
+              Task progress ({completedTasks}/{totalTasks})
             </span>
             <strong className={isOverdue ? 'text-destructive' : 'text-text-primary'}>
               {taskPercent}%
@@ -127,7 +127,7 @@ export default function ProjectCard({
         {budgetPercent !== null && (
           <div className="pointer-events-none relative z-10 grid gap-2 pt-2">
             <div className="flex items-center justify-between gap-3 text-sm text-text-secondary">
-              <span>ใช้เวลาไปแล้ว</span>
+              <span>Time used</span>
               <strong className="text-text-primary">{budgetPercent}%</strong>
             </div>
             <Progress
@@ -144,7 +144,7 @@ export default function ProjectCard({
             className={`h-9 w-fit min-w-36 rounded-full border-0 px-3 py-1.5 text-sm font-semibold ${statusSelectClasses[project.status]}`}
             wrapperClassName="w-fit"
             value={project.status}
-            aria-label={`สถานะของโปรเจกต์ ${project.name}`}
+            aria-label={`Status of project ${project.name}`}
             disabled={changing}
             onChange={(event) => onStatusChange(project, event.target.value as ProjectStatus)}
           >

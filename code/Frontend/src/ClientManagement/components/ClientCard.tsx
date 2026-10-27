@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../../components/ui/alert-dialog'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useState } from 'react'
 import { FiArchive, FiEdit2, FiRotateCcw } from 'react-icons/fi'
 import type { ClientCardProps } from '../../types/clientsPage'
@@ -39,8 +39,8 @@ export default function ClientCard({
   onArchive,
 }: ClientCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const displayName = client.name || 'ไม่ระบุชื่อ'
-  const companyName = client.company_name || 'ไม่มีชื่อบริษัท'
+  const displayName = client.name || 'Unnamed'
+  const companyName = client.company_name || 'No company name'
   const avatarColor = getAvatarColor(client.id || displayName)
 
   return (
@@ -48,8 +48,8 @@ export default function ClientCard({
       <article className="relative p-5 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(30,48,83,0.1)]">
         <Link
           className="absolute inset-0 z-0 rounded-[inherit]"
-          to={`/clients/${client.id}`}
-          aria-label={`เปิด ${displayName}`}
+          href={`/clients/${client.id}`}
+          aria-label={`Open ${displayName}`}
         />
 
         <div className="pointer-events-none relative z-10 flex items-start justify-between gap-3">
@@ -68,20 +68,20 @@ export default function ClientCard({
         </div>
 
         <div className="pointer-events-none relative z-10 grid gap-1 text-sm text-text-secondary">
-          <p className="truncate">{client.email || 'ยังไม่มีอีเมล'}</p>
-          <p className="truncate">{client.phone || 'ยังไม่มีเบอร์โทรศัพท์'}</p>
+          <p className="truncate">{client.email || 'No email address'}</p>
+          <p className="truncate">{client.phone || 'No phone number'}</p>
         </div>
 
         <div className="pointer-events-none relative z-10 grid grid-cols-2 gap-2 border-y border-border py-3 text-xs text-text-secondary">
           <span className="grid gap-0.5">
             <strong className="text-base font-semibold text-text-primary">{projectCount}</strong>
-            โปรเจกต์
+            Projects
           </span>
           <span className="grid gap-0.5">
             <strong className="text-base font-semibold text-text-primary">
               {formatDurationSeconds(minutes * 60)}
             </strong>
-            เวลารวม
+            Total time
           </span>
         </div>
 
@@ -94,7 +94,7 @@ export default function ClientCard({
             onClick={() => onEdit(client)}
           >
             <FiEdit2 aria-hidden="true" />
-            แก้ไข
+            Edit
           </Button>
           <Button
             variant="ghost"
@@ -108,27 +108,25 @@ export default function ClientCard({
             ) : (
               <FiArchive aria-hidden="true" />
             )}
-            {client.status === 'ARCHIVED' ? 'นำกลับ' : 'เก็บถาวร'}
+            {client.status === 'ARCHIVED' ? 'Restore' : 'Archived'}
           </Button>
         </div>
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {client.status === 'ARCHIVED'
-                  ? 'นำลูกค้ากลับมาใช้งานหรือไม่'
-                  : 'เก็บลูกค้าเข้าคลังหรือไม่'}
+                {client.status === 'ARCHIVED' ? 'Restore this client?' : 'Archive this client?'}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {client.status === 'ARCHIVED'
-                  ? 'ลูกค้าจะกลับมาแสดงในรายการที่ใช้งานอยู่'
-                  : 'ลูกค้าจะไม่แสดงในรายการที่ใช้งานอยู่ แต่ข้อมูลเดิมจะยังคงอยู่'}
+                  ? 'This client will return to the active list.'
+                  : 'This client will leave the active list while their data remains available.'}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={() => onArchive(client)}>
-                {client.status === 'ARCHIVED' ? 'นำกลับมาใช้งาน' : 'เก็บถาวร'}
+                {client.status === 'ARCHIVED' ? 'Restore client' : 'Archived'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

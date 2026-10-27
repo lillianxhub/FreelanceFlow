@@ -1,32 +1,21 @@
-# Documentation Update Pull Request Template
+# PR: ปรับกฎและคู่มือพัฒนา
 
-## Documentation Title
+<!-- เขียนชื่อ PR ให้ระบุผลที่เปลี่ยน และเติมเฉพาะส่วนที่เกี่ยวข้อง -->
 
-<!-- Write a short and descriptive pull request title in English. -->
+## ปัญหา ขอบเขต และผลหลังเปลี่ยน
 
-## Type of Change
+## เกณฑ์ implementation/review
 
-- [x] Documentation update
+- เอกสารและกลุ่มผู้อ่านที่เปลี่ยน พร้อมเหตุผล
+- แยก repository policy, current implementation, proposed design และ historical evidence
+- ตรวจ version/source/official references, links และ diagrams ที่เกี่ยวข้อง
+- คงเครดิตและหลักฐานประวัติ; ไม่แต่ง test counts/deployment URLs
+- docs-only ไม่ต้องรัน runtime suites โดยไม่มีผลกระทบ แต่ต้องบอกการตรวจที่ทำจริง
 
-## Description of Changes
+## ผลตรวจจริงและ evidence
 
-<!-- Describe the documentation that was added, modified, or removed and explain why. -->
+<!-- Commands, commit/environment, passed/failed/skipped, links และสิ่งที่ไม่ได้ตรวจ ห้ามอ้าง tests จากรอบก่อนเป็นผลรอบนี้ -->
 
-## Relevant Sections
+## Compatibility ข้อมูลเดิม และข้อจำกัด
 
-<!-- List the documentation sections or files affected by this change. -->
-
-## Review Considerations
-
-<!-- Highlight areas that reviewers should focus on. -->
-
-## Additional Remarks
-
-<!-- Add any additional context for the documentation changes. -->
-
-## Checklist
-
-- [ ] Documentation reviewed for accuracy
-- [ ] Content is clear, concise, and grammatically correct
-- [ ] Relevant README or documentation was updated
-- [ ] Documentation reflects the current project state
+อ่าน [workflow](../../doc/feature-workflow.md) และ [test plan](../../test/test-plan.md) เพื่อเลือก checks ตามผลกระทบ

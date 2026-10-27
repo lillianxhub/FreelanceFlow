@@ -72,13 +72,13 @@ class UserAuthIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"displayName\":\"Changed First\",\"province\":\"ขอนแก่น\"}"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.message").value("อัปเดตข้อมูลผู้ใช้สำเร็จ"))
+                                .andExpect(jsonPath("$.message").value("User updated"))
                                 .andExpect(jsonPath("$.data.email").value(firstEmail))
                                 .andExpect(jsonPath("$.data.displayName").value("Changed First"));
 
                 mockMvc.perform(get("/api/users/me").header("Authorization", bearer(firstToken)))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.message").value("ดึงข้อมูลผู้ใช้สำเร็จ"))
+                                .andExpect(jsonPath("$.message").value("User retrieved"))
                                 .andExpect(jsonPath("$.data.displayName").value("Changed First"))
                                 .andExpect(jsonPath("$.data.province").value("ขอนแก่น"));
                 mockMvc.perform(get("/api/users/me").header("Authorization", bearer(secondToken)))
@@ -130,7 +130,7 @@ class UserAuthIntegrationTest {
                                 .andExpect(jsonPath("$.success").value(false))
                                 .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"))
                                 .andExpect(jsonPath("$.error.status").value(401))
-                                .andExpect(jsonPath("$.message").value("กรุณาเข้าสู่ระบบก่อนดำเนินการ"))
+                                .andExpect(jsonPath("$.message").value("Sign in to continue"))
                                 .andReturn();
                 assertThat(objectMapper.readTree(unauthorized.getResponse().getContentAsString())
                                 .path("error").path("traceId").asText())
@@ -158,12 +158,12 @@ class UserAuthIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"displayName\":\"   \",\"phone\":\"letters\"}"))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(jsonPath("$.message").value("ข้อมูลที่ส่งมาไม่ถูกต้อง"))
+                                .andExpect(jsonPath("$.message").value("Invalid request data"))
                                 .andExpect(jsonPath("$.success").value(false))
                                 .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
-                                .andExpect(jsonPath("$.error.fieldErrors.displayName").value("ชื่อที่แสดงต้องไม่เป็นช่องว่าง"))
+                                .andExpect(jsonPath("$.error.fieldErrors.displayName").value("Display name cannot be blank"))
                                 .andExpect(jsonPath("$.error.fieldErrors.phone").value(
-                                                "เบอร์โทรศัพท์ต้องมีเฉพาะตัวเลขหรือเครื่องหมายคั่นที่ใช้ทั่วไป"))
+                                                "Phone may contain only digits or common separators"))
                                 .andExpect(jsonPath("$.error.details").value(org.hamcrest.Matchers.nullValue()))
                                 .andExpect(jsonPath("$.error.status").value(400))
                                 .andReturn();
@@ -190,14 +190,14 @@ class UserAuthIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"oldPassword\":\"wrong-password\",\"newPassword\":\"newPassword123\"}"))
                                 .andExpect(status().isUnauthorized())
-                                .andExpect(jsonPath("$.message").value("รหัสผ่านไม่ถูกต้อง"));
+                                .andExpect(jsonPath("$.message").value("Incorrect password"));
 
                 mockMvc.perform(patch("/api/users/me/password")
                                 .header("Authorization", bearer(accessToken))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"oldPassword\":\"password123\",\"newPassword\":\"newPassword123\"}"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.message").value("เปลี่ยนรหัสผ่านสำเร็จ"));
+                                .andExpect(jsonPath("$.message").value("Password changed"));
 
                 mockMvc.perform(post("/api/auth/refresh").header("Origin", "http://localhost:5174").cookie(firstFamily))
                                 .andExpect(status().isUnauthorized());
@@ -207,7 +207,7 @@ class UserAuthIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(loginJson(email, PASSWORD)))
                                 .andExpect(status().isUnauthorized())
-                                .andExpect(jsonPath("$.message").value("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
+                                .andExpect(jsonPath("$.message").value("Invalid email or password"));
                 mockMvc.perform(post("/api/auth/login")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(loginJson(email, "newPassword123")))
