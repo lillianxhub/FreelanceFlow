@@ -21,3 +21,9 @@
 Browser filters ใช้ค่า UI เช่น ALL ได้ แต่ต้อง map เป็น query ที่ Backend ยอมรับ Encode identifiers/query ด้วย URL APIs ไม่ต่อ untrusted query/sort field ตรง ๆ
 
 เมื่อเปลี่ยน origin ต้อง rebuild production frontend แยก public configuration จาก secrets ตรวจ rewrite และการส่ง Set-Cookie โดยไม่ log token/cookie values
+
+Finance ใช้ `src/services/finance.ts` ผ่าน proxy เดียวกัน รายการเงินเป็น decimal string จาก Backend และ `bigint` สตางค์เมื่อคำนวณใน browser; Backend ยืนยันยอด Invoice และการรับชำระ ดู [Finance API](../../../doc/finance-api.md) ทุก mutation ต้องรอ response ก่อนแสดงสำเร็จ และเมื่อได้ `409` ให้โหลดรายการใหม่ก่อนแก้ซ้ำ รูปโลโก้ต้อง fetch แบบ authenticated เพราะ `<img src="/api/...">` ไม่ส่ง Bearer token
+
+Finance access now comes from the workspace `FeaturesProvider` and `/users/me/features`, not from the login plan alone. The Admin switch uses `/admin/features` with optimistic versioning. Sidebar, Finance layout and Backend policy agree in both open and enforced modes.
+
+`SalesDocuments` shares the editor for invoices and quotations. `documentPreview` calculates unsaved totals using scaled integers and maps draft/current identity versus immutable issued snapshots. `DocumentPrint` renders both previews and printed documents. Conversion opens `/finance/invoices?invoice=<id>` with the persisted draft; every service uses the existing `/api` proxy.

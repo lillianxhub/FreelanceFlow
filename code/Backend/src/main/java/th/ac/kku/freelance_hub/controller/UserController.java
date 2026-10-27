@@ -21,6 +21,14 @@ import th.ac.kku.freelance_hub.dto.response.user.UserResponse;
 public class UserController {
 
     private final UserService userService;
+    private final th.ac.kku.freelance_hub.service.FeatureAccessService featureAccess;
+
+    @GetMapping("/me/features")
+    @Tag(name = "Premium", description = "Current plan and Finance entitlement")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResult<th.ac.kku.freelance_hub.service.FeatureAccessService.Features>> features() {
+        return ResponseEntity.ok(ApiResult.success("Features", featureAccess.features()));
+    }
 
     /**
      * Get current authenticated user profile

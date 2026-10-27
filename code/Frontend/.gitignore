@@ -31,3 +31,6 @@ test-results/
 playwright-report/
 
 *.tsbuildinfo
+
+# Isolated browser-test builds
+/.next-*/

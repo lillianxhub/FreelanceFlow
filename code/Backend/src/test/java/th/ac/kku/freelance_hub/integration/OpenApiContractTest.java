@@ -74,7 +74,8 @@ class OpenApiContractTest {
                                     .isEqualTo(ref(parameter.getType()));
                         }
                     }
-                    if (!hasRequestBody) {
+                    if (!hasRequestBody && java.util.Arrays.stream(handler.getMethod().getParameters())
+                            .noneMatch(parameter -> parameter.isAnnotationPresent(org.springframework.web.bind.annotation.RequestPart.class))) {
                         assertThat(operation.path("requestBody").isMissingNode())
                                 .as(label + " must have no request body")
                                 .isTrue();
@@ -82,6 +83,9 @@ class OpenApiContractTest {
 
                     ResolvableType bodyType = ResolvableType.forMethodReturnType(handler.getMethod())
                             .as(ResponseEntity.class).getGeneric(0);
+                    if (bodyType.resolve() == null) {
+                        bodyType = ResolvableType.forMethodReturnType(handler.getMethod());
+                    }
                     assertThat(bodyType.resolve()).as(label + " Java return type").isNotNull();
                     JsonNode responses = operation.path("responses");
                     boolean hasSuccess = false;
@@ -100,6 +104,10 @@ class OpenApiContractTest {
                         }
 
                         JsonNode responseSchema = firstContentSchema(response.getValue());
+                        if (bodyType.resolve() == byte[].class) {
+                            assertThat(responseSchema.path("type").asText()).as(label + " binary response").isEqualTo("string");
+                            continue;
+                        }
                         String responseRef = responseSchema.path("$ref").asText();
                         assertThat(responseRef).as(label + " response schema").startsWith("#/components/schemas/");
                         JsonNode resolved = schemas.path(responseRef.substring(responseRef.lastIndexOf('/') + 1));

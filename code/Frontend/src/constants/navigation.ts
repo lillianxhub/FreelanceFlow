@@ -6,6 +6,7 @@ import {
   FiUsers,
   FiColumns,
   FiDollarSign,
+  FiShield,
 } from 'react-icons/fi'
 
 export const workspaceLinks = [
@@ -17,3 +18,5 @@ export const workspaceLinks = [
   { to: '/reports', label: 'Reports', icon: FiBarChart2 },
   { to: '/finance', label: 'Finance', icon: FiDollarSign },
 ]
+
+export const adminLink = { to: '/admin', label: 'Admin', icon: FiShield }

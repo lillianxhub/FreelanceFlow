@@ -127,6 +127,11 @@ export function getApiToken(): string | null {
   return accessToken
 }
 
+// Explicit sign-in takes precedence over an initial session refresh still in flight.
+export function supersedePendingRefresh(): void {
+  tokenRevision++
+}
+
 export function setApiToken(token: string | null): void {
   tokenRevision++
   accessToken = token
@@ -222,7 +227,14 @@ async function request<T>(
     } catch {
       /* The server did not return JSON. */
     }
-    throw createApiError(body, response.status, `API error (${response.status})`)
+    const error = createApiError(body, response.status, `API error (${response.status})`)
+    if (
+      response.status === 403 &&
+      error.code === 'FINANCE_PREMIUM_REQUIRED' &&
+      typeof window !== 'undefined'
+    )
+      window.dispatchEvent(new Event('freelanceflow-finance-revoked'))
+    throw error
   }
   if (response.status === 204 || response.status === 205) {
     return {

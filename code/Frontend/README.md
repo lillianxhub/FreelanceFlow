@@ -26,7 +26,7 @@ Backend เป็น source of truth สำหรับ ownership/status/timer/v
 - ลูกค้า/โปรเจกต์ใช้ cards กับ side panel, Task ใช้ dialog; `/task-board` มี Today table และ Kanban รายโปรเจกต์ พร้อม keyboard/touch และปุ่มให้ผลเดียวกับ drag
 - focus เข้า/ออก dialog/panel ถูกต้อง คืน focus ให้ trigger; mobile panel เต็มจอและไม่ล้น viewport
 - Board column status แยกจาก Today membership; sorting ไม่เริ่ม timer; switching งานต้องยืนยัน explicit choice และไม่เปลี่ยน timer เพราะเปลี่ยนโหมด
-- ข้อความระบบเป็นอังกฤษ; ข้อมูลผู้ใช้ภาษาไทยคงเดิม; Finance เป็น prototype ที่ใช้ข้อมูลสมมติร่วมกันใน workspace provider และรีเซ็ตเมื่อรีโหลด/logout ห้ามนำยอดตัวอย่างไปรวมกับ API จริง
+- ข้อความระบบเป็นอังกฤษ; ข้อมูลผู้ใช้ภาษาไทยคงเดิม; Finance ใช้ `/api/finance` และ PostgreSQL จริงผ่าน `src/services/finance.ts` ข้อมูลแยก owner และคงอยู่หลังรีโหลด/logout ดู [Finance API](../../doc/finance-api.md)
 - ทดสอบ hydration, direct URL, reload และ layout persistence ไม่อาศัย unit test ของ component เพียงอย่างเดียว
 
 ## เพิ่ม แก้ไข หรือลบ UI
@@ -47,3 +47,5 @@ npm run test:e2e
 ```
 
 Frontend port 5174; `BACKEND_ORIGIN` เป็น server config สำหรับ [rewrites](https://nextjs.org/docs/app/api-reference/config/next-config-js/rewrites) เปลี่ยนแล้ว rebuild ก่อน `npm run start` Unit tests ปัจจุบันใช้ Node test runner + tsx/jsdom และ browser tests ใช้ [Playwright](https://nextjs.org/docs/app/guides/testing/playwright) การเปลี่ยน runner ต้องเป็นงานที่ระบุชัดเจน
+
+The current Next/TypeScript combination uses the TypeScript compiler API (`experimental.useTypeScriptCli: false`) during production builds. In constrained environments where Turbopack cannot bind its helper port, use `npm run build -- --webpack`; type checking remains enabled. Finance browser acceptance uses persistent Backend data. Open-access flows run with Free accounts; switch/revocation flows require an Admin test account. Use a dedicated test database because the switch is global. Set `NEXT_DIST_DIR=.next-finance-test` and `BACKEND_ORIGIN` before building to isolate browser-test output from a running development app.
