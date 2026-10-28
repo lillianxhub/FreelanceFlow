@@ -90,7 +90,7 @@ export default function TimerPanel({
           <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 @min-[520px]:grid-cols-2 @min-[900px]:grid-cols-[minmax(170px,1fr)_minmax(170px,1fr)_minmax(240px,1.6fr)_auto]">
             <div className="grid min-w-0 gap-2">
               <p className="text-xs text-text-secondary">Projects</p>
-              <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-white px-[11px] py-[9px]">
+              <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-surface px-[11px] py-[9px]">
                 <p className="truncate text-sm font-semibold text-text-primary">
                   {timer.runningProject?.name || 'No project selected'}
                 </p>
@@ -98,7 +98,7 @@ export default function TimerPanel({
             </div>
             <div className="grid min-w-0 gap-2">
               <p className="text-xs text-text-secondary">Tasks</p>
-              <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-white px-[11px] py-[9px]">
+              <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-surface px-[11px] py-[9px]">
                 <p className="truncate text-sm font-semibold text-text-primary">
                   {timer.runningTask?.name || 'No task selected'}
                 </p>
@@ -106,7 +106,7 @@ export default function TimerPanel({
             </div>
             <div className="grid min-w-0 gap-2 md:col-span-2 xl:col-span-1">
               <p className="text-xs text-text-secondary">Description</p>
-              <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-white px-[11px] py-[9px]">
+              <div className="flex h-[41px] min-w-0 items-center rounded-lg border border-input bg-surface px-[11px] py-[9px]">
                 <p className="truncate text-sm font-semibold text-text-primary">
                   {timer.runningEntry.description || 'No description'}
                 </p>

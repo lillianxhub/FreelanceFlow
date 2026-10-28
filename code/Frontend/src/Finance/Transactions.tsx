@@ -168,7 +168,7 @@ export default function Transactions({ kind }: { kind: 'income' | 'expense' }) {
                   <td>
                     {item.description}
                     {item.paymentId && <small className="block">Invoice payment</small>}
-                    {item.cancelled && <small className="block text-red-600">Cancelled</small>}
+                    {item.cancelled && <small className="block text-destructive">Cancelled</small>}
                   </td>
                   <td>{item.category}</td>
                   <td className="tabular-nums">{formatBaht(item.amount)}</td>
@@ -179,7 +179,7 @@ export default function Transactions({ kind }: { kind: 'income' | 'expense' }) {
                           Edit
                         </button>
                         <button
-                          className="text-red-600"
+                          className="text-destructive"
                           disabled={busy}
                           onClick={() => void cancel(item)}
                         >
@@ -271,7 +271,7 @@ export default function Transactions({ kind }: { kind: 'income' | 'expense' }) {
               />
             </label>
             {error && (
-              <p role="alert" className="text-red-600">
+              <p role="alert" className="text-destructive">
                 {error}
               </p>
             )}

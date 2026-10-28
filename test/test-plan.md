@@ -71,3 +71,7 @@ This suite exercises payment overrun races, same-key retries and changed payload
 - Quotation: create/edit/issue/cancel, valid dates, owner-safe client/project references, QT numbering, immutable snapshots, no accounting impact, unique conversion under concurrency, atomic rollback.
 - Browser: unsaved Quotation/Invoice preview, current form changes, exact decimal totals and invalid values, Escape/Close preserves form and focus, snapshot stability after customer changes, conversion and reload, desktop/mobile and multi-page A4 PDF.
 - Frontend: `documentPreview.test.ts` covers HALF_UP, quantities with three decimals, large values, overflow and incomplete fields. `e2e/finance-documents.spec.ts` covers the new user journeys through the Next proxy.
+
+## Premium trial regression (V26)
+
+`AdminAccessIntegrationTest` covers authenticated trial start, seven-day duration, duplicate/expired trial 409, isolation from other accounts, expiry 403 at the Finance boundary, and permanent Premium access after expiry. `FinancePostgresIntegrationTest` covers fresh migration, concurrent start (one winner), persisted trial history, and preserved invoices after expiry in an isolated PostgreSQL schema. `e2e/premium-trial.spec.ts` covers the trial button and expiry notice through login, the Next proxy, reload, and duplicate start on desktop/mobile. Enable **Require Premium for Finance** in the target test environment to exercise the locked Free screen; the existing open-access setting is not changed by V26.

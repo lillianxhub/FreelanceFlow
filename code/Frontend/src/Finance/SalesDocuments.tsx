@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { ApiError } from '../api/apiError'
 import { getClientById, listClientOptions } from '../services/client'
 import { listAllProjects } from '../services/project'
@@ -10,17 +9,13 @@ import type { Client } from '../types/client'
 import type { Project } from '../types/project'
 import {
   financeApi,
-  formatBaht,
-  type FinanceInvoice,
   type FinanceLine,
   type FinancePreset,
   type FinanceQuotation,
   type SalesDocumentInput,
 } from '../services/finance'
-import { FinanceShell, input, panel, primary, secondary } from './FinanceShell'
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../components/ui/sheet'
+import { FinanceShell, panel, primary, secondary } from './FinanceShell'
 import { DocumentPrint } from './DocumentPrint'
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/dialog'
 import {
   addDays,
   bangkokToday as today,
@@ -29,14 +24,11 @@ import {
   type SalesKind,
   type SalesPreview,
 } from './documentPreview'
+import { blankLine } from './SalesDocumentLineItems'
+import { SalesDocumentList, type SalesDocument } from './SalesDocumentList'
+import { SalesDocumentEditor } from './SalesDocumentEditor'
+import { QuotationConversionDialog } from './QuotationConversionDialog'
 
-const blankLine = (): FinanceLine => ({
-  description: '',
-  quantity: '1',
-  unit: '',
-  unitPrice: '0.00',
-})
-type SalesDocument = FinanceInvoice | FinanceQuotation
 export default function SalesDocuments({ kind }: { kind: SalesKind }) {
   const quotation = kind === 'QUOTATION'
   const singular = quotation ? 'quotation' : 'invoice'
@@ -291,6 +283,24 @@ export default function SalesDocuments({ kind }: { kind: SalesKind }) {
       setBusy(false)
     }
   }
+  const reloadDraft = async () => {
+    if (!editing) return
+    setBusy(true)
+    try {
+      const latest = quotation
+        ? await financeApi.quotation(editing.id)
+        : await financeApi.invoice(editing.id)
+      if (latest.status === 'DRAFT') edit(latest)
+      else {
+        setOpen(false)
+        await showPreview(latest)
+      }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not reload draft')
+    } finally {
+      setBusy(false)
+    }
+  }
   return (
     <FinanceShell
       title={title}
@@ -313,465 +323,72 @@ export default function SalesDocuments({ kind }: { kind: SalesKind }) {
           </button>
         </div>
       )}
-      <section className={panel}>
-        <input
-          className={`${input} mb-4 max-w-sm`}
-          aria-label={`Search ${title.toLowerCase()}`}
-          placeholder="Search number or client"
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value)
-            setPage(1)
-          }}
-        />
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <select
-            aria-label={`${quotation ? 'Quotation' : 'Invoice'} status`}
-            className={input}
-            value={status}
-            onChange={(event) => {
-              setStatus(event.target.value)
-              setPage(1)
-            }}
-          >
-            <option value="">All statuses</option>
-            {(quotation
-              ? ['DRAFT', 'ISSUED', 'CANCELLED']
-              : ['DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED']
-            ).map((value) => (
-              <option key={value} value={value}>
-                {value.replaceAll('_', ' ')}
-              </option>
-            ))}
-          </select>
-          <label className="text-sm">
-            From
-            <input
-              className={input}
-              type="date"
-              value={from}
-              onChange={(event) => {
-                setFrom(event.target.value)
-                setPage(1)
-              }}
-            />
-          </label>
-          <label className="text-sm">
-            To
-            <input
-              className={input}
-              type="date"
-              value={to}
-              onChange={(event) => {
-                setTo(event.target.value)
-                setPage(1)
-              }}
-            />
-          </label>
-        </div>
-        {loading && <p role="status">Loading…</p>}
-        {error && !open && (
-          <p role="alert">
-            {error}{' '}
-            <button className={secondary} onClick={() => void load()}>
-              Retry
-            </button>
-          </p>
-        )}
-        {!loading && !items.length && (
-          <p className="py-8 text-center text-text-secondary">No {title.toLowerCase()} yet.</p>
-        )}
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead>
-              <tr>
-                <th>{quotation ? 'Quotation' : 'Invoice'}</th>
-                <th>Client</th>
-                <th>{quotation ? 'Valid until' : 'Due'}</th>
-                <th>Status</th>
-                <th>Total</th>
-                {!quotation && <th>Paid</th>}
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className="border-t border-border">
-                  <td className="py-3">{item.number ?? 'Draft'}</td>
-                  <td>{clients.find((c) => c.id === item.clientId)?.name ?? item.clientId}</td>
-                  <td>{'validUntil' in item ? item.validUntil : item.dueDate}</td>
-                  <td>{item.status}</td>
-                  <td>{formatBaht(item.total)}</td>
-                  {'paid' in item && <td>{formatBaht(item.paid)}</td>}
-                  <td className="space-x-2">
-                    <button
-                      className="text-primary"
-                      disabled={busy}
-                      onClick={() => void showPreview(item)}
-                    >
-                      Preview
-                    </button>
-                    {'invoiceId' in item && item.invoiceId && (
-                      <Link
-                        className="text-primary"
-                        href={`/finance/invoices?invoice=${item.invoiceId}`}
-                      >
-                        Open invoice
-                      </Link>
-                    )}
-                    {'invoiceId' in item && !item.invoiceId && item.status === 'ISSUED' && (
-                      <button
-                        className="text-primary"
-                        disabled={busy}
-                        onClick={() => {
-                          setConverting(item)
-                          setConversionIssueDate(today())
-                          setConversionDueDate(today())
-                          setConversionError('')
-                        }}
-                      >
-                        Create invoice
-                      </button>
-                    )}
-                    {item.status === 'DRAFT' && (
-                      <>
-                        <button className="text-primary" onClick={() => edit(item)}>
-                          Edit
-                        </button>
-                        <button
-                          className="text-primary"
-                          disabled={busy}
-                          onClick={() => void issue(item)}
-                        >
-                          Issue
-                        </button>
-                      </>
-                    )}
-                    {item.status !== 'CANCELLED' && (
-                      <button
-                        className="text-red-600"
-                        disabled={busy}
-                        onClick={() => void cancel(item)}
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="mt-4 flex items-center gap-3">
-          <button className={secondary} disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-          <span>
-            Page {page} · {total} total
-          </span>
-          <button
-            className={secondary}
-            disabled={page * 20 >= total}
-            onClick={() => setPage(page + 1)}
-          >
-            Next
-          </button>
-        </div>
-      </section>
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          aria-label={editing ? 'Edit draft' : `New ${singular}`}
-          className="w-full overflow-y-auto p-6 data-[side=right]:w-full data-[side=right]:sm:max-w-xl"
-        >
-          <SheetTitle>{editing ? 'Edit draft' : `New ${singular}`}</SheetTitle>
-          <SheetDescription>
-            Prices exclude VAT. Amounts are confirmed by the server.
-          </SheetDescription>
-          <form className="mt-6 space-y-4" onSubmit={(event) => void submit(event)}>
-            <label className="block text-sm">
-              Client
-              <select
-                className={input}
-                required
-                aria-label="Client"
-                value={clientId}
-                onChange={(event) => {
-                  setClientId(event.target.value)
-                  setProjectId('')
-                }}
-              >
-                <option value="">Select client</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm">
-              Project (optional)
-              <select
-                className={input}
-                value={projectId}
-                onChange={(event) => setProjectId(event.target.value)}
-              >
-                <option value="">No project</option>
-                {projects
-                  .filter((p) => p.client_id === clientId)
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm">
-                Issue date
-                <input
-                  className={input}
-                  type="date"
-                  value={issueDate}
-                  onChange={(event) => setIssueDate(event.target.value)}
-                  required
-                />
-              </label>
-              <label className="block text-sm">
-                {quotation ? 'Valid until' : 'Due date'}
-                <input
-                  className={input}
-                  type="date"
-                  value={dueDate}
-                  min={issueDate}
-                  onChange={(event) => setDueDate(event.target.value)}
-                  required
-                />
-              </label>
-            </div>
-            <label className="block text-sm">
-              Add service preset
-              <select
-                className={input}
-                value=""
-                onChange={(event) => {
-                  const preset = presets.find((p) => p.id === event.target.value)
-                  if (preset) {
-                    setLines((old) => [
-                      ...old,
-                      {
-                        description: preset.description,
-                        quantity: preset.quantity,
-                        unit: preset.unit,
-                        unitPrice: preset.unitPrice,
-                      },
-                    ])
-                    setVatRate(preset.suggestedVatRate)
-                  }
-                }}
-              >
-                <option value="">Choose preset</option>
-                {presets.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {lines.map((line, index) => (
-              <div key={index} className="space-y-2 rounded-lg border border-border p-3">
-                <label className="block text-sm">
-                  Description
-                  <input
-                    className={input}
-                    required
-                    value={line.description}
-                    onChange={(event) =>
-                      setLines((old) =>
-                        old.map((l, i) =>
-                          i === index ? { ...l, description: event.target.value } : l,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <label className="text-sm">
-                    Quantity
-                    <input
-                      className={input}
-                      required
-                      inputMode="decimal"
-                      value={line.quantity}
-                      onChange={(event) =>
-                        setLines((old) =>
-                          old.map((l, i) =>
-                            i === index ? { ...l, quantity: event.target.value } : l,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                  <label className="text-sm">
-                    Unit
-                    <input
-                      className={input}
-                      value={line.unit}
-                      onChange={(event) =>
-                        setLines((old) =>
-                          old.map((l, i) => (i === index ? { ...l, unit: event.target.value } : l)),
-                        )
-                      }
-                    />
-                  </label>
-                  <label className="text-sm">
-                    Price
-                    <input
-                      className={input}
-                      required
-                      inputMode="decimal"
-                      value={line.unitPrice}
-                      onChange={(event) =>
-                        setLines((old) =>
-                          old.map((l, i) =>
-                            i === index ? { ...l, unitPrice: event.target.value } : l,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                </div>
-                {lines.length > 1 && (
-                  <button
-                    type="button"
-                    className="min-h-11 text-red-600"
-                    onClick={() => setLines((old) => old.filter((_, i) => i !== index))}
-                  >
-                    Remove line
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              className={secondary}
-              disabled={lines.length >= 100}
-              onClick={() => setLines((old) => [...old, blankLine()])}
-            >
-              Add line
-            </button>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="text-sm">
-                Discount THB
-                <input
-                  className={input}
-                  inputMode="decimal"
-                  value={discount}
-                  onChange={(event) => setDiscount(event.target.value)}
-                />
-              </label>
-              <label className="text-sm">
-                VAT %
-                <input
-                  className={input}
-                  inputMode="decimal"
-                  value={vatRate}
-                  onChange={(event) => setVatRate(event.target.value)}
-                />
-              </label>
-            </div>
-            <label className="block text-sm">
-              Note
-              <textarea
-                className={input}
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-              />
-            </label>
-            {error && (
-              <p role="alert" className="text-red-600">
-                {error}
-              </p>
-            )}
-            {conflict && editing && (
-              <button
-                type="button"
-                className={secondary}
-                onClick={async () => {
-                  setBusy(true)
-                  try {
-                    const latest = quotation
-                      ? await financeApi.quotation(editing.id)
-                      : await financeApi.invoice(editing.id)
-                    if (latest.status === 'DRAFT') edit(latest)
-                    else {
-                      setOpen(false)
-                      await showPreview(latest)
-                    }
-                  } catch (reason) {
-                    setError(reason instanceof Error ? reason.message : 'Could not reload draft')
-                  } finally {
-                    setBusy(false)
-                  }
-                }}
-                disabled={busy}
-              >
-                Reload draft (replace local edits)
-              </button>
-            )}
-            <button
-              type="button"
-              className={`${secondary} mr-2`}
-              disabled={busy}
-              onClick={() => void showPreview()}
-            >
-              Preview
-            </button>
-            <button className={primary} disabled={busy || conflict}>
-              {busy ? 'Saving…' : 'Save draft'}
-            </button>
-          </form>
-        </SheetContent>
-      </Sheet>
-      <Dialog
-        open={Boolean(converting)}
-        onOpenChange={(open) => {
-          if (!open && !busy) setConverting(null)
+      <SalesDocumentList
+        kind={kind}
+        items={items}
+        clients={clients}
+        filters={{ search, status, from, to }}
+        onFilterChange={(patch) => {
+          if (patch.search !== undefined) setSearch(patch.search)
+          if (patch.status !== undefined) setStatus(patch.status)
+          if (patch.from !== undefined) setFrom(patch.from)
+          if (patch.to !== undefined) setTo(patch.to)
+          setPage(1)
         }}
-      >
-        <DialogContent>
-          <DialogTitle>Create invoice from quotation</DialogTitle>
-          <DialogDescription>
-            Copy the quotation into an editable invoice draft. Choose the invoice dates.
-          </DialogDescription>
-          <form onSubmit={(event) => void convert(event)} className="space-y-4">
-            <label className="block">
-              Invoice issue date
-              <input
-                required
-                type="date"
-                className={input}
-                value={conversionIssueDate}
-                onChange={(event) => setConversionIssueDate(event.target.value)}
-              />
-            </label>
-            <label className="block">
-              Invoice due date
-              <input
-                required
-                type="date"
-                min={conversionIssueDate}
-                className={input}
-                value={conversionDueDate}
-                onChange={(event) => setConversionDueDate(event.target.value)}
-              />
-            </label>
-            {conversionError && <p role="alert">{conversionError}</p>}
-            <button className={primary} disabled={busy}>
-              {busy ? 'Creating…' : 'Create draft'}
-            </button>
-          </form>
-        </DialogContent>
-      </Dialog>
+        pagination={{ page, total, onPageChange: setPage }}
+        state={{ loading, error, editingOpen: open, busy }}
+        actions={{
+          retry: () => void load(),
+          preview: (item) => void showPreview(item),
+          edit,
+          issue: (item) => void issue(item),
+          cancel: (item) => void cancel(item),
+          convert: (item) => {
+            setConverting(item)
+            setConversionIssueDate(today())
+            setConversionDueDate(today())
+            setConversionError('')
+          },
+        }}
+      />
+      <SalesDocumentEditor
+        kind={kind}
+        open={open}
+        onOpenChange={setOpen}
+        editing={editing}
+        clients={clients}
+        projects={projects}
+        presets={presets}
+        values={{ clientId, projectId, issueDate, dueDate, vatRate, discount, note, lines }}
+        onLinesChange={setLines}
+        onVatRateChange={setVatRate}
+        onChange={(patch) => {
+          if (patch.clientId !== undefined) setClientId(patch.clientId)
+          if (patch.projectId !== undefined) setProjectId(patch.projectId)
+          if (patch.issueDate !== undefined) setIssueDate(patch.issueDate)
+          if (patch.dueDate !== undefined) setDueDate(patch.dueDate)
+          if (patch.vatRate !== undefined) setVatRate(patch.vatRate)
+          if (patch.discount !== undefined) setDiscount(patch.discount)
+          if (patch.note !== undefined) setNote(patch.note)
+        }}
+        error={error}
+        conflict={conflict}
+        busy={busy}
+        onSubmit={(event) => void submit(event)}
+        onPreview={() => void showPreview()}
+        onReload={() => void reloadDraft()}
+      />
+      <QuotationConversionDialog
+        open={Boolean(converting)}
+        busy={busy}
+        issueDate={conversionIssueDate}
+        dueDate={conversionDueDate}
+        error={conversionError}
+        onClose={() => setConverting(null)}
+        onIssueDateChange={setConversionIssueDate}
+        onDueDateChange={setConversionDueDate}
+        onSubmit={(event) => void convert(event)}
+      />
       {preview && <DocumentPrint preview={preview} onClose={() => setPreview(null)} />}
     </FinanceShell>
   )

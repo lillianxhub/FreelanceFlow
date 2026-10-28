@@ -1,3 +1,4 @@
+import { DEFAULT_DOCUMENT_BRAND_COLOR } from '../constants/colors'
 import type { Client } from '../types/client'
 import type {
   FinanceInvoice,
@@ -117,7 +118,7 @@ function identity(settings: FinanceSettings | null, client?: Client) {
       tax_id: client?.tax_id ?? '',
     }),
     brandSnapshot: JSON.stringify({
-      color: settings?.brandColor ?? '#315bd7',
+      color: settings?.brandColor ?? DEFAULT_DOCUMENT_BRAND_COLOR,
       footer: settings?.footer ?? '',
     }),
   }

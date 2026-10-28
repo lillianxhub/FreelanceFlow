@@ -87,7 +87,7 @@ public class FinanceTemplateService {
     }
     @Transactional
     public Preset savePreset(UUID id,Preset input) {
-        UUID owner=finance.owner(); require(input!=null && input.name()!=null && !input.name().isBlank() && input.description()!=null && !input.description().isBlank(),"Preset name and description are required");
+        UUID owner=id==null?finance.creationOwner():finance.owner(); require(input!=null && input.name()!=null && !input.name().isBlank() && input.description()!=null && !input.description().isBlank(),"Preset name and description are required");
         require(input.name().length()<=120,"Preset name is too long");
         FinancePolicy.Total calculated=FinancePolicy.calculate(List.of(new FinancePolicy.Line(input.description(),input.quantity(),input.unit(),input.unitPrice())),"0",input.suggestedVatRate());
         FinancePolicy.CalculatedLine line=calculated.lines().get(0);
@@ -113,7 +113,7 @@ public class FinanceTemplateService {
     }
     @Transactional
     public Category saveCategory(UUID id,Category input) {
-        UUID owner=finance.owner(); require(input!=null && ("INCOME".equals(input.kind())||"EXPENSE".equals(input.kind())) && input.name()!=null && !input.name().isBlank(),"Kind and name are required");
+        UUID owner=id==null?finance.creationOwner():finance.owner(); require(input!=null && ("INCOME".equals(input.kind())||"EXPENSE".equals(input.kind())) && input.name()!=null && !input.name().isBlank(),"Kind and name are required");
         require(input.name().length()<=100,"Category name is too long");
         UUID target=id==null?UUID.randomUUID():id;
         try {
@@ -169,7 +169,7 @@ public class FinanceTemplateService {
     }
     @Transactional
     public Document issueTax(TaxIssue input) {
-        UUID owner=finance.owner(); require(input!=null && input.invoiceId()!=null && input.date()!=null && input.description()!=null && !input.description().isBlank(),"Invoice, date and service description are required");
+        UUID owner=finance.creationOwner(); require(input!=null && input.invoiceId()!=null && input.date()!=null && input.description()!=null && !input.description().isBlank(),"Invoice, date and service description are required");
         List<Map<String,Object>> rows=db.queryForList("SELECT * FROM finance_invoices WHERE id=? AND owner_id=? FOR UPDATE",input.invoiceId(),owner);
         found(!rows.isEmpty()); Map<String,Object> invoice=rows.get(0);
         require("ISSUED".equals(invoice.get("status")),"Only issued invoices can have tax invoices");

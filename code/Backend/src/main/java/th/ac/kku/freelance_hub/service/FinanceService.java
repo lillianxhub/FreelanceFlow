@@ -51,6 +51,8 @@ public class FinanceService {
         return access.requireFinance();
     }
 
+    public UUID creationOwner() { return access.requireFinanceCreation(); }
+
     private FinanceException fail(HttpStatus status, String code, String message) {
         return new FinanceException(status, code, message);
     }
@@ -123,7 +125,7 @@ public class FinanceService {
 
     @Transactional
     public Transaction saveTransaction(UUID id, TransactionInput input) {
-        UUID owner = owner(); require(input != null, "Transaction is required");
+        UUID owner = id == null ? creationOwner() : owner(); require(input != null, "Transaction is required");
         require("INCOME".equals(input.kind()) || "EXPENSE".equals(input.kind()), "Invalid transaction kind");
         require(input.date() != null && input.description() != null && !input.description().isBlank(), "Date and description are required");
         project(owner, input.projectId(), null);
@@ -188,7 +190,7 @@ public class FinanceService {
 
     @Transactional
     public Invoice saveInvoice(UUID id, InvoiceInput input) {
-        UUID owner=owner(); require(input!=null && input.clientId()!=null && input.issueDate()!=null && input.dueDate()!=null,"Client and dates are required");
+        UUID owner=id==null?creationOwner():owner(); require(input!=null && input.clientId()!=null && input.issueDate()!=null && input.dueDate()!=null,"Client and dates are required");
         require(!input.dueDate().isBefore(input.issueDate()),"Due date precedes issue date");
         found(db.queryForObject("SELECT count(*) FROM clients WHERE id=? AND owner_id=?",Long.class,input.clientId(),owner)==1);
         project(owner,input.projectId(),input.clientId());
@@ -263,7 +265,7 @@ public class FinanceService {
     }
     @Transactional
     public Payment recordPayment(PaymentInput input) {
-        UUID owner=owner(); require(input!=null && input.invoiceId()!=null && input.date()!=null && input.idempotencyKey()!=null && !input.idempotencyKey().isBlank(),"Invoice, date and idempotency key are required");
+        UUID owner=creationOwner(); require(input!=null && input.invoiceId()!=null && input.date()!=null && input.idempotencyKey()!=null && !input.idempotencyKey().isBlank(),"Invoice, date and idempotency key are required");
         require(input.idempotencyKey().length()<=120,"Idempotency key is too long");
         require(input.method()==null || input.method().length()<=50,"Payment method is too long");
         require(input.reference()==null || input.reference().length()<=150,"Reference is too long");

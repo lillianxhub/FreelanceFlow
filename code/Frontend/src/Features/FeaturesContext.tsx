@@ -17,6 +17,9 @@ export interface Features {
   plan: 'FREE' | 'PREMIUM'
   finance: boolean
   premiumEnforced: boolean
+  trialActive: boolean
+  trialEndsAt: string | null
+  trialAvailable: boolean
 }
 const FeaturesContext = createContext<{
   features: Features | null
@@ -79,6 +82,14 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('freelanceflow-finance-revoked', revoked)
     }
   }, [refresh])
+  const trialEndsAt = state?.owner === user?.id ? state?.features.trialEndsAt : null
+  useEffect(() => {
+    if (!trialEndsAt) return
+    const delay = new Date(trialEndsAt).getTime() - Date.now()
+    if (delay <= 0) return
+    const timer = window.setTimeout(() => void refresh(), Math.min(delay + 100, 2_147_483_647))
+    return () => window.clearTimeout(timer)
+  }, [trialEndsAt, refresh])
   return (
     <FeaturesContext.Provider
       value={{

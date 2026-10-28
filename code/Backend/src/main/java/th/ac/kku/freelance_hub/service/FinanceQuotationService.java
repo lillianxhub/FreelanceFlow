@@ -56,7 +56,7 @@ public class FinanceQuotationService {
 
     @Transactional
     public Quotation save(UUID id, QuotationInput input) {
-        UUID owner=access.requireFinance();
+        UUID owner=id==null?access.requireFinanceCreation():access.requireFinance();
         require(input!=null && input.clientId()!=null && input.issueDate()!=null && input.validUntil()!=null,"Client and dates are required");
         require(!input.validUntil().isBefore(input.issueDate()),"Valid-until date precedes issue date");
         if (!repository.clientOwned(owner,input.clientId()) || !repository.projectMatches(owner,input.clientId(),input.projectId()))
@@ -93,7 +93,7 @@ public class FinanceQuotationService {
     }
     @Transactional
     public FinanceService.Invoice invoice(UUID id,long version,LocalDate issueDate,LocalDate dueDate) {
-        UUID owner=access.requireFinance(); var quotation=locked(id,owner);
+        UUID owner=access.requireFinanceCreation(); var quotation=locked(id,owner);
         require(quotation.status().equals("ISSUED"),"Only issued, non-cancelled quotations can create invoices");
         // A retry opens the same invoice, including when another concurrent request created it.
         if(quotation.invoiceId()!=null) return finance.invoice(quotation.invoiceId());

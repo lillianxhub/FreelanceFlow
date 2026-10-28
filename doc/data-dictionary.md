@@ -53,3 +53,7 @@ V23 เพิ่ม `finance_settings` (หนึ่งแถวต่อ owner)
 `finance_quotations` stores owner, client/project, issue/valid-until dates, DRAFT/ISSUED/CANCELLED state, exact monetary totals, seller/buyer/brand JSONB snapshots, note, cancellation reason, version and timestamps. Owner-safe composite foreign keys match invoices. `(owner_id,number)` is unique; QT uses the existing transactional owner/type/year counter. `finance_quotation_lines` stores ordered description, quantity `NUMERIC(15,3)`, unit, unit price and rounded amount `NUMERIC(17,2)`.
 
 `finance_invoices.source_quotation_id` is nullable for existing invoices, unique for converted invoices, and has an owner-safe composite foreign key to quotations. This permits at most one invoice per quotation without merging quotation data into the accounting ledger. Additive V24/V25 migrations retain all V23 records and existing migration checksums.
+
+### Premium trial (V26)
+
+`users.premium_trial_ends_at`: nullable TIMESTAMP WITH TIME ZONE. NULL means the account has not claimed a trial. A future instant grants Finance access alongside the stored plan; a past instant preserves trial usage and prevents renewal. Written once through the authenticated trial use case, with a conditional UPDATE and user version increment. No existing account or Finance data is rewritten by migration.

@@ -74,7 +74,7 @@ function DatePicker({
           aria-invalid={ariaInvalid || undefined}
           onBlur={onBlur}
           className={cn(
-            'h-[41px] w-full justify-between border-input bg-white px-[11px] py-[9px] text-left font-normal text-text-primary hover:bg-white',
+            'h-[41px] w-full justify-between border-input bg-surface px-[11px] py-[9px] text-left font-normal text-text-primary hover:bg-surface',
             !value && 'text-muted-foreground',
             className,
           )}
