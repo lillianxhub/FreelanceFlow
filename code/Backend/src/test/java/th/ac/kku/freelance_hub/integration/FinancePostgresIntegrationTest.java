@@ -78,6 +78,35 @@ class FinancePostgresIntegrationTest {
     FinanceService.PaymentInput payment(UUID invoice,String amount,String key) {
         return new FinanceService.PaymentInput(invoice,DATE,amount,"0","Bank","ref","",key);
     }
+    @Test void premiumTrialCanOnlyBeStartedOnceEvenWithConcurrentRequests() throws Exception {
+        db.update("UPDATE users SET plan='FREE' WHERE id=?", owner);
+        assertThat(access.features().finance()).isFalse();
+        var pool = Executors.newFixedThreadPool(2);
+        UUID account = owner;
+        try {
+            Callable<Boolean> start = () -> {
+                OWNER.set(account);
+                try { access.startTrial(); return true; }
+                catch (th.ac.kku.freelance_hub.exception.InvalidStateException expected) { return false; }
+                finally { OWNER.remove(); }
+            };
+            var results = pool.invokeAll(List.of(start, start));
+            int successes = 0;
+            for (var result : results) if (result.get()) successes++;
+            assertThat(successes).isEqualTo(1);
+        } finally { pool.shutdownNow(); }
+        assertThat(access.features().trialActive()).isTrue();
+        assertThat(access.requireFinance()).isEqualTo(owner);
+        var document = invoice("100.00", "0");
+        db.update("UPDATE users SET premium_trial_ends_at=? WHERE id=?",
+                java.sql.Timestamp.from(java.time.Instant.EPOCH), owner);
+        assertThat(access.requireFinance()).isEqualTo(owner);
+        assertThatThrownBy(() -> access.requireFinanceCreation()).isInstanceOf(FinanceException.class);
+        assertThat(access.features().trialAvailable()).isFalse();
+        assertThat(db.queryForObject("SELECT count(*) FROM finance_invoices WHERE id=?", Long.class, document.id()))
+                .isEqualTo(1);
+    }
+
     @Test void invoiceListQueryWorksForEmptyAndPopulatedPages() {
         assertThat(finance.invoices("", "", null, null, 1, 20).items()).isEmpty();
         var issued=invoice("100.00","0");
@@ -176,7 +205,8 @@ class FinancePostgresIntegrationTest {
         assertThat(finance.summary().income()).isEqualTo("0.00");
         assertThatThrownBy(()->finance.invoice(invoice.id())).isInstanceOf(FinanceException.class);
         db.update("UPDATE users SET role='USER' WHERE id=?",other);
-        assertThatThrownBy(()->finance.summary()).isInstanceOf(FinanceException.class);
+        assertThat(finance.summary().income()).isEqualTo("0.00");
+        assertThatThrownBy(()->access.requireFinanceCreation()).isInstanceOf(FinanceException.class);
     }
     @Test void cancellationAndPaymentSerializeOnTheSameInvoice() throws Exception {
         var invoice=invoice("100","0");
@@ -290,7 +320,8 @@ class FinancePostgresIntegrationTest {
         assertThatThrownBy(()->quotations.get(draft.id())).isInstanceOf(FinanceException.class);
         db.update("UPDATE users SET deleted_at=NULL WHERE id=?",owner);
         db.update("UPDATE app_feature_settings SET premium_enforced=true WHERE id=1");
-        assertThatThrownBy(()->quotations.get(draft.id())).isInstanceOf(FinanceException.class);
+        assertThat(quotations.get(draft.id()).id()).isEqualTo(draft.id());
+        assertThatThrownBy(()->access.requireFinanceCreation()).isInstanceOf(FinanceException.class);
         db.update("UPDATE app_feature_settings SET premium_enforced=false WHERE id=1");
         assertThat(quotations.get(draft.id()).id()).isEqualTo(draft.id());
     }

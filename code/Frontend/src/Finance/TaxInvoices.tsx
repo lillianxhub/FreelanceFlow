@@ -133,7 +133,7 @@ export default function TaxInvoices() {
     >
       {loading && <p role="status">Loading…</p>}
       {error && (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-destructive">
           {error}{' '}
           <button className={secondary} onClick={() => void load()}>
             Retry
@@ -248,7 +248,7 @@ export default function TaxInvoices() {
                     </button>
                     {d.status === 'ISSUED' && (
                       <button
-                        className="text-red-600"
+                        className="text-destructive"
                         disabled={busy}
                         onClick={() => void cancel(d)}
                       >

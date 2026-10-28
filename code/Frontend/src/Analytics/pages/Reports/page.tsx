@@ -8,33 +8,10 @@ import {
   FiTrendingUp,
   FiUsers,
 } from 'react-icons/fi'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import PageHeader from '../../../components/PageHeader'
 import SummaryCard from '../../../components/SummaryCard'
-import StatusBadge from '../../../components/StatusBadge'
 import { ErrorState, LoadingState } from '../../../components/ViewState'
 import { Button } from '../../../components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../../components/ui/chart'
-import { DatePicker } from '../../../components/ui/date-picker'
-import { Label } from '../../../components/ui/label'
-import { NativeSelect } from '../../../components/ui/native-select'
-import { Progress } from '../../../components/ui/progress'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../../components/ui/table'
-import { ToggleGroup, ToggleGroupItem } from '../../../components/ui/toggle-group'
 import { useAsyncData } from '../../../hooks/useAsyncData'
 import {
   getReportDistribution,
@@ -50,7 +27,9 @@ import type {
 import { downloadCsv } from '../../../utils/csv'
 import { formatDurationSeconds } from '../../../utils/duration'
 import type { ProjectStatus } from '../../../types/project'
-import { projectStatusLabels } from '../../../ProjectManagement/components/projectStatusOptions'
+import { ReportCharts } from '../../components/ReportCharts'
+import { ReportFilters } from '../../components/ReportFilters'
+import { ReportProjectsTable } from '../../components/ReportProjectsTable'
 
 const emptyReport: ReportSummaryData = {
   generatedAt: '',
@@ -76,15 +55,6 @@ const emptyProjects: ReportProjectPage = {
   page: 1,
   totalPages: 1,
   total: 0,
-}
-
-function clampPercent(value: number): number {
-  return Math.max(0, Math.min(100, value))
-}
-
-function truncateChartLabel(value: string): string {
-  const characters = Array.from(value)
-  return characters.length > 12 ? `${characters.slice(0, 12).join('')}…` : value
 }
 
 function previousPeriodLabel(from: string, to: string): string {
@@ -173,40 +143,14 @@ function ReportsPage() {
   const refresh = () => {
     void Promise.all([refreshSummary(), refreshDistribution(), refreshProjects()])
   }
-  const availableProjects = useMemo(
-    () =>
-      data.filters.projects
-        .filter((project) => clientId === 'ALL' || project.clientId === clientId)
-        .filter((project) => status === 'ALL' || project.status === status),
-    [clientId, status, data.filters.projects],
-  )
-
   const { summary } = data
   const projectRows = projects.items.map((project) => ({
     project,
     targetHours: project.targetSeconds == null ? 0 : project.targetSeconds / 3600,
     usedHours: project.trackedSeconds / 3600,
   }))
-  const clientChartData = distribution.items.map((item) => ({
-    name: item.name,
-    hours: Number((item.trackedSeconds / 3600).toFixed(2)),
-  }))
-  const showProjectTimeChart = groupBy === 'PROJECT'
-  const timeChartData = clientChartData
   const selectedClientName =
     data.filters.clients.find((client) => client.id === clientId)?.name || 'Selected client'
-  const timeChartTitle = showProjectTimeChart ? 'Time by project' : 'Time by client'
-  const timeChartDescription =
-    clientId !== 'ALL'
-      ? `Hours tracked${showProjectTimeChart ? 'By project' : ''}for client ${selectedClientName}`
-      : `Hours tracked by${showProjectTimeChart ? 'Projects' : 'Clients'}${hasDateRange ? 'in the selected period' : 'All time'}`
-  const projectChartData = projects.items
-    .filter((project) => project.trackedSeconds > 0 || project.taskProgressPercent > 0)
-    .map((project) => ({
-      name: project.projectName,
-      usage: Number((project.usagePercent ?? 0).toFixed(1)),
-      progress: Number(project.taskProgressPercent.toFixed(1)),
-    }))
   const trendPercent = summary.trackedTimeTrendPercent
   const trend =
     trendPercent == null ? (
@@ -258,93 +202,32 @@ function ReportsPage() {
         }
       />
 
-      <Card>
-        <CardContent className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 xl:grid-cols-5">
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-from">From date</Label>
-            <DatePicker
-              id="report-from"
-              value={range.from}
-              placeholder="Select start date"
-              onChange={(value) => {
-                setRange((current) => ({ ...current, from: value }))
-                setPage(1)
-              }}
-            />
-          </div>
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-status">StatusProjects</Label>
-            <NativeSelect
-              id="report-status"
-              value={status}
-              disabled={!canLoad}
-              onChange={(event) => {
-                setStatus(event.target.value as 'ALL' | ProjectStatus)
-                setProjectId('ALL')
-                setPage(1)
-              }}
-            >
-              <option value="ALL">All statuses</option>
-              {Object.entries(projectStatusLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-to">To date</Label>
-            <DatePicker
-              id="report-to"
-              value={range.to}
-              placeholder="Select end date"
-              onChange={(value) => {
-                setRange((current) => ({ ...current, to: value }))
-                setPage(1)
-              }}
-            />
-          </div>
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-client">Clients</Label>
-            <NativeSelect
-              id="report-client"
-              value={clientId}
-              disabled={!canLoad}
-              onChange={(event) => {
-                setClientId(event.target.value)
-                setProjectId('ALL')
-                setPage(1)
-              }}
-            >
-              <option value="ALL">All clients</option>
-              {data.filters.clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <Label htmlFor="report-project">Projects</Label>
-            <NativeSelect
-              id="report-project"
-              value={projectId}
-              disabled={!canLoad}
-              onChange={(event) => {
-                setProjectId(event.target.value)
-                setPage(1)
-              }}
-            >
-              <option value="ALL">All projects</option>
-              {availableProjects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-        </CardContent>
-      </Card>
+      <ReportFilters
+        range={range}
+        clientId={clientId}
+        projectId={projectId}
+        status={status}
+        canLoad={canLoad}
+        filters={data.filters}
+        onRangeChange={(nextRange) => {
+          setRange(nextRange)
+          setPage(1)
+        }}
+        onClientChange={(nextClientId) => {
+          setClientId(nextClientId)
+          setProjectId('ALL')
+          setPage(1)
+        }}
+        onProjectChange={(nextProjectId) => {
+          setProjectId(nextProjectId)
+          setPage(1)
+        }}
+        onStatusChange={(nextStatus) => {
+          setStatus(nextStatus)
+          setProjectId('ALL')
+          setPage(1)
+        }}
+      />
 
       {hasPartialRange ? (
         <p className="text-sm text-destructive">
@@ -393,209 +276,21 @@ function ReportsPage() {
             />
           </section>
 
-          <Card>
-            <CardHeader>
-              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <CardTitle>{timeChartTitle}</CardTitle>
-                  <CardDescription className="break-words">{timeChartDescription}</CardDescription>
-                </div>
-                <ToggleGroup
-                  type="single"
-                  value={groupBy}
-                  onValueChange={(value) => {
-                    if (value === 'CLIENT' || value === 'PROJECT') {
-                      setGroupBy(value)
-                    }
-                  }}
-                  aria-label="Group time by"
-                >
-                  <ToggleGroupItem value="CLIENT" aria-label="Time by client">
-                    By client
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="PROJECT" aria-label="Time by project">
-                    By project
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {timeChartData.length ? (
-                <ChartContainer
-                  className="h-[300px] w-full min-w-0 aspect-auto"
-                  config={{ hours: { label: 'hours', color: '#4F6BFF' } }}
-                >
-                  <BarChart data={timeChartData} layout="vertical" margin={{ left: 12, right: 28 }}>
-                    <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                    <XAxis type="number" axisLine={false} tickLine={false} unit=" h" />
-                    <YAxis
-                      type="category"
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      width={110}
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={showProjectTimeChart ? truncateChartLabel : undefined}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      dataKey="hours"
-                      name="hours"
-                      fill="var(--color-hours)"
-                      radius={[0, 6, 6, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              ) : (
-                <p className="py-12 text-center text-sm text-muted-foreground">
-                  No time data for this period
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <ReportCharts
+            distribution={distribution}
+            projects={projects}
+            groupBy={groupBy}
+            onGroupByChange={setGroupBy}
+            clientId={clientId}
+            selectedClientName={selectedClientName}
+            hasDateRange={hasDateRange}
+          />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Time usage versus task progress</CardTitle>
-              <CardDescription>
-                Compare time used with tasks completed for these projects.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {projectChartData.length ? (
-                <div className="w-full overflow-x-auto">
-                  <ChartContainer
-                    className="h-[320px] min-w-[44rem] aspect-auto"
-                    config={{
-                      usage: { label: 'Hours used', color: '#4F6BFF' },
-                      progress: { label: 'Task progress', color: '#7C3AED' },
-                    }}
-                  >
-                    <BarChart data={projectChartData}>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
-                        interval={0}
-                        tickFormatter={truncateChartLabel}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        unit="%"
-                        domain={[
-                          0,
-                          (maximum: number) => Math.max(100, Math.ceil(maximum / 20) * 20),
-                        ]}
-                      />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar
-                        dataKey="usage"
-                        name="Hours used"
-                        fill="var(--color-usage)"
-                        radius={[5, 5, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="progress"
-                        name="Task progress"
-                        fill="var(--color-progress)"
-                        radius={[5, 5, 0, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </div>
-              ) : (
-                <p className="py-12 text-center text-sm text-muted-foreground">
-                  No projects for this period
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Time breakdown by project</CardTitle>
-              <CardDescription>
-                Time, targets, and progress for projects ({projects.total} entries)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table
-                pagination={{
-                  page: projects.page,
-                  totalPages: projects.totalPages,
-                  total: projects.total,
-                  onPageChange: setPage,
-                }}
-              >
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Project name</TableHead>
-                    <TableHead>NameClients</TableHead>
-                    <TableHead className="w-32">Target time</TableHead>
-                    <TableHead className="w-32">Time spent</TableHead>
-                    <TableHead className="w-36">Used</TableHead>
-                    <TableHead className="w-36">Progress</TableHead>
-                    <TableHead className="w-36">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {projectRows.map(({ project, targetHours }) => (
-                    <TableRow key={project.projectId}>
-                      <TableCell>
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span
-                            className="size-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: project.color }}
-                          />
-                          <strong className="truncate" title={project.projectName}>
-                            {project.projectName}
-                          </strong>
-                        </div>
-                      </TableCell>
-                      <TableCell>{project.clientName}</TableCell>
-                      <TableCell>
-                        {targetHours ? `${targetHours.toFixed(1)} h` : 'No target'}
-                      </TableCell>
-                      <TableCell>{formatDurationSeconds(project.trackedSeconds)}</TableCell>
-                      <TableCell>
-                        <div className="flex min-w-28 items-center gap-2">
-                          <Progress value={clampPercent(project.usagePercent ?? 0)} />
-                          <span className="w-10 text-right">
-                            {project.usagePercent == null
-                              ? '—'
-                              : `${project.usagePercent.toFixed(0)}%`}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex min-w-28 items-center gap-2">
-                          <Progress
-                            value={clampPercent(project.taskProgressPercent)}
-                            indicatorColor="#7C3AED"
-                          />
-                          <span className="w-10 text-right">
-                            {project.taskProgressPercent.toFixed(0)}%
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={project.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {!projectRows.length && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                        No projects match your filters
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <ReportProjectsTable
+            projects={projects}
+            projectRows={projectRows}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>

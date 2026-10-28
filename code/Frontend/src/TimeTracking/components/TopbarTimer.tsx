@@ -39,7 +39,7 @@ function TopbarTimer() {
   return (
     <>
       <div
-        className="flex min-w-0 items-stretch overflow-hidden rounded-[10px] border border-[#d9e1ff] bg-primary-soft text-primary-dark"
+        className="flex min-w-0 items-stretch overflow-hidden rounded-[10px] border border-border bg-primary-soft text-primary-dark"
         aria-label="Active timer"
       >
         <Button
@@ -48,7 +48,7 @@ function TopbarTimer() {
           type="button"
           onClick={() => router.push('/time-tracker')}
         >
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white">
+          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-surface">
             <FiClock className="size-[14px]" aria-hidden="true" />
           </span>
           <span className="flex min-w-0 max-w-[140px] flex-col max-[820px]:hidden">

@@ -7,10 +7,10 @@ export default function ProjectTimeChart({ data }: ProjectTimeChartProps) {
   return (
     <ChartContainer
       className="h-[270px] w-full aspect-auto"
-      config={{ hours: { label: 'hours', color: '#4F6BFF' } }}
+      config={{ hours: { label: 'hours', color: 'var(--chart-1)' } }}
     >
       <BarChart data={[...data]}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
         <XAxis
           dataKey="name"
           tick={{ fontSize: 'var(--font-size-sm)' }}

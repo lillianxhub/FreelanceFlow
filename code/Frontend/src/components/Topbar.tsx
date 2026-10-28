@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { Avatar, AvatarFallback } from './ui/avatar'
+import { ThemeToggle } from './ThemeToggle'
 
 const labels: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -55,6 +56,7 @@ function Topbar({ onMenu }: TopbarProps) {
         <strong className="text-text-primary">{label}</strong>
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <ThemeToggle />
         <TopbarTimer />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

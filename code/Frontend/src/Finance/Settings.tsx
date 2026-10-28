@@ -110,7 +110,7 @@ export default function Settings() {
     >
       {loading && <p role="status">Loading…</p>}
       {error && (
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-destructive">
           {error}{' '}
           <button className={secondary} onClick={() => void load()}>
             Retry
@@ -190,7 +190,7 @@ export default function Settings() {
                 {p.name} · {p.description} · {p.quantity} {p.unit} × {p.unitPrice} THB
               </span>
               <button
-                className="text-red-600"
+                className="text-destructive"
                 onClick={() =>
                   void api
                     .delete(`/finance/presets/${p.id}?version=${p.version}`)
@@ -278,7 +278,7 @@ export default function Settings() {
                 {item.kind} · {item.name}
               </span>
               <button
-                className="text-red-600"
+                className="text-destructive"
                 disabled={busy}
                 onClick={() => {
                   void financeApi

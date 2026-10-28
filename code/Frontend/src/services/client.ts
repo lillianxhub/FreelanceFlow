@@ -1,3 +1,4 @@
+import { DEFAULT_RECORD_COLOR } from '../constants/colors'
 import { api } from '../api/apiClient'
 import type { ApiClient, ApiMeta } from '../types/api'
 import type { Client, ClientInput } from '../types/client'
@@ -22,7 +23,7 @@ function toClient(source: ApiClient): Client {
     tax_id: emptyString(source.taxId),
     notes: emptyString(source.notes),
     status: source.isActive === false ? 'ARCHIVED' : source.status,
-    color: '#4F6BFF',
+    color: DEFAULT_RECORD_COLOR,
     created_at: source.createdAt,
     updated_at: source.updatedAt,
   }

@@ -107,7 +107,7 @@ export default function TaskBoardPage() {
               aria-label="Project"
               value={projectId}
               onChange={(event) => navigate('kanban', event.target.value)}
-              className="min-h-10 min-w-56 rounded-lg border border-border bg-white px-3"
+              className="min-h-10 min-w-56 rounded-lg border border-border bg-surface px-3"
             >
               <option value="">Select a project</option>
               {projects.map((project) => (
@@ -135,7 +135,7 @@ export default function TaskBoardPage() {
             />
           )}
           {!projectId && (
-            <p className="rounded-lg border border-border bg-white p-8 text-text-secondary">
+            <p className="rounded-lg border border-border bg-surface p-8 text-text-secondary">
               Select a project to view its board.
             </p>
           )}

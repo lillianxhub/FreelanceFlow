@@ -37,6 +37,8 @@ npm run dev
 
 Frontend http://localhost:5174, Backend ผ่าน Compose ใช้ http://localhost:8080 ตามค่า default ใน working tree นี้ (ปรับด้วย `APP_PORT`), PostgreSQL localhost:5433 ใช้ `/api` ผ่าน Next.js rewrite โดย `BACKEND_ORIGIN` เป็น configuration ฝั่ง server เปลี่ยน origin แล้วต้อง build ใหม่ก่อนใช้ `npm run start` Compose project คือ `freelanceflow` ตรวจ host/container ports จาก Compose อย่าสมมติว่าเหมือนกัน การรัน Spring โดยตรงมี default port 8081 จึงต้องตั้ง `BACKEND_ORIGIN` ให้ตรงวิธีรันจริง
 
+เตรียมค่า production จาก `code/Backend/.env.production.example` และ `code/Frontend/.env.production.example`; ขั้นตอนตรวจค่า HTTPS, CORS, secure cookie, migration, backup และ health อยู่ที่ [คู่มือ production](deploy/README.md)
+
 สร้างข้อมูลตัวอย่างสำหรับทดสอบหน้าจอด้วย `cd code/Backend && ./seed-local.sh` หลังตั้ง datasource ให้ชี้ PostgreSQL ในเครื่อง คำสั่งสร้างบัญชี ลูกค้า โปรเจกต์ งาน เวลา และข้อมูล Finance ได้แก่ Settings, หมวดหมู่, service presets, Quotation ทุกสถานะ, Invoice แบบร่าง/ค้างชำระ/ชำระแล้ว/ยกเลิก, Payments, Income/Expenses, Receipt และ Tax invoice สามารถรันซ้ำได้โดยไม่สร้างรายการซ้ำหรือเขียนทับข้อมูลตัวอย่างที่แก้ไว้ ตั้งบัญชีด้วย `LOCAL_SEED_EMAIL` และ `LOCAL_SEED_PASSWORD` ได้ตามเดิม
 
 ## ขอบเขตผลิตภัณฑ์

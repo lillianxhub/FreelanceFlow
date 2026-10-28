@@ -50,6 +50,47 @@ class AdminAccessIntegrationTest {
         return body.at("/data/token").asText();
     }
 
+    @Test void trialIsAuthenticatedOneTimeAndExpiresWithoutDeletingData() throws Exception {
+        String email = "trial-" + UUID.randomUUID() + "@example.com";
+        String token = register(email);
+        String otherEmail = "other-" + UUID.randomUUID() + "@example.com";
+        String otherToken = register(otherEmail);
+        db.update("UPDATE app_feature_settings SET premium_enforced=true WHERE id=1");
+        mvc.perform(post("/api/users/me/premium-trial")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/users/me/features").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.data.finance").value(false))
+                .andExpect(jsonPath("$.data.trialAvailable").value(true));
+        var before = java.time.Instant.now().plus(7, java.time.temporal.ChronoUnit.DAYS);
+        mvc.perform(post("/api/users/me/premium-trial").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.finance").value(true))
+                .andExpect(jsonPath("$.data.plan").value("FREE"))
+                .andExpect(jsonPath("$.data.trialActive").value(true))
+                .andExpect(jsonPath("$.data.trialAvailable").value(false));
+        var endsAt = db.queryForObject("SELECT premium_trial_ends_at FROM users WHERE email=?",
+                java.sql.Timestamp.class, email).toInstant();
+        assertThat(endsAt).isBetween(before, java.time.Instant.now().plus(7, java.time.temporal.ChronoUnit.DAYS));
+        mvc.perform(post("/api/users/me/premium-trial").header("Authorization", "Bearer " + token))
+                .andExpect(status().isConflict());
+        mvc.perform(get("/api/users/me/features").header("Authorization", "Bearer " + otherToken))
+                .andExpect(jsonPath("$.data.finance").value(false))
+                .andExpect(jsonPath("$.data.trialAvailable").value(true));
+        db.update("UPDATE users SET premium_trial_ends_at=? WHERE email=?",
+                java.sql.Timestamp.from(java.time.Instant.EPOCH), email);
+        mvc.perform(get("/api/users/me/features").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.data.finance").value(false))
+                .andExpect(jsonPath("$.data.trialActive").value(false))
+                .andExpect(jsonPath("$.data.trialAvailable").value(false));
+        mvc.perform(post("/api/finance/transactions").header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"kind\":\"INCOME\",\"date\":\"2026-10-28\",\"description\":\"New work\",\"amount\":\"199.00\"}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/users/me/premium-trial").header("Authorization", "Bearer " + token))
+                .andExpect(status().isConflict());
+        db.update("UPDATE users SET plan='PREMIUM' WHERE email=?", email);
+        mvc.perform(get("/api/users/me/features").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.data.finance").value(true));
+    }
+
     @Test void adminOnlyAccountDataAndOptimisticPlanChange() throws Exception {
         String adminEmail = "admin-" + UUID.randomUUID() + "@example.com";
         String userEmail = "user-" + UUID.randomUUID() + "@example.com";

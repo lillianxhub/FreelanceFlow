@@ -46,10 +46,10 @@ export function FinanceShell({
     </div>
   )
 }
-export const panel = 'rounded-xl border border-border bg-white p-5 shadow-sm'
+export const panel = 'rounded-xl border border-border bg-surface p-5 shadow-sm'
 export const input =
-  'min-h-10 w-full rounded-lg border border-border bg-white px-3 text-sm focus-visible:outline-primary'
+  'min-h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm focus-visible:outline-primary'
 export const primary =
-  'min-h-10 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50'
+  'min-h-10 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-dark disabled:opacity-50'
 export const secondary =
-  'min-h-10 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold hover:bg-surface-soft disabled:opacity-50'
+  'min-h-10 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold hover:bg-surface-soft disabled:opacity-50'

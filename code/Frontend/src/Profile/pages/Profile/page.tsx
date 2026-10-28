@@ -1,24 +1,16 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card'
-import { NativeSelect } from '../../../components/ui/native-select'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { Button } from '../../../components/ui/button'
-import FormLabel from '../../../components/FormLabel'
-import { Input } from '../../../components/ui/input'
-// import { Textarea } from '../../../components/ui/textarea'
-import PasswordInput from '../../../components/PasswordInput'
 import PageHeader from '../../../components/PageHeader'
 import { ErrorState, LoadingState } from '../../../components/ViewState'
 import { useProfile } from '../../useProfile'
-import type { ChangePasswordInput, Profile, ProfileFieldErrors } from '../../../types/profile'
+import type { Profile, ProfileFieldErrors } from '../../../types/profile'
 import type { ProfileInput } from '../../../types/profile'
 import type { NotificationMessage } from '../../../types/notification'
 import { toast } from 'sonner'
-import type { FieldErrorProps } from '../../../types/ui'
 import { getErrorMessage } from '../../../api/apiError'
-import { changePassword } from '../../../services/profile'
 import { validateProfileFields } from '../../profile.validators'
 import { useThaiAddress } from '../../useThaiAddress'
-import { hasRequiredPassword } from '../../../Authentication/authentication.validators'
+import { ChangePasswordForm } from '../../components/ChangePasswordForm'
+import { ProfileDetailsForm } from '../../components/ProfileDetailsForm'
 
 const emptyProfile: ProfileInput = {
   full_name: '',
@@ -63,14 +55,6 @@ function fieldValue(value: unknown): string {
   return value === null || value === undefined ? '' : String(value)
 }
 
-function FieldError({ id, message }: FieldErrorProps) {
-  return message ? (
-    <p id={id} className="mt-1 text-xs font-semibold text-destructive">
-      {message}
-    </p>
-  ) : null
-}
-
 function ProfilePage() {
   const { data, loading, error, refresh, updateProfile } = useProfile()
   const [draft, setDraft] = useState<Profile | ProfileInput | null>(null)
@@ -80,43 +64,17 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const { provinces, loading: addressLoading, error: addressError } = useThaiAddress()
   const [profileErrors, setProfileErrors] = useState<ProfileFieldErrors>({})
-  const [passwordForm, setPasswordForm] = useState<ChangePasswordInput>({
-    current_password: '',
-    new_password: '',
-    confirm_password: '',
-  })
-  const [passwordSaving, setPasswordSaving] = useState(false)
 
   if (loading) return <LoadingState label="Loading profile…" />
   if (error) return <ErrorState message={error} onRetry={refresh} />
 
   const profile = draft || data || emptyProfile
-  const selectedProvince = provinces.find((item) => item.name_th === profile.province)
-  const districts = selectedProvince?.districts || []
-  const selectedDistrict = districts.find((item) => item.name_th === profile.district)
-  const subDistricts = selectedDistrict?.sub_districts || []
-  const selectedSubDistrict = subDistricts.find((item) => item.name_th === profile.sub_district)
   const savedProfile = data || emptyProfile
   const hasProfileChanges =
     draft !== null &&
     editableProfileFields.some(
       (field) => fieldValue(profile[field]) !== fieldValue(savedProfile[field]),
     )
-  const passwordInvalidLength =
-    passwordForm.new_password.length > 0 && !hasRequiredPassword(passwordForm.new_password)
-  const passwordMismatch =
-    passwordForm.confirm_password.length > 0 &&
-    passwordForm.new_password !== passwordForm.confirm_password
-  const passwordUnchanged =
-    passwordForm.new_password.length > 0 &&
-    passwordForm.current_password === passwordForm.new_password
-  const passwordFormInvalid =
-    !passwordForm.current_password ||
-    !passwordForm.new_password ||
-    !passwordForm.confirm_password ||
-    passwordInvalidLength ||
-    passwordMismatch ||
-    passwordUnchanged
 
   const updateFields = (values: Partial<ProfileInput>) => {
     setDraft((current) => ({
@@ -133,36 +91,6 @@ function ProfilePage() {
       ...(current || data || emptyProfile),
       [name]: value,
     }))
-  }
-
-  const updateDigits = (maxLength: number) => (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
-    updateFields({ [name]: value.replace(/\D/g, '').slice(0, maxLength) })
-  }
-
-  const updateProvince = (event: ChangeEvent<HTMLSelectElement>) => {
-    updateFields({
-      province: event.target.value,
-      district: '',
-      sub_district: '',
-      postal_code: '',
-    })
-  }
-
-  const updateDistrict = (event: ChangeEvent<HTMLSelectElement>) => {
-    updateFields({
-      district: event.target.value,
-      sub_district: '',
-      postal_code: '',
-    })
-  }
-
-  const updateSubDistrict = (event: ChangeEvent<HTMLSelectElement>) => {
-    const subDistrict = subDistricts.find((item) => item.name_th === event.target.value)
-    updateFields({
-      sub_district: event.target.value,
-      postal_code: subDistrict ? String(subDistrict.zip_code) : '',
-    })
   }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -193,395 +121,25 @@ function ProfilePage() {
     }
   }
 
-  const updatePassword = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
-    setPasswordForm((current) => ({ ...current, [name]: value }))
-  }
-
-  const submitPassword = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!hasRequiredPassword(passwordForm.new_password)) {
-      showToast({
-        success: false,
-        message: 'New password must have at least 8 characters and no more than 72 bytes UTF-8',
-      })
-      return
-    }
-    if (passwordForm.new_password !== passwordForm.confirm_password) {
-      showToast({ success: false, message: 'The new passwords do not match' })
-      return
-    }
-    if (passwordForm.current_password === passwordForm.new_password) {
-      showToast({
-        success: false,
-        message: 'The new password must differ from the current password',
-      })
-      return
-    }
-    setPasswordSaving(true)
-    try {
-      const response = await changePassword(
-        passwordForm.current_password,
-        passwordForm.new_password,
-      )
-      setPasswordForm({
-        current_password: '',
-        new_password: '',
-        confirm_password: '',
-      })
-      showToast({
-        success: response.success,
-        message: response.message || 'Password changed',
-      })
-    } catch (passwordError) {
-      showToast({
-        success: false,
-        message: getErrorMessage(passwordError, 'Could not change password'),
-      })
-    } finally {
-      setPasswordSaving(false)
-    }
-  }
-
   return (
     <div className="mx-auto w-full max-w-screen-2xl">
       <PageHeader title="Personal information" />
 
-      <form className="grid gap-4" onSubmit={submit} noValidate>
-        <Card asChild>
-          <section className="p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="col-span-full flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-display-name" required>
-                  Display name
-                </FormLabel>
-                <Input
-                  id="profile-display-name"
-                  name="display_name"
-                  value={profile.display_name || ''}
-                  onChange={update}
-                  aria-invalid={Boolean(profileErrors.display_name)}
-                  aria-describedby={
-                    profileErrors.display_name ? 'profile-display-name-error' : undefined
-                  }
-                  required
-                />
-                <FieldError id="profile-display-name-error" message={profileErrors.display_name} />
-                <small className="text-xs text-muted-foreground">
-                  This name appears across your workspace and account menu.
-                </small>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-first-name" required>
-                  Name
-                </FormLabel>
-                <Input
-                  id="profile-first-name"
-                  name="first_name"
-                  value={profile.first_name || ''}
-                  onChange={update}
-                  aria-invalid={Boolean(profileErrors.first_name)}
-                  aria-describedby={
-                    profileErrors.first_name ? 'profile-first-name-error' : undefined
-                  }
-                  required
-                />
-                <FieldError id="profile-first-name-error" message={profileErrors.first_name} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-last-name" required>
-                  Last name
-                </FormLabel>
-                <Input
-                  id="profile-last-name"
-                  name="last_name"
-                  value={profile.last_name || ''}
-                  onChange={update}
-                  aria-invalid={Boolean(profileErrors.last_name)}
-                  aria-describedby={profileErrors.last_name ? 'profile-last-name-error' : undefined}
-                  required
-                />
-                <FieldError id="profile-last-name-error" message={profileErrors.last_name} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-email">Account email</FormLabel>
-                <Input
-                  id="profile-email"
-                  name="email"
-                  type="email"
-                  value={profile.email || ''}
-                  disabled
-                  aria-disabled="true"
-                />
-                <small className="text-xs text-muted-foreground">Use this email to sign in.</small>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-phone" required>
-                  Phone number
-                </FormLabel>
-                <Input
-                  id="profile-phone"
-                  name="phone"
-                  value={profile.phone || ''}
-                  onChange={updateDigits(10)}
-                  inputMode="numeric"
-                  pattern="[0-9]{0,10}"
-                  maxLength={10}
-                  aria-invalid={Boolean(profileErrors.phone)}
-                  aria-describedby={profileErrors.phone ? 'profile-phone-error' : undefined}
-                />
-                <FieldError id="profile-phone-error" message={profileErrors.phone} />
-                <small className="text-xs text-muted-foreground">Enter no more than 10 Main</small>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-tax">Tax ID</FormLabel>
-                <Input
-                  id="profile-tax"
-                  name="tax_id"
-                  value={profile.tax_id || ''}
-                  onChange={updateDigits(13)}
-                  inputMode="numeric"
-                  pattern="[0-9]{0,13}"
-                  maxLength={13}
-                  aria-invalid={Boolean(profileErrors.tax_id)}
-                  aria-describedby={profileErrors.tax_id ? 'profile-tax-error' : undefined}
-                />
-                <FieldError id="profile-tax-error" message={profileErrors.tax_id} />
-                <small className="text-xs text-muted-foreground">Enter no more than 13 Main</small>
-              </div>
-              {/* <div className="col-span-full flex flex-col gap-1.5">
-              <label htmlFor="profile-bio">About you</label>
-              <Textarea
-                id="profile-bio"
-                name="bio"
-                value={profile.bio || ""}
-                onChange={update}
-                maxLength={1000}
-                placeholder="Write a short introduction about your work."
-              />
-            </div> */}
-            </div>
+      <ProfileDetailsForm
+        profile={profile}
+        errors={profileErrors}
+        provinces={provinces}
+        addressLoading={addressLoading}
+        addressError={addressError}
+        saving={saving}
+        hasChanges={hasProfileChanges}
+        onChange={update}
+        onFieldsChange={updateFields}
+        onSubmit={submit}
+        onCancel={() => setDraft(null)}
+      />
 
-            <div className="my-6 border-t border-border" />
-            <p className="mb-3 text-sm font-semibold tracking-wide text-text-secondary">Address</p>
-            {addressError && (
-              <p className="rounded-lg bg-red-soft px-3 py-2 text-sm text-destructive">
-                {addressError}
-              </p>
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="col-span-full flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-address" required>
-                  Address
-                </FormLabel>
-                <Input
-                  id="profile-address"
-                  name="address"
-                  value={profile.address || ''}
-                  onChange={update}
-                  aria-invalid={Boolean(profileErrors.address)}
-                  aria-describedby={profileErrors.address ? 'profile-address-error' : undefined}
-                />
-                <FieldError id="profile-address-error" message={profileErrors.address} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-province" required>
-                  Province
-                </FormLabel>
-                <NativeSelect
-                  id="profile-province"
-                  value={profile.province || ''}
-                  onChange={updateProvince}
-                  disabled={addressLoading || Boolean(addressError)}
-                  aria-invalid={Boolean(profileErrors.province)}
-                  aria-describedby={profileErrors.province ? 'profile-province-error' : undefined}
-                >
-                  <option value="">
-                    {addressLoading ? 'Loading provinces…' : 'Select province'}
-                  </option>
-                  {provinces.map((province) => (
-                    <option key={province.id} value={province.name_th}>
-                      {province.name_th}
-                    </option>
-                  ))}
-                </NativeSelect>
-                <FieldError id="profile-province-error" message={profileErrors.province} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-district" required>
-                  District
-                </FormLabel>
-                <NativeSelect
-                  id="profile-district"
-                  value={profile.district || ''}
-                  onChange={updateDistrict}
-                  disabled={!selectedProvince}
-                  aria-invalid={Boolean(profileErrors.district)}
-                  aria-describedby={profileErrors.district ? 'profile-district-error' : undefined}
-                >
-                  <option value="">Select district</option>
-                  {districts.map((district) => (
-                    <option key={district.id} value={district.name_th}>
-                      {district.name_th}
-                    </option>
-                  ))}
-                </NativeSelect>
-                <FieldError id="profile-district-error" message={profileErrors.district} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-sub-district" required>
-                  Subdistrict
-                </FormLabel>
-                <NativeSelect
-                  id="profile-sub-district"
-                  value={profile.sub_district || ''}
-                  onChange={updateSubDistrict}
-                  disabled={!selectedDistrict}
-                  aria-invalid={Boolean(profileErrors.sub_district)}
-                  aria-describedby={
-                    profileErrors.sub_district ? 'profile-sub-district-error' : undefined
-                  }
-                >
-                  <option value="">Select subdistrict</option>
-                  {subDistricts.map((subDistrict) => (
-                    <option key={subDistrict.id} value={subDistrict.name_th}>
-                      {subDistrict.name_th}
-                    </option>
-                  ))}
-                </NativeSelect>
-                <FieldError id="profile-sub-district-error" message={profileErrors.sub_district} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <FormLabel htmlFor="profile-postal-code" required>
-                  Postal code
-                </FormLabel>
-                <NativeSelect
-                  id="profile-postal-code"
-                  name="postal_code"
-                  value={profile.postal_code || ''}
-                  disabled={!selectedSubDistrict}
-                  onChange={update}
-                  aria-invalid={Boolean(profileErrors.postal_code)}
-                  aria-describedby={
-                    profileErrors.postal_code ? 'profile-postal-code-error' : undefined
-                  }
-                >
-                  <option value="">Select a subdistrict first</option>
-                  {selectedSubDistrict && (
-                    <option value={String(selectedSubDistrict.zip_code)}>
-                      {selectedSubDistrict.zip_code}
-                    </option>
-                  )}
-                </NativeSelect>
-                <FieldError id="profile-postal-code-error" message={profileErrors.postal_code} />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-2 border-t border-border pt-6 sm:flex-row sm:justify-end">
-              <Button
-                variant="outline"
-                className="min-h-10 w-full sm:w-auto"
-                type="button"
-                onClick={() => setDraft(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="min-h-10 w-full sm:w-auto"
-                type="submit"
-                disabled={saving || !hasProfileChanges}
-              >
-                {saving ? 'Saving…' : 'Save changes'}
-              </Button>
-            </div>
-          </section>
-        </Card>
-      </form>
-
-      <Card asChild>
-        <form className="mt-4 p-6" onSubmit={submitPassword}>
-          <CardHeader className="mb-6 p-0">
-            <CardTitle>Change password</CardTitle>
-            <CardDescription>
-              Enter your current password to set a new sign-in password.
-            </CardDescription>
-          </CardHeader>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <FormLabel htmlFor="current-password" required>
-                Current password
-              </FormLabel>
-              <PasswordInput
-                id="current-password"
-                name="current_password"
-                value={passwordForm.current_password}
-                onChange={updatePassword}
-                autoComplete="current-password"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <FormLabel htmlFor="new-password" required>
-                New password
-              </FormLabel>
-              <PasswordInput
-                id="new-password"
-                name="new_password"
-                value={passwordForm.new_password}
-                onChange={updatePassword}
-                autoComplete="new-password"
-                minLength={8}
-                aria-invalid={passwordInvalidLength || passwordUnchanged}
-                required
-              />
-              {passwordInvalidLength ? (
-                <small className="mt-1 text-xs font-semibold text-destructive">
-                  New password must have at least 8 characters and no more than 72 bytes UTF-8
-                </small>
-              ) : (
-                <small className="text-xs text-muted-foreground">
-                  must have at least 8 characters
-                </small>
-              )}
-              {passwordUnchanged && (
-                <small className="mt-1 text-xs font-semibold text-destructive">
-                  The new password must differ from the current password
-                </small>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <FormLabel htmlFor="confirm-password" required>
-                Confirm new password
-              </FormLabel>
-              <PasswordInput
-                id="confirm-password"
-                name="confirm_password"
-                value={passwordForm.confirm_password}
-                onChange={updatePassword}
-                autoComplete="new-password"
-                minLength={8}
-                aria-invalid={passwordMismatch}
-                required
-              />
-              {passwordMismatch && (
-                <small className="mt-1 text-xs font-semibold text-destructive">
-                  The new passwords do not match
-                </small>
-              )}
-            </div>
-          </div>
-          <div className="mt-6 flex flex-col gap-2 border-t border-border pt-6 sm:flex-row sm:justify-end">
-            <Button
-              className="min-h-10 w-full sm:w-auto"
-              type="submit"
-              disabled={passwordSaving || passwordFormInvalid}
-            >
-              {passwordSaving ? 'Changing password…' : 'Change password'}
-            </Button>
-          </div>
-        </form>
-      </Card>
+      <ChangePasswordForm />
     </div>
   )
 }

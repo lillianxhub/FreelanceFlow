@@ -1,3 +1,4 @@
+import { DEFAULT_RECORD_COLOR } from '../../../constants/colors'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { NativeSelect } from '../../../components/ui/native-select'
@@ -41,7 +42,7 @@ const emptyForm: ClientInput = {
   tax_id: '',
   notes: '',
   status: 'ACTIVE',
-  color: '#4F6BFF',
+  color: DEFAULT_RECORD_COLOR,
 }
 
 function toClientForm(value: Partial<ClientInput> = {}): ClientInput {
@@ -60,7 +61,7 @@ function toClientForm(value: Partial<ClientInput> = {}): ClientInput {
     tax_id: value.tax_id ?? '',
     notes: value.notes ?? '',
     status: value.status ?? 'ACTIVE',
-    color: value.color ?? '#4F6BFF',
+    color: value.color ?? DEFAULT_RECORD_COLOR,
   }
 }
 

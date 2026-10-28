@@ -1,21 +1,17 @@
-# กฎ CI และการเตรียม release
+# CI, image publishing, and deployment
 
-Pipeline ปัจจุบันอยู่ใน `.github/workflows/backend.yml` และ `frontend-ci.yml` ใช้ source YAML เป็นความจริง ไม่อ้างสถานะ CI จากเอกสารนี้
+GitHub-hosted pull request checks stay separate from production access:
 
-## Checks สำหรับ implementation
+- `backend.yml`: Maven verify, fresh Flyway validation, Finance PostgreSQL fresh/upgrade/concurrency tests, image runtime smoke, and one gate.
+- `frontend-ci.yml`: clean install, lint, typecheck, unit tests, production build, and one gate.
+- `proxy-integration.yml`: isolated PostgreSQL, Backend, production Next, and Playwright login/refresh/Finance flows through `/api`.
 
-- Backend: Maven verify, Flyway migrate/validate และ Docker build/runtime smoke ที่ตรวจ port จริงของแอป
-- Frontend: npm ci จาก lockfile, lint, typecheck, unit tests และ Next production build
-- Browser integration: Playwright ต้องเปิด PostgreSQL/Backend/Next ที่แยกสำหรับ tests ตาม [test plan](../test/test-plan.md) ปัจจุบันเป็นคำสั่งแยก ไม่อ้างว่า frontend CI รัน browser โดยอัตโนมัติ
-- schema change ต้องทดสอบทั้ง fresh และ upgrade; runtime checks ต้องใช้ container/host port ให้ตรง config
-- ใช้ quality gates ที่ไม่ผ่านเมื่อ required job fail ตรวจ path filters เมื่อเพิ่ม/ย้าย/ลบ feature หรือโฟลเดอร์
+`release.yml` runs only on a push to `main`. It repeats release checks for that exact SHA and publishes Frontend and Backend to GHCR with the same immutable SHA tag. Pull requests cannot publish.
 
-## กฎแก้ CI
+`deploy.yml` accepts a successful publish run on `main`, or a manual full SHA already in GHCR. It uses the GitHub `production` environment and a trusted self-hosted runner. `cancel-in-progress: false` prevents interruption during backup, migration, or service replacement.
 
-CI change ต้องตรวจ YAML, commands, working directory, versions, paths, ports และ secrets scopes ห้าม disable tests หรือเพิ่ม skip เพื่อกลบ bug เก็บ log/report เป็น evidence พร้อม commit/run URL ไม่ฝัง credentials จริงในตัวอย่าง
+Production Frontend uses Next standalone output and `BACKEND_ORIGIN=http://backend:8080`; browsers call `/api`. Backend containers use port 8080. Local direct Spring runs may keep default port 8081.
 
-## Deployment
+Next.js is pinned to 16.4.3 after 16.4.0 triggered the security build gate. Keep later patch upgrades reviewable with the lockfile, production build, and browser integration results. Do not deploy canary builds.
 
-FreelanceFlow ไม่มี deploy jobs ที่เปิดใช้งาน การ build/push branch/เปิด PR ไม่ใช่ deploy หากเพิ่ม deployment ในอนาคตต้องกำหนด environment/URL จริง, secret storage, HTTPS/cookies, migrations, backup/restore, health และ recovery ก่อนเปิด job ไม่ใช้ปลายทางของ Freelance Hub
-
-ลบ feature ต้องปรับ CI paths/artifacts/config ที่เลิกใช้และคง checks ของ consumers ที่เหลือ ไม่ลบ historical logs/evidence เพื่อให้ผลดูผ่าน
+Production database and JWT secrets stay in `DEPLOY_PATH/.env` or the host secret store. See [the homelab runbook](../deploy/README.md) for setup, backup, restore, rollback, and troubleshooting.

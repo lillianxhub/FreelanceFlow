@@ -6,6 +6,7 @@ import AuthInput from './AuthInput'
 import { Button } from '../../components/ui/button'
 import { useAuth } from '../useAuthentication'
 import { getErrorMessage } from '../../api/apiError'
+import { BrandLogo } from '../../components/BrandLogo'
 import {
   hasRequiredPassword,
   isValidEmail,
@@ -129,7 +130,7 @@ function RegisterForm() {
     <AuthenticationLayout>
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="auth-brand">
-          <img src="/logo-light.svg" alt="" />
+          <BrandLogo />
           <strong>FreelanceFlow</strong>
         </div>
         <h1>Register</h1>

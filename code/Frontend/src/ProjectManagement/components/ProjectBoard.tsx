@@ -58,7 +58,7 @@ function BoardCard({
         transform: CSS.Transform.toString(sortable.transform),
         transition: sortable.transition,
       }}
-      className="rounded-lg border border-border bg-white p-3 shadow-sm"
+      className="rounded-lg border border-border bg-surface p-3 shadow-sm"
     >
       <div className="flex items-start gap-2">
         <button
@@ -341,7 +341,7 @@ export default function ProjectBoard({
                   toast.error(getErrorMessage(error, 'Could not save preference')),
                 )
             }}
-            className="rounded border border-border bg-white p-1"
+            className="rounded border border-border bg-surface p-1"
           >
             <option value="AUTO">Automatic timer</option>
             <option value="MANUAL">Manual timer</option>

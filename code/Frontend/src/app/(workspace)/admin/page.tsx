@@ -108,7 +108,7 @@ export default function AdminPage() {
 
   if (user?.role !== 'ADMIN')
     return (
-      <div role="alert" className="rounded-xl border border-border bg-white p-6">
+      <div role="alert" className="rounded-xl border border-border bg-surface p-6">
         You do not have access to the admin dashboard.
       </div>
     )
@@ -119,13 +119,13 @@ export default function AdminPage() {
         <p className="mt-1 text-text-secondary">Accounts and Premium access</p>
       </header>
       {features && (
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-white p-5">
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-surface p-5">
           <div>
             <h2 className="font-semibold">Require Premium for Finance</h2>
             <p className="mt-1 text-sm text-text-secondary">
               {features.premiumEnforced
-                ? 'Only Premium and Admin accounts can use Finance.'
-                : 'All active accounts can use Finance. Account plans are preserved.'}
+                ? 'Premium, Admin, and active trials can create Finance records. Existing records remain available.'
+                : 'All active accounts can create Finance records. Account plans are preserved.'}
             </p>
           </div>
           <Button
@@ -142,7 +142,7 @@ export default function AdminPage() {
       )}
       {loading && <p role="status">Loading accounts…</p>}
       {error && (
-        <div role="alert" className="rounded-xl border border-border bg-white p-5">
+        <div role="alert" className="rounded-xl border border-border bg-surface p-5">
           {error}{' '}
           <button className="ml-2 text-primary underline" onClick={() => void load()}>
             Retry
@@ -160,13 +160,13 @@ export default function AdminPage() {
                 ['New this month', summary.newThisMonth],
               ] as const
             ).map(([label, value]) => (
-              <div key={label} className="rounded-xl border border-border bg-white p-5">
+              <div key={label} className="rounded-xl border border-border bg-surface p-5">
                 <p className="text-sm text-text-secondary">{label}</p>
                 <strong className="mt-2 block text-3xl">{value}</strong>
               </div>
             ))}
           </div>
-          <section className="rounded-xl border border-border bg-white p-5">
+          <section className="rounded-xl border border-border bg-surface p-5">
             <h2 className="font-semibold">Signups in the last six months</h2>
             <div
               className="mt-5 grid grid-cols-6 items-end gap-2"
@@ -189,7 +189,7 @@ export default function AdminPage() {
           </section>
         </>
       )}
-      <section className="rounded-xl border border-border bg-white p-5">
+      <section className="rounded-xl border border-border bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Users</h2>
           <div className="flex flex-wrap gap-2">
@@ -324,7 +324,7 @@ export default function AdminPage() {
             </DialogTitle>
             <DialogDescription>
               {nextMode
-                ? 'Free accounts will lose Finance access on their next request. Their documents will remain stored. Premium and Admin accounts retain access.'
+                ? 'Free accounts without an active trial cannot create new Finance records. Existing records remain available to view, search, print, download, edit, and cancel.'
                 : 'All active accounts will be able to use Finance immediately. Existing Free/Premium plans will stay the same.'}
             </DialogDescription>
           </DialogHeader>

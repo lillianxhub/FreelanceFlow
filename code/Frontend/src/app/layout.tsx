@@ -5,10 +5,11 @@ import { Providers } from './providers'
 export const metadata: Metadata = {
   title: 'FreelanceFlow',
   description: 'Manage projects, tasks, time, and finances',
+  icons: { icon: '/favicon.svg' },
 }
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
       </body>
